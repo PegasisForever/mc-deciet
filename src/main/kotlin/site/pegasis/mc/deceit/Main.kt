@@ -16,7 +16,6 @@ open class Main : JavaPlugin() {
         server.pluginManager.registerEvents(ItemFrameBehaviour(this), this)
         server.pluginManager.registerEvents(Transform(this), this)
         GameState.init(this)
-        BloodPacks.init(this)
     }
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
@@ -30,31 +29,12 @@ open class Main : JavaPlugin() {
     }
 
     private suspend fun startGame() {
-        GamePlayer.start()
-        BloodPacks.loadAll(Bukkit.getWorld(Config.worldName)!!)
+        Environment.preStart(this)
 
-        if (!debug) {
-            repeat(5) { i ->
-                GamePlayer.list.forEach { gp ->
-                    gp.player.sendTitle((5 - i).toString(), "", 0, 20, 0)
-                }
-                delay(1000)
-            }
-        }
+        GamePlayer.hook()
+        BloodPacks.hook()
+        Environment.hook()
 
-        GamePlayer.list.forEach { gp ->
-            gp.player.sendTitle(if (gp.isInfected) "Infected" else "Innocent", "", 10, 60, 10)
-        }
-
-        GameState.onDark = {
-            consoleCommand("time set midnight")
-        }
-        GameState.onLight = {
-            consoleCommand("time set day")
-        }
-        GameState.onEnd = {
-            BloodPacks.gameEnd()
-        }
-        GlobalScope.launch { GameState.start() }
+        GameState.start()
     }
 }

@@ -25,7 +25,7 @@ class ItemFrameBehaviour(val plugin: JavaPlugin) : Listener {
             val item = itemFrame.item
 
             if (item.type == Material.POTION) {
-                BloodPacks.drink(player,itemFrame)
+                BloodPacks.drink(player, itemFrame, plugin)
             } else {
                 player.sendMessage("The blood pack is empty!")
             }

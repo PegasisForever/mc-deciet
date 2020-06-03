@@ -15,25 +15,29 @@ data class BloodPack(val itemFrame: ItemFrame, var refillJob: Job? = null)
 
 object BloodPacks {
     val list = arrayListOf<BloodPack>()
-    lateinit var plugin: JavaPlugin
 
-    fun init(plugin: JavaPlugin) {
-        this.plugin = plugin
+    fun hook() {
+        GameState.addListener(GameEvent.START) {
+            val world = Bukkit.getWorld(Config.worldName)!!
+            world.getEntitiesByClass(ItemFrame::class.java).forEach { addBloodPack(it) }
+        }
+
+        GameState.addListener(GameEvent.END) {
+            list.forEach { pack ->
+                pack.refillJob?.cancel()
+            }
+            list.clear()
+        }
     }
 
-    fun loadAll(world: World) {
-        list.clear()
-        world.getEntitiesByClass(ItemFrame::class.java).forEach { add(it) }
-    }
-
-    private fun add(itemFrame: ItemFrame) {
+    private fun addBloodPack(itemFrame: ItemFrame) {
         list.add(BloodPack(itemFrame))
         itemFrame.isInvulnerable = true
         itemFrame.setItem(getBloodItemStack(), false)
         itemFrame.rotation = Rotation.NONE
     }
 
-    fun drink(player: Player, itemFrame: ItemFrame) {
+    fun drink(player: Player, itemFrame: ItemFrame, plugin: JavaPlugin) {
         val found = list.find { it.itemFrame == itemFrame } ?: return
         GamePlayer.get(player)!!.addBloodLevel(if (GameState.dark) 1 else 2)
 
@@ -50,12 +54,6 @@ object BloodPacks {
             plugin.inMainThread {
                 itemFrame.setItem(getBloodItemStack(), false)
             }
-        }
-    }
-
-    fun gameEnd() {
-        list.forEach { pack ->
-            pack.refillJob?.cancel()
         }
     }
 

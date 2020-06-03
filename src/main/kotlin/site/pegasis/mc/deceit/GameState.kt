@@ -1,78 +1,73 @@
 package site.pegasis.mc.deceit
 
 import kotlinx.coroutines.delay
-import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
-import org.bukkit.scoreboard.DisplaySlot
-import org.bukkit.scoreboard.Scoreboard
+import java.util.concurrent.CopyOnWriteArrayList
 
+typealias GameEventListener = JavaPlugin.() -> Unit
+
+enum class GameEvent {
+    START,
+    LIGHT,
+    DARK,
+    END,
+    SECOND
+}
 
 object GameState {
     var started = false
     var dark = false
     var secondToNextStage = 0
-    lateinit var plugin: JavaPlugin
-    lateinit var scoreboard: Scoreboard
-    var onDark: (() -> Unit)? = null
-    var onLight: (() -> Unit)? = null
-    var onEnd: (() -> Unit)? = null
+    private val listeners = CopyOnWriteArrayList<Pair<GameEvent, GameEventListener>>()
+    private lateinit var plugin: JavaPlugin
 
     fun init(plugin: JavaPlugin) {
         this.plugin = plugin
+    }
+
+    fun addListener(eventType: GameEvent, listener: JavaPlugin.() -> Unit) {
+        listeners += (eventType to listener)
+    }
+
+    private fun clearListener() {
+        listeners.clear()
+    }
+
+    private fun dispatch(event: GameEvent) {
+        listeners.forEach { (eventType, listener) ->
+            if (eventType == event) {
+                plugin.inMainThread {
+                    listener(plugin)
+                }
+            }
+        }
     }
 
     suspend fun start() {
         started = true
         dark = false
         secondToNextStage = 10
-        createScoreBoard()
-        updateScoreBoard()
-        plugin.inMainThread { onLight?.invoke() }
+        dispatch(GameEvent.START)
+        dispatch(GameEvent.LIGHT)
+        dispatch(GameEvent.SECOND)
         while (secondToNextStage > 0) {
             delay(1000)
             secondToNextStage--
-            updateScoreBoard()
+            dispatch(GameEvent.SECOND)
         }
-        dark = true
-        plugin.inMainThread { onDark?.invoke() }
 
+        dark = true
         secondToNextStage = 10
+        dispatch(GameEvent.DARK)
+
         while (secondToNextStage > 0) {
             delay(1000)
             secondToNextStage--
-            updateScoreBoard()
+            dispatch(GameEvent.SECOND)
         }
         started = false
-        updateScoreBoard()
-        plugin.inMainThread {
-            onLight?.invoke()
-            onEnd?.invoke()
-        }
-    }
-
-    private fun createScoreBoard() {
-        plugin.inMainThread {
-            val manager = Bukkit.getScoreboardManager()
-            scoreboard = manager!!.newScoreboard
-            val obj = scoreboard.registerNewObjective("game-state", "dummy", "MC Deciet")
-            obj.displaySlot = DisplaySlot.SIDEBAR
-
-            GamePlayer.list.forEach { gp ->
-                gp.player.scoreboard = scoreboard
-            }
-        }
-    }
-
-    private fun updateScoreBoard() {
-        plugin.inMainThread {
-            val obj = scoreboard.objectives.first()
-            obj.displayName = when {
-                !started -> "Game End"
-                dark -> "Dark"
-                else -> "Light"
-            }
-
-            obj.getScore("Seconds left").score = secondToNextStage
-        }
+        dispatch(GameEvent.LIGHT)
+        dispatch(GameEvent.END)
+        clearListener()
     }
 }
