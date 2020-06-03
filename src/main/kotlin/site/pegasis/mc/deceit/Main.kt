@@ -41,6 +41,13 @@ open class Main : JavaPlugin() {
         GamePlayer.list.forEach { gp ->
             gp.player.sendTitle(if (gp.isInfected) "Infected" else "Innocent", "", 10, 60, 10)
         }
+
+        GameState.onDark = {
+            server.getWorld(Config.worldName)!!.time = 23_000
+        }
+        GameState.onLight = {
+            server.getWorld(Config.worldName)!!.time = 11_000
+        }
         GlobalScope.launch { GameState.start() }
     }
 }

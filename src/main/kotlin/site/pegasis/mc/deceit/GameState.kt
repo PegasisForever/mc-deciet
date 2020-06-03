@@ -13,6 +13,8 @@ object GameState {
     var secondToNextStage = 0
     lateinit var plugin: JavaPlugin
     lateinit var scoreboard: Scoreboard
+    var onDark: (() -> Unit)? = null
+    var onLight: (() -> Unit)? = null
 
     fun init(plugin: JavaPlugin) {
         this.plugin = plugin
@@ -24,12 +26,14 @@ object GameState {
         secondToNextStage = 10
         createScoreBoard()
         updateScoreBoard()
+        plugin.inMainThread { onLight?.invoke() }
         while (secondToNextStage > 0) {
             delay(1000)
             secondToNextStage--
             updateScoreBoard()
         }
         dark = true
+        plugin.inMainThread { onDark?.invoke() }
 
         secondToNextStage = 10
         while (secondToNextStage > 0) {
@@ -39,6 +43,7 @@ object GameState {
         }
         started = false
         updateScoreBoard()
+        plugin.inMainThread { onLight?.invoke() }
     }
 
     private fun createScoreBoard() {
