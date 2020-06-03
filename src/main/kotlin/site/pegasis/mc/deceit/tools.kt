@@ -1,6 +1,8 @@
 package site.pegasis.mc.deceit
 
 import org.bukkit.Bukkit
+import org.bukkit.event.Cancellable
+import org.bukkit.event.Event
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
 import java.util.concurrent.Callable
@@ -8,6 +10,10 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+
+fun JavaPlugin.log(msg: Any) {
+    logger.logInfo(msg.toString())
+}
 
 fun Logger.logInfo(msg: String) {
     log(Level.INFO, msg)
@@ -36,4 +42,8 @@ fun <T> JavaPlugin.inMainThread(action: () -> T): T {
 
 fun JavaPlugin.consoleCommand(cmd: String) {
     this.server.dispatchCommand(Bukkit.getConsoleSender(), cmd)
+}
+
+fun Cancellable.cancel() {
+    isCancelled = true
 }

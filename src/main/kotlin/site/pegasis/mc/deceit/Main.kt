@@ -3,6 +3,7 @@ package site.pegasis.mc.deceit
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.plugin.java.JavaPlugin
@@ -29,6 +30,7 @@ open class Main : JavaPlugin() {
 
     private suspend fun startGame() {
         GamePlayer.start()
+        BloodPacks.loadAll(Bukkit.getWorld(Config.worldName)!!)
 
         if (!debug) {
             repeat(5) { i ->

@@ -4,6 +4,7 @@ import org.bukkit.*
 import org.bukkit.entity.ItemFrame
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.hanging.HangingPlaceEvent
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.PotionMeta
@@ -12,32 +13,21 @@ import org.bukkit.plugin.java.JavaPlugin
 class ItemFrameBehaviour(val plugin: JavaPlugin) : Listener {
     @EventHandler
     fun onRightClick(event: PlayerInteractEntityEvent) {
-        if (event.rightClicked is ItemFrame) {
+        val player = event.player
+        if (event.rightClicked is ItemFrame &&
+            player.gameMode != GameMode.CREATIVE &&
+            player.isInfected() &&
+            GameState.started
+        ) {
             val itemFrame = event.rightClicked as ItemFrame
-            val player = event.player
-            if (player.gameMode == GameMode.CREATIVE) {
-                itemFrame.isInvulnerable = true
-            } else {
-                event.isCancelled = true
-                val item = itemFrame.item
-                if (player.isInfected()) {
-                    if (item.itemMeta is PotionMeta) {
-                        //replace with empty bottle and play sound
-                        itemFrame.setItem(ItemStack(Material.GLASS_BOTTLE), false)
-                        player.world.playSound(
-                            itemFrame.location,
-                            Sound.ITEM_BUCKET_EMPTY_LAVA,
-                            SoundCategory.BLOCKS,
-                            1f, 1f
-                        )
+            val item = itemFrame.item
+            event.cancel()
 
-                        //add blood level
-                        GamePlayer.get(player)!!.addBloodLevel(2)
-                    } else {
-                        //already empty
-                        player.sendMessage("The blood pack is empty!")
-                    }
-                }
+            if (item.type == Material.POTION) {
+                BloodPacks.drink(itemFrame)
+                GamePlayer.get(player)!!.addBloodLevel(2)
+            } else {
+                player.sendMessage("The blood pack is empty!")
             }
         }
     }

@@ -15,6 +15,11 @@ data class GamePlayer(
         player.exp = bloodLevel / 6f
     }
 
+    fun clearBloodLevel() {
+        bloodLevel = 0
+        player.exp = 0f
+    }
+
     companion object {
         val list = arrayListOf<GamePlayer>()
 
@@ -25,9 +30,9 @@ data class GamePlayer(
                 player.level = 0
                 player.exp = 0f
                 player.foodLevel = 20
-                if (debug){
+                if (debug) {
                     list.add(GamePlayer(player, true))
-                }else{
+                } else {
                     list.add(GamePlayer(player, randomInfectedList[i]))
                 }
 
@@ -38,9 +43,9 @@ data class GamePlayer(
     }
 }
 
-fun Player.isBloodLevelFull():Boolean{
+fun Player.isBloodLevelFull(): Boolean {
     val found = GamePlayer.get(this)
-    return found?.bloodLevel==6
+    return found?.bloodLevel == 6
 }
 
 fun Player.isInfected(): Boolean {
