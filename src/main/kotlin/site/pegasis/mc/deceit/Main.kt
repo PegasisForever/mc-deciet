@@ -13,6 +13,7 @@ open class Main : JavaPlugin() {
     override fun onEnable() {
         server.pluginManager.registerEvents(TPLobby(this), this)
         server.pluginManager.registerEvents(ItemFrameBehaviour(this), this)
+        server.pluginManager.registerEvents(Transform(this), this)
         GameState.init(this)
     }
 
@@ -43,10 +44,10 @@ open class Main : JavaPlugin() {
         }
 
         GameState.onDark = {
-            server.getWorld(Config.worldName)!!.time = 23_000
+            consoleCommand("time set midnight")
         }
         GameState.onLight = {
-            server.getWorld(Config.worldName)!!.time = 11_000
+            consoleCommand("time set day")
         }
         GlobalScope.launch { GameState.start() }
     }
