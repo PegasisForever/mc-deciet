@@ -22,13 +22,13 @@ fun JavaPlugin.runDelayed(seconds: Double, action: () -> Unit) {
 
 }
 
-suspend fun JavaPlugin.delay(seconds: Double): Unit = suspendCoroutine { cont ->
-    object : BukkitRunnable() {
-        override fun run() {
-            cont.resume(Unit)
-        }
-    }.runTaskLater(this, (seconds * 20).toLong())
-}
+//suspend fun JavaPlugin.delay(seconds: Double): Unit = suspendCoroutine { cont ->
+//    object : BukkitRunnable() {
+//        override fun run() {
+//            cont.resume(Unit)
+//        }
+//    }.runTaskLater(this, (seconds * 20).toLong())
+//}
 
 fun <T> JavaPlugin.inMainThread(action: () -> T): T {
     return Bukkit.getScheduler().callSyncMethod(this) { action() }.get()

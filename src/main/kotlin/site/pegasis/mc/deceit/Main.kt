@@ -1,6 +1,7 @@
 package site.pegasis.mc.deceit
 
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -12,6 +13,7 @@ open class Main : JavaPlugin() {
     override fun onEnable() {
         server.pluginManager.registerEvents(TPLobby(this), this)
         server.pluginManager.registerEvents(ItemFrameBehaviour(this), this)
+        GameState.init(this)
     }
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
@@ -25,19 +27,20 @@ open class Main : JavaPlugin() {
     }
 
     private suspend fun startGame() {
-        GamePlayer.init()
+        GamePlayer.start()
 
-        if (!debug){
+        if (!debug) {
             repeat(5) { i ->
                 GamePlayer.list.forEach { gp ->
                     gp.player.sendTitle((5 - i).toString(), "", 0, 20, 0)
                 }
-                delay(1.0)
+                delay(1000)
             }
         }
 
         GamePlayer.list.forEach { gp ->
             gp.player.sendTitle(if (gp.isInfected) "Infected" else "Innocent", "", 10, 60, 10)
         }
+        GlobalScope.launch { GameState.start() }
     }
 }

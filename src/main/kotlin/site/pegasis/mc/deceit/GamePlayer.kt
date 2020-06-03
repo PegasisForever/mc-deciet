@@ -18,12 +18,13 @@ data class GamePlayer(
     companion object {
         val list = arrayListOf<GamePlayer>()
 
-        fun init() {
+        fun start() {
             list.clear()
             val randomInfectedList = listOf(true, true, false, false, false, false).shuffled()
             Bukkit.getOnlinePlayers().take(6).forEachIndexed { i, player ->
                 player.level = 0
                 player.exp = 0f
+                player.foodLevel = 20
                 list.add(GamePlayer(player, randomInfectedList[i]))
             }
         }
