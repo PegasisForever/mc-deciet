@@ -20,18 +20,23 @@ class ItemFrameBehaviour(val plugin: JavaPlugin) : Listener {
             } else {
                 event.isCancelled = true
                 val item = itemFrame.item
-                if (item.itemMeta is PotionMeta) {
-                    //replace with empty bottle
-                    itemFrame.setItem(ItemStack(Material.GLASS_BOTTLE), false)
-                    player.world.playSound(
-                        itemFrame.location,
-                        Sound.ITEM_BUCKET_EMPTY_LAVA,
-                        SoundCategory.BLOCKS,
-                        1f, 1f
-                    )
-                } else {
-                    //already empty
+                if (player.isInfected()) {
+                    if (item.itemMeta is PotionMeta) {
+                        //replace with empty bottle and play sound
+                        itemFrame.setItem(ItemStack(Material.GLASS_BOTTLE), false)
+                        player.world.playSound(
+                            itemFrame.location,
+                            Sound.ITEM_BUCKET_EMPTY_LAVA,
+                            SoundCategory.BLOCKS,
+                            1f, 1f
+                        )
 
+                        //add blood level
+                        GamePlayer.get(player)!!.addBloodLevel(2)
+                    } else {
+                        //already empty
+                        player.sendMessage("The blood pack is empty!")
+                    }
                 }
             }
         }
