@@ -14,6 +14,7 @@ open class Main : JavaPlugin() {
     override fun onEnable() {
         logger.logInfo("Enabled")
         server.pluginManager.registerEvents(TPLobby(this), this)
+        server.pluginManager.registerEvents(ItemFrameBehaviour(this), this)
     }
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
