@@ -1,3 +1,9 @@
 name: MCDeceit
 main: site.pegasis.mc.deceit.Main
 version: "1.0"
+commands:
+  start-deciet:
+    description: Start deciet game.
+    usage: /<command>
+    permission: mcdeceit.start
+    permission-message: You don't have <permission>
