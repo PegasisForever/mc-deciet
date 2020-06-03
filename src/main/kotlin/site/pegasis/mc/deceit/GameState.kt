@@ -15,6 +15,7 @@ object GameState {
     lateinit var scoreboard: Scoreboard
     var onDark: (() -> Unit)? = null
     var onLight: (() -> Unit)? = null
+    var onEnd: (() -> Unit)? = null
 
     fun init(plugin: JavaPlugin) {
         this.plugin = plugin
@@ -43,7 +44,10 @@ object GameState {
         }
         started = false
         updateScoreBoard()
-        plugin.inMainThread { onLight?.invoke() }
+        plugin.inMainThread {
+            onLight?.invoke()
+            onEnd?.invoke()
+        }
     }
 
     private fun createScoreBoard() {

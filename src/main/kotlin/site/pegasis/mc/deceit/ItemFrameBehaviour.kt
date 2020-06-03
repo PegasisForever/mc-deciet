@@ -14,6 +14,8 @@ class ItemFrameBehaviour(val plugin: JavaPlugin) : Listener {
     @EventHandler
     fun onRightClick(event: PlayerInteractEntityEvent) {
         val player = event.player
+        event.cancel()
+
         if (event.rightClicked is ItemFrame &&
             player.gameMode != GameMode.CREATIVE &&
             player.isInfected() &&
@@ -21,11 +23,9 @@ class ItemFrameBehaviour(val plugin: JavaPlugin) : Listener {
         ) {
             val itemFrame = event.rightClicked as ItemFrame
             val item = itemFrame.item
-            event.cancel()
 
             if (item.type == Material.POTION) {
-                BloodPacks.drink(itemFrame)
-                GamePlayer.get(player)!!.addBloodLevel(2)
+                BloodPacks.drink(player,itemFrame)
             } else {
                 player.sendMessage("The blood pack is empty!")
             }

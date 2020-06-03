@@ -7,5 +7,6 @@ object Config {
     val originalSkinOverride = mapOf("Pegasis" to "yEco")
     val infectedSkin = "GGsf2" //https://namemc.com/skin/f9b5ba2c8cd83d55
     val worldName = "world"
-    val transformDuration=5
+    val transformDuration = 5 //Seconds
+    val bloodPackRestoreTime = 2 //Seconds
 }

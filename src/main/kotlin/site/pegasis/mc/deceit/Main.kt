@@ -16,6 +16,7 @@ open class Main : JavaPlugin() {
         server.pluginManager.registerEvents(ItemFrameBehaviour(this), this)
         server.pluginManager.registerEvents(Transform(this), this)
         GameState.init(this)
+        BloodPacks.init(this)
     }
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
@@ -50,6 +51,9 @@ open class Main : JavaPlugin() {
         }
         GameState.onLight = {
             consoleCommand("time set day")
+        }
+        GameState.onEnd = {
+            BloodPacks.gameEnd()
         }
         GlobalScope.launch { GameState.start() }
     }
