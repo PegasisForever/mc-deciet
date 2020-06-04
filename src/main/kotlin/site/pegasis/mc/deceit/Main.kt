@@ -10,6 +10,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
+import org.bukkit.entity.ItemFrame
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import kotlin.experimental.or
@@ -93,6 +94,40 @@ open class Main : JavaPlugin(), Listener {
                             ) {
                                 list += block.blockPos
                             }
+                        }
+                    }
+                    log(list.joinToString())
+                }
+                "fuses" -> {
+                    val world = Bukkit.getWorld(Config.worldName)!!
+                    val list = arrayListOf<BlockPos>()
+                    world.loadedChunks.forEach { chunk ->
+                        chunk.forEachBlock { block ->
+                            if (block.type == Config.fuseMaterial) {
+                                list += block.blockPos
+                            }
+                        }
+                    }
+                    log(list.joinToString())
+                }
+                "fuse-sockets" -> {
+                    val world = Bukkit.getWorld(Config.worldName)!!
+                    val list = arrayListOf<BlockPos>()
+                    world.loadedChunks.forEach { chunk ->
+                        chunk.forEachBlock { block ->
+                            if (block.type == Material.END_PORTAL_FRAME) {
+                                list += block.blockPos
+                            }
+                        }
+                    }
+                    log(list.joinToString())
+                }
+                "blood-packs"->{
+                    val world = Bukkit.getWorld(Config.worldName)!!
+                    val list = arrayListOf<EntityPos>()
+                    world.getEntitiesByClass(ItemFrame::class.java).forEach { itemFrame->
+                        if (itemFrame.item.type == Material.POTION || itemFrame.item.type == Material.GLASS_BOTTLE){
+                            list+=itemFrame.entityPos
                         }
                     }
                     log(list.joinToString())

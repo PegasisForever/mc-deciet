@@ -4,6 +4,7 @@ import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.World
 import org.bukkit.block.Block
+import org.bukkit.entity.Entity
 
 data class BlockPos(val x: Int, val y: Int, val z: Int)
 
@@ -18,14 +19,20 @@ data class EntityPos(val x: Double, val y: Double, val z: Double) {
     }
 }
 
+val Entity.entityPos: EntityPos
+    get() = EntityPos(location.x, location.y, location.z)
+
 data class Level(
     val lightTime: Int,
     val darkTime: Int,
     val rageTime: Int,
     val runTime: Int,
+    val bloodPackPosesCount: Int,
     val bloodPackPoses: List<EntityPos>,
     val requiredFuses: Int,
+    val fuseCount: Int,
     val fusePositions: List<BlockPos>,
+    val fuseSocketCount: Int,
     val fuseSocketPositions: List<BlockPos>
 )
 
@@ -342,10 +349,56 @@ object Config {
             10,
             10,
             5,
-            listOf(),
+            10,
+            listOf(
+                EntityPos(x = 681.5, y = 67.5, z = 28365.96875),
+                EntityPos(x = 693.96875, y = 67.5, z = 28373.5),
+                EntityPos(x = 693.96875, y = 67.5, z = 28355.5),
+                EntityPos(x = 676.5, y = 67.5, z = 28345.03125),
+                EntityPos(x = 697.03125, y = 67.5, z = 28369.5),
+                EntityPos(x = 707.5, y = 67.5, z = 28345.03125),
+                EntityPos(x = 693.5, y = 67.5, z = 28329.03125),
+                EntityPos(x = 733.5, y = 67.5, z = 28329.03125),
+                EntityPos(x = 729.03125, y = 67.5, z = 28363.5),
+                EntityPos(x = 731.5, y = 67.5, z = 28379.03125),
+                EntityPos(x = 714.5, y = 67.5, z = 28361.03125),
+                EntityPos(x = 689.03125, y = 67.5, z = 28337.5),
+                EntityPos(x = 708.5, y = 67.5, z = 28341.96875),
+                EntityPos(x = 722.03125, y = 67.5, z = 28338.5),
+                EntityPos(x = 685.96875, y = 67.5, z = 28353.5),
+                EntityPos(x = 701.96875, y = 67.5, z = 28355.5),
+                EntityPos(x = 721.03125, y = 67.5, z = 28347.5)
+            ),
             1,
-            listOf(BlockPos(676, 75, 28365), BlockPos(677, 75, 28363)),
-            listOf(BlockPos(679, 74, 28364), BlockPos(678, 74, 28366))
+            4,
+            listOf(
+                BlockPos(x = 668, y = 67, z = 28345),
+                BlockPos(x = 666, y = 67, z = 28365),
+                BlockPos(x = 681, y = 67, z = 28369),
+                BlockPos(x = 689, y = 67, z = 28353),
+                BlockPos(x = 682, y = 67, z = 28330),
+                BlockPos(x = 717, y = 67, z = 28357),
+                BlockPos(x = 704, y = 68, z = 28375),
+                BlockPos(x = 714, y = 67, z = 28380),
+                BlockPos(x = 724, y = 67, z = 28351),
+                BlockPos(x = 725, y = 69, z = 28365),
+                BlockPos(x = 727, y = 71, z = 28381)
+            ),
+            4,
+            listOf(
+                BlockPos(x = 671, y = 66, z = 28344),
+                BlockPos(x = 682, y = 66, z = 28342),
+                BlockPos(x = 682, y = 66, z = 28347),
+                BlockPos(x = 694, y = 66, z = 28358),
+                BlockPos(x = 694, y = 66, z = 28381),
+                BlockPos(x = 682, y = 66, z = 28334),
+                BlockPos(x = 710, y = 66, z = 28336),
+                BlockPos(x = 704, y = 66, z = 28358),
+                BlockPos(x = 704, y = 66, z = 28368),
+                BlockPos(x = 721, y = 66, z = 28361),
+                BlockPos(x = 734, y = 66, z = 28360),
+                BlockPos(x = 720, y = 66, z = 28378)
+            )
         )
     )
 }

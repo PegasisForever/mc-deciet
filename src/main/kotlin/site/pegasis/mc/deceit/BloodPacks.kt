@@ -21,7 +21,6 @@ object BloodPacks {
             val world = Bukkit.getWorld(Config.worldName)!!
             val locations = Game.level.bloodPackPoses.map { it.toLocation(world) }
             world.getEntitiesByClass(ItemFrame::class.java).forEach { itemFrame ->
-                //itemFrame.item.type == Material.POTION || itemFrame.item.type == Material.GLASS_BOTTLE
                 if (locations.any { it.distanceSquared(itemFrame.location) < 0.2 }) {
                     addBloodPack(itemFrame)
                 }
