@@ -7,6 +7,9 @@ import com.comphenix.protocol.events.PacketEvent
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
+import org.bukkit.Material
+import org.bukkit.block.data.Directional
+import org.bukkit.block.data.type.Lantern
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Cow
@@ -14,6 +17,7 @@ import org.bukkit.entity.FallingBlock
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import kotlin.experimental.or
+import kotlin.random.Random
 
 
 val debug = true
@@ -75,10 +79,30 @@ open class Main : JavaPlugin(), Listener {
             }
             return true
         } else if (command.name == "light-off") {
-            Environment.lightOff()
+            Environment.lightOff(args.firstOrNull() == "full")
             return true
         } else if (command.name == "light-on") {
             Environment.lightOn()
+            return true
+        } else if (command.name == "debug-deceit") {
+            when (args.firstOrNull()) {
+                "lights" -> {
+                    val world = Bukkit.getWorld(Config.worldName)!!
+                    val list = arrayListOf<BlockPos>()
+                    world.loadedChunks.forEach { chunk ->
+                        chunk.forEachBlock { block ->
+                            if (block.type == Material.TORCH ||
+                                block.type.toString().startsWith("POTTED") ||
+                                block.type == Material.LANTERN ||
+                                block.type == Material.JACK_O_LANTERN
+                            ) {
+                                list += block.blockPos
+                            }
+                        }
+                    }
+                    log(list.joinToString())
+                }
+            }
             return true
         }
         return false

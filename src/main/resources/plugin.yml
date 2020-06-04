@@ -18,3 +18,8 @@ commands:
     usage: /<command>
     permission: mcdeceit.start
     permission-message: You don't have <permission>
+  debug-deceit:
+    description: debug
+    usage: /<command>
+    permission: mcdeceit.start
+    permission-message: You don't have <permission>

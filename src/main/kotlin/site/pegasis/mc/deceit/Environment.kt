@@ -6,6 +6,7 @@ import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.Directional
 import org.bukkit.block.data.type.Lantern
+import org.bukkit.material.Redstone
 import org.bukkit.plugin.java.JavaPlugin
 import kotlin.random.Random
 
@@ -54,7 +55,7 @@ object Environment {
         }
     }
 
-    fun lightOff() {
+    fun lightOff(full: Boolean = false) {
         if (!lightOn) return
         lightOn = false
 
@@ -62,33 +63,43 @@ object Environment {
         potBlocks.clear()
         lanternBlocks.clear()
         pumpkinBlocks.clear()
-        val world = Bukkit.getWorld(Config.worldName)!!
-        world.loadedChunks.forEach { chunk ->
-            chunk.forEachBlock { block ->
-                if (block.type == Material.TORCH) {
-                    if (Random.nextInt(10) <= 6) {
-                        block.setType(Material.REDSTONE_TORCH)
-                    } else {
-                        block.setType(Material.AIR)
-                    }
-                    torchBlocks.add(block)
-                } else if (block.type.toString().startsWith("POTTED")) {
-                    potBlocks += (block to block.type)
-                    if (Random.nextBoolean()) {
-                        block.setType(Material.POTTED_DEAD_BUSH)
-                    } else {
-                        block.setType(Material.POTTED_WITHER_ROSE)
-                    }
-                } else if (block.type == Material.LANTERN) {
-                    lanternBlocks += (block to (block.blockData as Lantern).isHanging)
+
+        val replaceAction: (Block) -> Unit = { block: Block ->
+            if (block.type == Material.TORCH) {
+                if (Random.nextInt(10) <= 6) {
+                    block.setType(Material.REDSTONE_TORCH)
+                } else {
                     block.setType(Material.AIR)
-                } else if (block.type == Material.JACK_O_LANTERN) {
-                    val facing = (block.blockData as Directional).facing
-                    pumpkinBlocks += (block to facing)
-                    block.setType(Material.CARVED_PUMPKIN)
-                    block.setBlockData((block.blockData as Directional).apply { setFacing(facing) })
                 }
+                torchBlocks.add(block)
+            } else if (block.type.toString().startsWith("POTTED")) {
+                potBlocks += (block to block.type)
+                if (Random.nextBoolean()) {
+                    block.setType(Material.POTTED_DEAD_BUSH)
+                } else {
+                    block.setType(Material.POTTED_WITHER_ROSE)
+                }
+            } else if (block.type == Material.LANTERN) {
+                lanternBlocks += (block to (block.blockData as Lantern).isHanging)
+                block.setType(Material.AIR)
+            } else if (block.type == Material.JACK_O_LANTERN) {
+                val facing = (block.blockData as Directional).facing
+                pumpkinBlocks += (block to facing)
+                block.setType(Material.CARVED_PUMPKIN)
+                block.setBlockData((block.blockData as Directional).apply { setFacing(facing) })
             }
         }
+
+        val world = Bukkit.getWorld(Config.worldName)!!
+        if (full) {
+            world.loadedChunks.forEach { chunk ->
+                chunk.forEachBlock(replaceAction)
+            }
+        } else {
+            Config.lightSources.forEach { pos ->
+                replaceAction(world.getBlockAt(pos))
+            }
+        }
+
     }
 }
