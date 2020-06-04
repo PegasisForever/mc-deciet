@@ -28,7 +28,15 @@ data class GamePlayer(
         }
     var hasFuse: Boolean = false
         set(value) {
-            player.inventory.setItem(2, ItemStack(if (value) Material.END_ROD else Material.AIR))
+            if (value) {
+                player.inventory.setItem(2, ItemStack(Material.END_ROD))
+            } else {
+                player.inventory.contents.forEach { itemStack: ItemStack? ->
+                    if (itemStack?.type == Material.END_ROD) {
+                        player.inventory.remove(itemStack)
+                    }
+                }
+            }
             field = value
         }
 
