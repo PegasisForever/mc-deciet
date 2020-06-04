@@ -1,20 +1,19 @@
 package site.pegasis.mc.deceit
 
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
+import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 
 val debug = true
 
-open class Main : JavaPlugin() {
+open class Main : JavaPlugin(), Listener {
     override fun onEnable() {
         server.pluginManager.registerEvents(TPLobby(this), this)
-        server.pluginManager.registerEvents(ItemFrameBehaviour(this), this)
-        server.pluginManager.registerEvents(Transform(this), this)
+        server.pluginManager.registerEvents(ItemFrameListener(this), this)
+        server.pluginManager.registerEvents(TransformListener(this), this)
         GameState.init(this)
     }
 
@@ -29,7 +28,7 @@ open class Main : JavaPlugin() {
     }
 
     private suspend fun startGame() {
-        Environment.preStart(this)
+        GamePlayer.preStart(this)
 
         GamePlayer.hook()
         BloodPacks.hook()

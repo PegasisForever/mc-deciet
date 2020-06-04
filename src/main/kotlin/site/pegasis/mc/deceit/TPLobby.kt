@@ -13,7 +13,6 @@ class TPLobby(val plugin: JavaPlugin) : Listener {
 
         plugin.runDelayed(0.5) {
             player.teleport(Config.lobbyLocation.apply { world = player.world })
-            plugin.logger.logInfo("Tped ${player.name} to lobby.")
         }
     }
 }

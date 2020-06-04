@@ -1,7 +1,11 @@
 package site.pegasis.mc.deceit
 
+import kotlinx.coroutines.delay
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+import org.bukkit.plugin.java.JavaPlugin
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
 import org.bukkit.scoreboard.DisplaySlot
 import org.bukkit.scoreboard.Scoreboard
 
@@ -10,6 +14,8 @@ data class GamePlayer(
     val isInfected: Boolean,
     var bloodLevel: Int = 0,
     var isDead: Boolean = false,
+    var transformed: Boolean = false,
+    var secondToHuman: Int = 0,
     val scoreboard: Scoreboard = createScoreBoard()
 ) {
     init {
@@ -22,14 +28,78 @@ data class GamePlayer(
         player.exp = bloodLevel / 6f
     }
 
-    fun clearBloodLevel() {
+    private fun clearBloodLevel() {
         bloodLevel = 0
         player.exp = 0f
     }
 
+    private suspend fun JavaPlugin.changeSkin(player: Player, skinName: String) {
+        inMainThread { consoleCommand("skin ${player.name} $skinName") }
+        delay(300)
+        inMainThread { consoleCommand("skinupdate ${player.name}") }
+        delay(200)
+    }
+
+    private fun Player.addInfectedEffect() {
+        addPotionEffect(
+            PotionEffect(
+                PotionEffectType.NIGHT_VISION,
+                10000,
+                1
+            )
+        )
+        addPotionEffect(
+            PotionEffect(
+                PotionEffectType.SPEED,
+                10000,
+                1
+            )
+        )
+    }
+
+    private fun Player.removeAllEffect() {
+        activePotionEffects.forEach { removePotionEffect(it.type) }
+    }
+
+    suspend fun transform(plugin: JavaPlugin) {
+        clearBloodLevel()
+        transformed = true
+        secondToHuman = Config.transformDuration
+
+        plugin.changeSkin(player, Config.infectedSkin)
+        plugin.inMainThread {
+            player.inventory.heldItemSlot = 8
+            player.addInfectedEffect()
+        }
+
+        secondToHuman = Config.transformDuration
+        repeat(Config.transformDuration) {
+            delay(1000L)
+            secondToHuman--
+        }
+
+        plugin.inMainThread { player.removeAllEffect() }
+        plugin.changeSkin(player, Config.originalSkinOverride[player.name] ?: player.name)
+
+        transformed = false
+        secondToHuman = 0
+    }
 
     companion object {
         val gps = arrayListOf<GamePlayer>()
+
+        suspend fun preStart(plugin: JavaPlugin) {
+            if (!debug) {
+                repeat(5) { i ->
+                    plugin.inMainThread {
+                        Bukkit.getOnlinePlayers().forEach { player ->
+                            player.sendTitle((5 - i).toString(), "", 0, 20, 0)
+                        }
+                    }
+                    delay(1000)
+                }
+            }
+        }
 
         fun hook() {
             GameState.addListener(GameEvent.START) {
@@ -79,22 +149,14 @@ data class GamePlayer(
                 else -> "Light"
             }
 
-            obj.getScore("Seconds left").score = GameState.secondToNextStage
+            obj.getScore("Seconds left ").score = GameState.secondToNextStage
+            if (gp.transformed){
+                obj.getScore("Return to human ").score = gp.secondToHuman
+            }else{
+                obj.scoreboard?.resetScores("Return to human ")
+            }
         }
     }
 }
 
-fun Player.isBloodLevelFull(): Boolean {
-    val found = GamePlayer.get(this)
-    return found?.bloodLevel == 6
-}
-
-fun Player.isInfected(): Boolean {
-    val found = GamePlayer.get(this)
-    return found?.isInfected ?: false
-}
-
-fun Player.isGameDead(): Boolean {
-    val found = GamePlayer.get(this)
-    return found?.isDead ?: true
-}
+fun Player.getGP() = GamePlayer.get(this)
