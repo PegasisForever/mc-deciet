@@ -2,19 +2,12 @@ package site.pegasis.mc.deceit
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.bukkit.Bukkit
-import org.bukkit.Material
-import org.bukkit.block.Block
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
-import kotlin.random.Random
 
 val debug = true
-
-val torchBlocks = arrayListOf<Block>()
-val potBlocks = arrayListOf<Pair<Block, Material>>()
 
 open class Main : JavaPlugin(), Listener {
     override fun onEnable() {
@@ -33,35 +26,10 @@ open class Main : JavaPlugin(), Listener {
             }
             return true
         } else if (command.name == "light-off") {
-            torchBlocks.clear()
-            val world = Bukkit.getWorld(Config.worldName)!!
-            world.loadedChunks.forEach { chunk ->
-                chunk.forEachBlock { block ->
-                    if (block.type == Material.TORCH) {
-                        if (Random.nextInt(10) <= 6) {
-                            block.setType(Material.REDSTONE_TORCH)
-                        } else {
-                            block.setType(Material.AIR)
-                        }
-                        torchBlocks.add(block)
-                    } else if (block.type.toString().startsWith("POTTED")) {
-                        potBlocks += (block to block.type)
-                        if (Random.nextBoolean()){
-                            block.setType(Material.POTTED_DEAD_BUSH)
-                        }else{
-                            block.setType(Material.POTTED_WITHER_ROSE)
-                        }
-                    }
-                }
-            }
+            Environment.lightOff()
             return true
         } else if (command.name == "light-on") {
-            torchBlocks.forEach { block ->
-                block.setType(Material.TORCH)
-            }
-            potBlocks.forEach { (block, originalType) ->
-                block.setType(originalType)
-            }
+            Environment.lightOn()
             return true
         }
         return false
