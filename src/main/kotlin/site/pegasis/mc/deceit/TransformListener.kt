@@ -14,13 +14,11 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 
 class TransformListener(private val plugin: JavaPlugin) : Listener {
-
-
     @EventHandler
     fun onLeftClick(event: PlayerInteractEvent) {
         val itemInHand = event.player.inventory.itemInMainHand
         val player = event.player
-        if (event.action == Action.LEFT_CLICK_AIR &&
+        if ((event.action == Action.RIGHT_CLICK_AIR || event.action == Action.RIGHT_CLICK_AIR) &&
             itemInHand.type == Material.ENDER_EYE &&
             GameState.dark &&
             GameState.started &&

@@ -4,7 +4,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
+import org.bukkit.Material
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
@@ -14,20 +16,24 @@ import org.bukkit.scoreboard.Scoreboard
 data class GamePlayer(
     val player: Player,
     val isInfected: Boolean,
-    var bloodLevel: Int = 0,
     var isDead: Boolean = false,
     var transformed: Boolean = false,
     var secondToHuman: Int = 0,
     val scoreboard: Scoreboard = createScoreBoard()
 ) {
+    var bloodLevel: Int = 0
+        set(value) {
+            field = value.coerceAtMost(6)
+            player.exp = field / 6f
+        }
+    var hasFuse: Boolean = false
+        set(value) {
+            player.inventory.setItem(2, ItemStack(if (value) Material.END_ROD else Material.AIR))
+            field = value
+        }
+
     init {
         player.scoreboard = scoreboard
-    }
-
-    fun addBloodLevel(level: Int) {
-        bloodLevel += level
-        if (bloodLevel > 6) bloodLevel = 6
-        player.exp = bloodLevel / 6f
     }
 
     private fun clearBloodLevel() {
@@ -119,6 +125,10 @@ data class GamePlayer(
                     player.level = 0
                     player.exp = 0f
                     player.foodLevel = 20
+                    player.inventory.apply {
+                        setItem(0, ItemStack(Material.ENDER_EYE))
+                        setItem(1, ItemStack(Material.COMPASS))
+                    }
                     val gp = if (debug) {
                         GamePlayer(player, true)
                     } else {

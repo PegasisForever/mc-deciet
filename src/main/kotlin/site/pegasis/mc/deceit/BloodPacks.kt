@@ -39,7 +39,7 @@ object BloodPacks {
 
     fun drink(player: Player, itemFrame: ItemFrame, plugin: JavaPlugin) {
         val found = list.find { it.itemFrame == itemFrame } ?: return
-        GamePlayer.get(player)!!.addBloodLevel(if (GameState.dark) 1 else 2)
+        player.getGP()!!.bloodLevel += if (GameState.dark) 1 else 2
 
         itemFrame.setItem(ItemStack(Material.GLASS_BOTTLE), false)
         itemFrame.world.playSound(
