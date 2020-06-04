@@ -9,9 +9,6 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.plugin.java.JavaPlugin
 
 class TransformListener(private val plugin: JavaPlugin) : Listener {
-    private fun canTransform(gp: GamePlayer) =
-        gp.isInfected && ((Game.state == GameState.DARK && gp.bloodLevel == 6) || Game.state == GameState.RAGE)
-
     @EventHandler
     fun onLeftClick(event: PlayerInteractEvent) {
         val itemInHand = event.player.inventory.itemInMainHand
@@ -19,7 +16,7 @@ class TransformListener(private val plugin: JavaPlugin) : Listener {
         val gp = player.getGP() ?: return
         if ((event.action == Action.RIGHT_CLICK_AIR || event.action == Action.RIGHT_CLICK_AIR) &&
             itemInHand.type == Config.transformMaterial &&
-            canTransform(gp)
+            gp.canTransform()
         ) {
             GlobalScope.launch {
                 player.getGP()!!.transform(plugin)

@@ -51,7 +51,6 @@ object Game {
     }
 
     private fun dispatch(event: GameEvent) {
-        plugin.log(event)
         listeners.forEach { (eventType, listener) ->
             if (eventType == event) {
                 plugin.inMainThread {

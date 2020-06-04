@@ -3,8 +3,11 @@ package site.pegasis.mc.deceit
 import org.bukkit.Bukkit
 import org.bukkit.Chunk
 import org.bukkit.block.Block
+import org.bukkit.enchantments.Enchantment
 import org.bukkit.event.Cancellable
 import org.bukkit.event.Event
+import org.bukkit.inventory.ItemFlag
+import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
 import java.util.concurrent.Callable
@@ -54,4 +57,15 @@ fun Chunk.forEachBlock(action: (Block) -> Unit) {
     for (x in 0..15) for (y in 0..255) for (z in 0..15) {
         action(getBlock(x, y, z))
     }
+}
+
+fun ItemStack.enchant(): ItemStack {
+    setItemMeta(itemMeta!!.apply { addItemFlags(ItemFlag.HIDE_ENCHANTS) })
+    addUnsafeEnchantment(Enchantment.DURABILITY, 1)
+    return this
+}
+
+fun ItemStack.removeEnchant(): ItemStack {
+    removeEnchantment(Enchantment.DURABILITY)
+    return this
 }

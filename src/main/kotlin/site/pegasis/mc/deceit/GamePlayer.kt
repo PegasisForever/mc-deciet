@@ -5,8 +5,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.FallingBlock
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.potion.PotionEffect
@@ -61,6 +63,9 @@ data class GamePlayer(
     init {
         player.scoreboard = scoreboard
     }
+
+    fun canTransform() =
+        isInfected && ((Game.state == GameState.DARK && bloodLevel == 6) || Game.state == GameState.RAGE)
 
     private fun clearBloodLevel() {
         bloodLevel = 0
@@ -170,6 +175,11 @@ data class GamePlayer(
 
                     Game.addListener(GameEvent.ON_SECOND) {
                         updateScoreBoard(gp)
+                        if (gp.canTransform()) {
+                            player.inventory.contents[0].enchant()
+                        } else {
+                            player.inventory.contents[0].removeEnchant()
+                        }
                     }
                     Game.addListener(GameEvent.ON_END) inner@{
                         GlobalScope.launch {
@@ -198,7 +208,7 @@ data class GamePlayer(
             return scoreboard
         }
 
-        private val texts= arrayOf(
+        private val texts = arrayOf(
             "Next Black out",
             "Enrage in",
             "Time remaining",
