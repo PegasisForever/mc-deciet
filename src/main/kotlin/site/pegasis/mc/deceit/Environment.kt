@@ -3,6 +3,7 @@ package site.pegasis.mc.deceit
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.Block
+import org.bukkit.block.data.type.Lantern
 import kotlin.random.Random
 
 object Environment {
@@ -10,16 +11,17 @@ object Environment {
         GameState.addListener(GameEvent.START) {
             consoleCommand("time set midnight")
         }
-        GameState.addListener(GameEvent.LIGHT){
+        GameState.addListener(GameEvent.LIGHT) {
             lightOn()
         }
-        GameState.addListener(GameEvent.DARK){
+        GameState.addListener(GameEvent.DARK) {
             lightOff()
         }
     }
 
     private val torchBlocks = arrayListOf<Block>()
     private val potBlocks = arrayListOf<Pair<Block, Material>>()
+    private val lanternBlocks = arrayListOf<Pair<Block, Boolean>>()
     private var lightOn = true
 
     fun lightOn() {
@@ -32,6 +34,10 @@ object Environment {
         potBlocks.forEach { (block, originalType) ->
             block.setType(originalType)
         }
+        lanternBlocks.forEach { (block, isHanging) ->
+            block.setType(Material.LANTERN)
+            block.setBlockData((block.blockData as Lantern).apply { setHanging(isHanging) })
+        }
     }
 
     fun lightOff() {
@@ -39,6 +45,8 @@ object Environment {
         lightOn = false
 
         torchBlocks.clear()
+        potBlocks.clear()
+        lanternBlocks.clear()
         val world = Bukkit.getWorld(Config.worldName)!!
         world.loadedChunks.forEach { chunk ->
             chunk.forEachBlock { block ->
@@ -56,6 +64,9 @@ object Environment {
                     } else {
                         block.setType(Material.POTTED_WITHER_ROSE)
                     }
+                } else if (block.type == Material.LANTERN) {
+                    lanternBlocks += (block to (block.blockData as Lantern).isHanging)
+                    block.setType(Material.AIR)
                 }
             }
         }

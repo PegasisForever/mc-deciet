@@ -16,9 +16,13 @@ open class Main : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(TransformListener(this), this)
         server.pluginManager.registerEvents(FuseListener(this), this)
         server.pluginManager.registerEvents(NoDropListener(this), this)
+        server.pluginManager.registerEvents(ServerStopListener(), this)
         GameState.init(this)
     }
 
+    override fun onDisable() {
+        super.onDisable()
+    }
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (command.name == "start-deciet") {
             GlobalScope.launch {
