@@ -15,7 +15,11 @@ data class ConsistentFallingBlock(
     val data: BlockData,
     var block: FallingBlock,
     var renewJob: Job? = null
-)
+){
+    fun remove(){
+        FallingBlockManager.remove(this)
+    }
+}
 
 object FallingBlockManager {
     private val world = Bukkit.getWorld(Config.worldName)!!

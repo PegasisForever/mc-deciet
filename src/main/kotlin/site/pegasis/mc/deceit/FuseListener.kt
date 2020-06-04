@@ -22,7 +22,7 @@ class FuseListener(private val plugin: JavaPlugin) : Listener {
                 targetBlock.type == Config.fuseMaterial &&
                 !gp.hasFuse
             ) {
-                targetBlock.type = Material.AIR
+                FuseManager.getFuse(targetBlock)?.taken = true
                 gp.hasFuse = true
             } else if (itemInHand.type == Config.fuseMaterial &&
                 targetBlock.type == Material.END_PORTAL_FRAME &&
