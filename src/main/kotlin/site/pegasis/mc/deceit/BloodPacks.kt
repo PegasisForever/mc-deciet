@@ -19,11 +19,24 @@ object BloodPacks {
     fun hook() {
         Game.addListener(GameEvent.ON_LEVEL_START) {
             val world = Bukkit.getWorld(Config.worldName)!!
-            val locations = Game.level.bloodPackPoses.map { it.toLocation(world) }
-            world.getEntitiesByClass(ItemFrame::class.java).forEach { itemFrame ->
-                if (locations.any { it.distanceSquared(itemFrame.location) < 0.2 }) {
-                    addBloodPack(itemFrame)
-                }
+            val locations = Game.level.bloodPackPoses.map { it.toLocation(world) }.shuffled()
+            val addLocations = locations.take(Game.level.bloodPackPosesCount).toMutableSet()
+            val removeLocations = locations.takeLast(locations.size - Game.level.bloodPackPosesCount)
+            val itemFrames = world.getEntitiesByClass(ItemFrame::class.java).toMutableSet()
+
+            removeLocations.forEach { removeLocation ->
+                val itemFrame = itemFrames.find { removeLocation.distanceSquared(it.location) < 0.3 } ?: return@forEach
+                itemFrame.remove()
+                itemFrames.remove(itemFrame)
+            }
+            itemFrames.forEach { itemFrame ->
+                val location = addLocations.find { it.distanceSquared(itemFrame.location) < 0.3 } ?: return@forEach
+                addBloodPack(itemFrame)
+                addLocations.remove(location)
+            }
+            addLocations.forEach { location ->
+                val itemFrame = world.spawn(location, ItemFrame::class.java)
+                addBloodPack(itemFrame)
             }
         }
 
@@ -32,6 +45,16 @@ object BloodPacks {
                 pack.refillJob?.cancel()
             }
             list.clear()
+
+            val world = Bukkit.getWorld(Config.worldName)!!
+            val itemFrames = world.getEntitiesByClass(ItemFrame::class.java).toMutableSet()
+            Game.level.bloodPackPoses.map { it.toLocation(world) }.forEach { location ->
+                val itemFrame = itemFrames.find {
+                    location.distanceSquared(it.location) < 0.3
+                } ?: world.spawn(location, ItemFrame::class.java)
+                itemFrame.setItem(getBloodItemStack(), false)
+                itemFrame.rotation = Rotation.NONE
+            }
         }
     }
 

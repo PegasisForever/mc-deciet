@@ -11,6 +11,7 @@ import org.bukkit.Material
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.ItemFrame
+import org.bukkit.entity.Player
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import kotlin.experimental.or
@@ -122,12 +123,12 @@ open class Main : JavaPlugin(), Listener {
                     }
                     log(list.joinToString())
                 }
-                "blood-packs"->{
+                "blood-packs" -> {
                     val world = Bukkit.getWorld(Config.worldName)!!
                     val list = arrayListOf<EntityPos>()
-                    world.getEntitiesByClass(ItemFrame::class.java).forEach { itemFrame->
-                        if (itemFrame.item.type == Material.POTION || itemFrame.item.type == Material.GLASS_BOTTLE){
-                            list+=itemFrame.entityPos
+                    world.getEntitiesByClass(ItemFrame::class.java).forEach { itemFrame ->
+                        if (itemFrame.item.type == Material.POTION || itemFrame.item.type == Material.GLASS_BOTTLE) {
+                            list += itemFrame.entityPos
                         }
                     }
                     log(list.joinToString())

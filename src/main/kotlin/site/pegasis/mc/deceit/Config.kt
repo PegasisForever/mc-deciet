@@ -4,7 +4,8 @@ import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.World
 import org.bukkit.block.Block
-import org.bukkit.entity.Entity
+import org.bukkit.block.BlockFace
+import org.bukkit.entity.ItemFrame
 
 data class BlockPos(val x: Int, val y: Int, val z: Int)
 
@@ -19,7 +20,7 @@ data class EntityPos(val x: Double, val y: Double, val z: Double) {
     }
 }
 
-val Entity.entityPos: EntityPos
+val ItemFrame.entityPos: EntityPos
     get() = EntityPos(location.x, location.y, location.z)
 
 data class Level(
