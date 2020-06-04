@@ -42,14 +42,18 @@ data class GamePlayer(
         }
     val glowingEntityIDs: Set<Int>
         get() {
-            if (hasFuse) {//end portal frames
-                return emptySet()
-            } else {
-                return player.world
+            if (!GameState.started) return emptySet()
+
+            val set = hashSetOf<Int>()
+            if (GameState.dark && hasFuse) {
+                set += player.world
                     .getEntitiesByClass(FallingBlock::class.java)
+                    .filter { it.blockData.material == Config.fuseMaterial }
                     .map { it.entityId }
-                    .toSet()
+            } else if (GameState.dark && !hasFuse) {
+
             }
+            return set
         }
 
 

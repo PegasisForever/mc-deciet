@@ -1,44 +1,37 @@
 package site.pegasis.mc.deceit
 
 import org.bukkit.Material
-import org.bukkit.block.data.type.EndPortalFrame
+import org.bukkit.entity.FallingBlock
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEntityEvent
-import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.plugin.java.JavaPlugin
 
 class FuseListener(private val plugin: JavaPlugin) : Listener {
     @EventHandler
-    fun onLeftClick(event: PlayerInteractEvent) {
+    fun onInteractEntity(event: PlayerInteractEntityEvent) {
         if (!GameState.started) return
-
         val player = event.player
         val gp = player.getGP() ?: return
-        val itemInHand = event.player.inventory.itemInMainHand
-        val targetBlock = player.getTargetBlock(null, 4)
-        if (event.action == Action.RIGHT_CLICK_AIR || event.action == Action.RIGHT_CLICK_BLOCK) {
-            if (itemInHand.type != Config.transformMaterial &&
-                targetBlock.type == Config.fuseMaterial &&
-                !gp.hasFuse
-            ) {
-                FuseManager.getFuse(targetBlock)?.taken = true
-                gp.hasFuse = true
-            } else if (itemInHand.type == Config.fuseMaterial &&
-                targetBlock.type == Material.END_PORTAL_FRAME &&
-                !(targetBlock.blockData as EndPortalFrame).hasEye()
-            ) {
-                targetBlock.blockData = (targetBlock.blockData as EndPortalFrame).apply { setEye(true) }
-                gp.hasFuse = false
-            }
-
-        }
-    }
-
-    @EventHandler
-    fun onInteractEntity(event:PlayerInteractEntityEvent){
+        val itemInHand = player.inventory.itemInMainHand
         val entity = event.rightClicked
-        plugin.log(entity)
+
+        if (itemInHand.type != Config.transformMaterial &&
+            entity is FallingBlock &&
+            entity.blockData.material == Config.fuseMaterial &&
+            !gp.hasFuse &&
+            GameState.dark
+        ) {
+            FuseManager.getFuse(entity)?.taken = true
+            gp.hasFuse = true
+        } else if (itemInHand.type == Config.fuseMaterial &&
+            entity is FallingBlock &&
+            entity.blockData.material == Material.END_PORTAL_FRAME &&
+            GameState.dark
+        ) {
+            //todo
+            //targetBlock.blockData = (targetBlock.blockData as EndPortalFrame).apply { setEye(true) }
+            //gp.hasFuse = false
+        }
     }
 }
