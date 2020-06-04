@@ -8,3 +8,13 @@ commands:
     usage: /<command>
     permission: mcdeceit.start
     permission-message: You don't have <permission>
+  light-on:
+    description: light on
+    usage: /<command>
+    permission: mcdeceit.start
+    permission-message: You don't have <permission>
+  light-off:
+    description: light off.
+    usage: /<command>
+    permission: mcdeceit.start
+    permission-message: You don't have <permission>

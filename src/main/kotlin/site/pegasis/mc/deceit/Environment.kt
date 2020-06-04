@@ -2,11 +2,8 @@ package site.pegasis.mc.deceit
 
 object Environment {
     fun hook() {
-        GameState.addListener(GameEvent.DARK) {
+        GameState.addListener(GameEvent.START) {
             consoleCommand("time set midnight")
-        }
-        GameState.addListener(GameEvent.LIGHT) {
-            consoleCommand("time set day")
         }
     }
 }

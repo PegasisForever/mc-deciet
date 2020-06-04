@@ -1,6 +1,8 @@
 package site.pegasis.mc.deceit
 
 import org.bukkit.Bukkit
+import org.bukkit.Chunk
+import org.bukkit.block.Block
 import org.bukkit.event.Cancellable
 import org.bukkit.event.Event
 import org.bukkit.plugin.java.JavaPlugin
@@ -46,4 +48,10 @@ fun JavaPlugin.consoleCommand(cmd: String) {
 
 fun Cancellable.cancel() {
     isCancelled = true
+}
+
+fun Chunk.forEachBlock(action: (Block) -> Unit) {
+    for (x in 0..15) for (y in 0..255) for (z in 0..15) {
+        action(getBlock(x, y, z))
+    }
 }
