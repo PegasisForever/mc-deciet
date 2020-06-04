@@ -29,6 +29,8 @@ open class Main : JavaPlugin(), Listener {
         GameState.init(this)
         Environment.init(this)
         FallingBlockManager.init(this)
+        FuseSocketManager.init(this)
+        FuseManager.init(this)
 
         val protocolManager = ProtocolLibrary.getProtocolManager()!!
         protocolManager.addPacketListener(object : PacketAdapter(
@@ -85,6 +87,7 @@ open class Main : JavaPlugin(), Listener {
     private suspend fun startGame() {
         GamePlayer.preStart(this)
 
+        FuseSocketManager.hook()
         FallingBlockManager.hook()
         FuseManager.hook()
         GamePlayer.hook()

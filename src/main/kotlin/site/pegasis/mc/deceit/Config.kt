@@ -18,4 +18,5 @@ object Config {
     val transformMaterial = Material.MUSIC_DISC_11
     val fuseMaterial = Material.YELLOW_STAINED_GLASS_PANE
     val fusePositions = listOf(BlockPos(676, 75, 28365), BlockPos(677, 75, 28363))
+    val fuseSocketPositions = listOf(BlockPos(679, 74, 28364), BlockPos(678, 74, 28366))
 }

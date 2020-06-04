@@ -4,19 +4,26 @@ import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.entity.FallingBlock
+import org.bukkit.plugin.java.JavaPlugin
 
 data class Fuse(val block: Block, val fallingBlock: ConsistentFallingBlock) {
     var taken: Boolean = false
         set(value) {
             if (value) {
                 fallingBlock.remove()
+                FuseManager.availableFuses.remove(this)
                 field = value
             }
         }
 }
 
 object FuseManager {
-    private val availableFuses = arrayListOf<Fuse>()
+    val availableFuses = arrayListOf<Fuse>()
+    lateinit var plugin: JavaPlugin
+
+    fun init(plugin: JavaPlugin){
+        this.plugin=plugin
+    }
 
     fun hook() {
         val world = Bukkit.getWorld(Config.worldName)!!
@@ -41,9 +48,14 @@ object FuseManager {
         GameState.addListener(GameEvent.LIGHT) {
             availableFuses.forEach { fuse->
                 fuse.fallingBlock.remove()
-                fuse.block.setType(Config.fuseMaterial)
             }
             availableFuses.clear()
+            plugin.runDelayed(0.2){
+                Config.fusePositions.forEach { pos ->
+                    val block = world.getBlockAt(pos)
+                    block.setType(Config.fuseMaterial)
+                }
+            }
         }
     }
 

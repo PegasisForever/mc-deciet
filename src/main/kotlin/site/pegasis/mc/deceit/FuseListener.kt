@@ -30,8 +30,8 @@ class FuseListener(private val plugin: JavaPlugin) : Listener {
             GameState.dark
         ) {
             //todo
-            //targetBlock.blockData = (targetBlock.blockData as EndPortalFrame).apply { setEye(true) }
-            //gp.hasFuse = false
+            FuseSocketManager.getSocket(entity)?.filled = true
+            gp.hasFuse = false
         }
     }
 }

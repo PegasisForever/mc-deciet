@@ -45,13 +45,16 @@ data class GamePlayer(
             if (!GameState.started) return emptySet()
 
             val set = hashSetOf<Int>()
-            if (GameState.dark && hasFuse) {
+            if (GameState.dark && !hasFuse) {
                 set += player.world
                     .getEntitiesByClass(FallingBlock::class.java)
                     .filter { it.blockData.material == Config.fuseMaterial }
                     .map { it.entityId }
-            } else if (GameState.dark && !hasFuse) {
-
+            } else if (GameState.dark && hasFuse) {
+                set += player.world
+                    .getEntitiesByClass(FallingBlock::class.java)
+                    .filter { it.blockData.material == Material.END_PORTAL_FRAME }
+                    .map { it.entityId }
             }
             return set
         }
@@ -153,6 +156,7 @@ data class GamePlayer(
                     player.inventory.apply {
                         setItem(0, ItemStack(Config.transformMaterial))
                         setItem(1, ItemStack(Material.COMPASS))
+                        contents[2]?.let { remove(it) }
                     }
                     val gp = if (debug) {
                         GamePlayer(player, true)
