@@ -18,6 +18,7 @@ open class Main : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(NoDropListener(this), this)
         server.pluginManager.registerEvents(ServerStopListener(), this)
         GameState.init(this)
+        Environment.init(this)
     }
 
     override fun onDisable() {
