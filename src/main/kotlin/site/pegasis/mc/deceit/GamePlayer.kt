@@ -1,6 +1,8 @@
 package site.pegasis.mc.deceit
 
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
@@ -61,7 +63,8 @@ data class GamePlayer(
         activePotionEffects.forEach { removePotionEffect(it.type) }
     }
 
-    suspend fun transform(plugin: JavaPlugin) {
+    private suspend fun startTransform(plugin: JavaPlugin) {
+        if (transformed) return
         clearBloodLevel()
         transformed = true
         secondToHuman = Config.transformDuration
@@ -71,18 +74,26 @@ data class GamePlayer(
             player.inventory.heldItemSlot = 8
             player.addInfectedEffect()
         }
+    }
 
-        secondToHuman = Config.transformDuration
+    private suspend fun endTransform(plugin: JavaPlugin) {
+        if (!transformed) return
+        transformed = false
+        secondToHuman = 0
+
+        plugin.inMainThread { player.removeAllEffect() }
+        plugin.changeSkin(player, Config.originalSkinOverride[player.name] ?: player.name)
+    }
+
+    suspend fun transform(plugin: JavaPlugin) {
+        startTransform(plugin)
+
         repeat(Config.transformDuration) {
             delay(1000L)
             secondToHuman--
         }
 
-        plugin.inMainThread { player.removeAllEffect() }
-        plugin.changeSkin(player, Config.originalSkinOverride[player.name] ?: player.name)
-
-        transformed = false
-        secondToHuman = 0
+        endTransform(plugin)
     }
 
     companion object {
@@ -119,8 +130,13 @@ data class GamePlayer(
                     GameState.addListener(GameEvent.SECOND) {
                         updateScoreBoard(gp)
                     }
-                    GameState.addListener(GameEvent.END) {
-                        updateScoreBoard(gp)
+                    GameState.addListener(GameEvent.END) inner@{
+                        GlobalScope.launch {
+                            gp.endTransform(this@inner)
+                            this@inner.inMainThread {
+                                updateScoreBoard(gp)
+                            }
+                        }
                     }
                 }
             }
@@ -150,9 +166,9 @@ data class GamePlayer(
             }
 
             obj.getScore("Seconds left ").score = GameState.secondToNextStage
-            if (gp.transformed){
+            if (gp.transformed) {
                 obj.getScore("Return to human ").score = gp.secondToHuman
-            }else{
+            } else {
                 obj.scoreboard?.resetScores("Return to human ")
             }
         }
