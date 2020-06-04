@@ -64,7 +64,7 @@ object FallingBlockManager {
 
     fun createRenewJob(cfb: ConsistentFallingBlock): Job {
         return GlobalScope.launch {
-            delay(20_000)
+            delay(1000)
             plugin.inMainThread {
                 cfb.block.remove()
                 cfb.block = createFallingBlock(cfb.location, cfb.data)

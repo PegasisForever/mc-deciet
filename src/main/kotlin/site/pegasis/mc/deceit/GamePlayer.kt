@@ -5,6 +5,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.entity.FallingBlock
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
@@ -39,6 +40,18 @@ data class GamePlayer(
             }
             field = value
         }
+    val glowingEntityIDs: Set<Int>
+        get() {
+            if (hasFuse) {//end portal frames
+                return emptySet()
+            } else {
+                return player.world
+                    .getEntitiesByClass(FallingBlock::class.java)
+                    .map { it.entityId }
+                    .toSet()
+            }
+        }
+
 
     init {
         player.scoreboard = scoreboard

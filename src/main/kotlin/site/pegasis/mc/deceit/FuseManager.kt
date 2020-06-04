@@ -24,8 +24,15 @@ object FuseManager {
             world.loadedChunks.forEach { chunk ->
                 chunk.forEachBlock { block ->
                     if (block.type == Config.fuseMaterial) {
+                        val glassBlockData = block.blockData
+//                        block.setType(Material.AIR)
+                        //fixme falling block replace original block
+                        //todo use onInteractEntity
                         val fallingBlock =
-                            FallingBlockManager.add(block.location.clone().apply { y += 0.01;x += 1 }, block.blockData)
+                            FallingBlockManager.add(
+                                block.location.clone().apply { x += 0.5;z += 0.5 },
+                                glassBlockData
+                            )
                         fuses += Fuse(block, fallingBlock)
                     }
                 }

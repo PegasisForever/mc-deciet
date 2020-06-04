@@ -10,6 +10,7 @@ import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Cow
+import org.bukkit.entity.FallingBlock
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import kotlin.experimental.or
@@ -36,14 +37,11 @@ open class Main : JavaPlugin(), Listener {
             PacketType.Play.Server.NAMED_ENTITY_SPAWN
         ) {
             override fun onPacketSending(event: PacketEvent) {
-                return
                 val player = event.player
+                val gp = player.getGP() ?: return
                 val entityID = event.packet.integers.read(0)
                 val packetType = event.packetType
-                if (player.name != "Pegasis") return
-                val world = Bukkit.getWorld(Config.worldName)!!
-                val cowIds=world.getEntitiesByClass(Cow::class.java).map { it.entityId }
-                if (entityID !in cowIds) return
+                if (entityID !in gp.glowingEntityIDs) return
 
                 if (packetType == PacketType.Play.Server.ENTITY_METADATA) {
                     val dataWatchers = event.packet.watchableCollectionModifier.read(0)
