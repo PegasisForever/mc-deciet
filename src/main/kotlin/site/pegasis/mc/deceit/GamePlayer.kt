@@ -29,10 +29,10 @@ data class GamePlayer(
     var hasFuse: Boolean = false
         set(value) {
             if (value) {
-                player.inventory.setItem(2, ItemStack(Material.END_ROD))
+                player.inventory.setItem(2, ItemStack(Config.fuseMaterial))
             } else {
                 player.inventory.contents.forEach { itemStack: ItemStack? ->
-                    if (itemStack?.type == Material.END_ROD) {
+                    if (itemStack?.type == Config.fuseMaterial) {
                         player.inventory.remove(itemStack)
                     }
                 }
@@ -134,7 +134,7 @@ data class GamePlayer(
                     player.exp = 0f
                     player.foodLevel = 20
                     player.inventory.apply {
-                        setItem(0, ItemStack(Material.ENDER_EYE))
+                        setItem(0, ItemStack(Config.transformMaterial))
                         setItem(1, ItemStack(Material.COMPASS))
                     }
                     val gp = if (debug) {

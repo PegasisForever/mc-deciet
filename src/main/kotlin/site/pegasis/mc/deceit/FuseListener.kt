@@ -18,13 +18,13 @@ class FuseListener(private val plugin: JavaPlugin) : Listener {
         val itemInHand = event.player.inventory.itemInMainHand
         val targetBlock = player.getTargetBlock(null, 4)
         if (event.action == Action.RIGHT_CLICK_AIR || event.action == Action.RIGHT_CLICK_BLOCK) {
-            if (itemInHand.type != Material.ENDER_EYE &&
-                targetBlock.type == Material.END_ROD &&
+            if (itemInHand.type != Config.transformMaterial &&
+                targetBlock.type == Config.fuseMaterial &&
                 !gp.hasFuse
             ) {
                 targetBlock.type = Material.AIR
                 gp.hasFuse = true
-            } else if (itemInHand.type == Material.END_ROD &&
+            } else if (itemInHand.type == Config.fuseMaterial &&
                 targetBlock.type == Material.END_PORTAL_FRAME &&
                 !(targetBlock.blockData as EndPortalFrame).hasEye()
             ) {

@@ -19,7 +19,7 @@ class TransformListener(private val plugin: JavaPlugin) : Listener {
         val itemInHand = event.player.inventory.itemInMainHand
         val player = event.player
         if ((event.action == Action.RIGHT_CLICK_AIR || event.action == Action.RIGHT_CLICK_AIR) &&
-            itemInHand.type == Material.ENDER_EYE &&
+            itemInHand.type == Config.transformMaterial &&
             GameState.dark &&
             GameState.started &&
             player.getGP()?.isInfected == true &&
