@@ -24,7 +24,11 @@ object BloodPacks {
     fun hook() {
         GameState.addListener(GameEvent.START) {
             val world = Bukkit.getWorld(Config.worldName)!!
-            world.getEntitiesByClass(ItemFrame::class.java).forEach { addBloodPack(it) }
+            world.getEntitiesByClass(ItemFrame::class.java).forEach { itemFrame ->
+                if (itemFrame.item.type == Material.POTION || itemFrame.item.type == Material.GLASS_BOTTLE) {
+                    addBloodPack(itemFrame)
+                }
+            }
         }
 
         GameState.addListener(GameEvent.END) {
