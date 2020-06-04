@@ -6,6 +6,7 @@ import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
+import org.bukkit.entity.Entity
 import org.bukkit.entity.FallingBlock
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
@@ -49,11 +50,13 @@ data class GamePlayer(
                 set += player.world
                     .getEntitiesByClass(FallingBlock::class.java)
                     .filter { it.blockData.material == Config.fuseMaterial }
+                    .filter { inHighLightDistance(it) }
                     .map { it.entityId }
             } else if ((Game.state == GameState.DARK || Game.state == GameState.RAGE) && hasFuse) {
                 set += player.world
                     .getEntitiesByClass(FallingBlock::class.java)
                     .filter { it.blockData.material == Material.END_PORTAL_FRAME }
+                    .filter { inHighLightDistance(it) }
                     .map { it.entityId }
             }
             return set
@@ -62,6 +65,10 @@ data class GamePlayer(
 
     init {
         player.scoreboard = scoreboard
+    }
+
+    private fun inHighLightDistance(entity: Entity): Boolean {
+        return entity.location.distanceSquared(player.location) < Config.highLightDistance * Config.highLightDistance
     }
 
     fun canTransform() =

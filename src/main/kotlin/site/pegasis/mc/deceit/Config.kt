@@ -48,6 +48,7 @@ object Config {
     val transformMaterial = Material.MUSIC_DISC_11
     val fuseMaterial = Material.YELLOW_STAINED_GLASS_PANE
     val fuseBaseMaterial = Material.IRON_BARS
+    val highLightDistance = 22
     val lightSources = listOf(
         BlockPos(x = 673, y = 75, z = 28355),
         BlockPos(x = 675, y = 71, z = 28358),
