@@ -17,11 +17,12 @@ data class FuseSocket(val block: Block, val fallingBlock: ConsistentFallingBlock
                 fallingBlock.remove()
                 FuseSocketManager.availableSockets.remove(this)
 
-                FuseSocketManager.plugin.runDelayed(0.2){
+                FuseSocketManager.plugin.runDelayed(0.3) {
                     block.setType(Material.END_PORTAL_FRAME)
                     block.setBlockData(blockData)
                 }
 
+                FuseSocketManager.filledSockets++
                 field = true
             }
         }
@@ -29,39 +30,44 @@ data class FuseSocket(val block: Block, val fallingBlock: ConsistentFallingBlock
 
 object FuseSocketManager {
     val availableSockets = arrayListOf<FuseSocket>()
+    var filledSockets = 0
     lateinit var plugin: JavaPlugin
 
-    fun init(plugin: JavaPlugin){
-        this.plugin=plugin
+    fun init(plugin: JavaPlugin) {
+        this.plugin = plugin
     }
 
     fun hook() {
         val world = Bukkit.getWorld(Config.worldName)!!
-        GameState.addListener(GameEvent.START) {
-            Config.fuseSocketPositions.forEach { pos ->
+        Game.addListener(GameEvent.ON_LEVEL_START) {
+            Game.level.fuseSocketPositions.forEach { pos ->
                 val block = world.getBlockAt(pos)
                 block.setType(Material.END_PORTAL_FRAME)
             }
         }
-        GameState.addListener(GameEvent.DARK) {
-            Config.fuseSocketPositions.forEach { pos ->
+        Game.addListener(GameEvent.ON_DARK) {
+            Game.level.fuseSocketPositions.forEach { pos ->
                 val block = world.getBlockAt(pos)
                 val originalBlockData = block.blockData
                 block.setType(Material.AIR)
                 val fallingBlock = FallingBlockManager.add(
-                    block.location.clone().apply { x += 0.5;z += 0.5 },
+                    block.location.clone().apply { x += 0.5; z += 0.5 },
                     originalBlockData
                 )
                 availableSockets += FuseSocket(block, fallingBlock)
             }
         }
-        GameState.addListener(GameEvent.LIGHT) {
+        Game.addListener(GameEvent.ON_LEVEL_END) {
+            filledSockets = 0
+
             availableSockets.forEach { socket ->
                 socket.fallingBlock.remove()
             }
             availableSockets.clear()
-            runDelayed(0.2){
-                Config.fuseSocketPositions.forEach { pos ->
+
+            val positions = Game.level.fuseSocketPositions
+            runDelayed(0.3) {
+                positions.forEach { pos ->
                     val block = world.getBlockAt(pos)
                     block.setType(Material.END_PORTAL_FRAME)
                 }

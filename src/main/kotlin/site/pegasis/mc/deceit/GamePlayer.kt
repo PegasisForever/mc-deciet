@@ -42,15 +42,13 @@ data class GamePlayer(
         }
     val glowingEntityIDs: Set<Int>
         get() {
-            if (!GameState.started) return emptySet()
-
             val set = hashSetOf<Int>()
-            if (GameState.dark && !hasFuse) {
+            if (Game.state == GameState.DARK && !hasFuse) {
                 set += player.world
                     .getEntitiesByClass(FallingBlock::class.java)
                     .filter { it.blockData.material == Config.fuseMaterial }
                     .map { it.entityId }
-            } else if (GameState.dark && hasFuse) {
+            } else if (Game.state == GameState.DARK && hasFuse) {
                 set += player.world
                     .getEntitiesByClass(FallingBlock::class.java)
                     .filter { it.blockData.material == Material.END_PORTAL_FRAME }
@@ -147,7 +145,7 @@ data class GamePlayer(
         }
 
         fun hook() {
-            GameState.addListener(GameEvent.START) {
+            Game.addListener(GameEvent.ON_START) {
                 val randomInfectedList = listOf(true, true, false, false, false, false).shuffled()
                 Bukkit.getOnlinePlayers().take(6).forEachIndexed { i, player ->
                     player.level = 0
@@ -164,12 +162,16 @@ data class GamePlayer(
                         GamePlayer(player, randomInfectedList[i])
                     }
                     gps += gp
-                    gp.player.sendTitle(if (gp.isInfected) "Infected" else "Innocent", "", 10, 60, 10)
+                    if (!debug) {
+                        val spawn = Config.spawnPoses.random()
+                        player.teleport(player.location.apply { x = spawn.x; y = spawn.y; z = spawn.z })
+                    }
+                    player.sendTitle(if (gp.isInfected) "Infected" else "Innocent", "", 10, 60, 10)
 
-                    GameState.addListener(GameEvent.SECOND) {
+                    Game.addListener(GameEvent.ON_SECOND) {
                         updateScoreBoard(gp)
                     }
-                    GameState.addListener(GameEvent.END) inner@{
+                    Game.addListener(GameEvent.ON_END) inner@{
                         GlobalScope.launch {
                             gp.endTransform(this@inner)
                             this@inner.inMainThread {
@@ -180,7 +182,7 @@ data class GamePlayer(
                 }
             }
 
-            GameState.addListener(GameEvent.END) {
+            Game.addListener(GameEvent.ON_END) {
                 gps.clear()
             }
         }
@@ -198,13 +200,23 @@ data class GamePlayer(
 
         fun updateScoreBoard(gp: GamePlayer) {
             val obj = gp.scoreboard.objectives.first()
-            obj.displayName = when {
-                !GameState.started -> "Game End"
-                GameState.dark -> "Dark"
-                else -> "Light"
+            obj.displayName = when (Game.state) {
+                GameState.LIGHT -> "Light"
+                GameState.END -> "Game End"
+                GameState.DARK -> "Dark"
+                GameState.RAGE -> "Rage"
+                GameState.RUN -> "Run"
             }
 
-            obj.getScore("Seconds left ").score = GameState.secondToNextStage
+            val text = when (Game.state) {
+                GameState.LIGHT -> "Light off in"
+                GameState.END -> "Game End"
+                GameState.DARK -> "Rage in"
+                GameState.RAGE -> "Time remaining"
+                GameState.RUN -> "Go to next area in"
+            }
+            obj.getScore(text).score = Game.secondToNextStage
+
             if (gp.transformed) {
                 obj.getScore("Return to human ").score = gp.secondToHuman
             } else {

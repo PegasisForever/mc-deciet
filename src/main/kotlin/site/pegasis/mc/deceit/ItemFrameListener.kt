@@ -16,7 +16,7 @@ class ItemFrameListener(private val plugin: JavaPlugin) : Listener {
         if (event.rightClicked is ItemFrame) {
             event.cancel()
             if (player.getGP()?.isInfected == true &&
-                GameState.started
+                Game.started
             ) {
                 val itemFrame = event.rightClicked as ItemFrame
                 val item = itemFrame.item

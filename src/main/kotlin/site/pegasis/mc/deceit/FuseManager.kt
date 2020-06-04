@@ -21,37 +21,39 @@ object FuseManager {
     val availableFuses = arrayListOf<Fuse>()
     lateinit var plugin: JavaPlugin
 
-    fun init(plugin: JavaPlugin){
-        this.plugin=plugin
+    fun init(plugin: JavaPlugin) {
+        this.plugin = plugin
     }
 
     fun hook() {
         val world = Bukkit.getWorld(Config.worldName)!!
-        GameState.addListener(GameEvent.START) {
-            Config.fusePositions.forEach { pos ->
+        Game.addListener(GameEvent.ON_LEVEL_START) {
+            Game.level.fusePositions.forEach { pos ->
                 val block = world.getBlockAt(pos)
                 block.setType(Config.fuseMaterial)
             }
         }
-        GameState.addListener(GameEvent.DARK) {
-            Config.fusePositions.forEach { pos ->
+        Game.addListener(GameEvent.ON_DARK) {
+            Game.level.fusePositions.forEach { pos ->
                 val block = world.getBlockAt(pos)
                 val originalBlockData = block.blockData
                 block.setType(Material.AIR)
                 val fallingBlock = FallingBlockManager.add(
-                    block.location.clone().apply { x += 0.5;z += 0.5 },
+                    block.location.clone().apply { x += 0.5; z += 0.5 },
                     originalBlockData
                 )
                 availableFuses += Fuse(block, fallingBlock)
             }
         }
-        GameState.addListener(GameEvent.LIGHT) {
-            availableFuses.forEach { fuse->
+        Game.addListener(GameEvent.ON_LEVEL_END) {
+            availableFuses.forEach { fuse ->
                 fuse.fallingBlock.remove()
             }
             availableFuses.clear()
-            plugin.runDelayed(0.2){
-                Config.fusePositions.forEach { pos ->
+
+            val positions = Game.level.fusePositions
+            plugin.runDelayed(0.3) {
+                positions.forEach { pos ->
                     val block = world.getBlockAt(pos)
                     block.setType(Config.fuseMaterial)
                 }

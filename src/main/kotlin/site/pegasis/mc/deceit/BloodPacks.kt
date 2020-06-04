@@ -5,16 +5,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.bukkit.*
-import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.ItemFrame
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.PotionMeta
 import org.bukkit.plugin.java.JavaPlugin
-import org.bukkit.potion.PotionData
-import org.bukkit.potion.PotionEffect
-import org.bukkit.potion.PotionEffectType
-import org.bukkit.potion.PotionType
 
 data class BloodPack(val itemFrame: ItemFrame, var refillJob: Job? = null)
 
@@ -22,16 +17,18 @@ object BloodPacks {
     val list = arrayListOf<BloodPack>()
 
     fun hook() {
-        GameState.addListener(GameEvent.START) {
+        Game.addListener(GameEvent.ON_LEVEL_START) {
             val world = Bukkit.getWorld(Config.worldName)!!
+            val locations = Game.level.bloodPackPoses.map { it.toLocation(world) }
             world.getEntitiesByClass(ItemFrame::class.java).forEach { itemFrame ->
-                if (itemFrame.item.type == Material.POTION || itemFrame.item.type == Material.GLASS_BOTTLE) {
+                //itemFrame.item.type == Material.POTION || itemFrame.item.type == Material.GLASS_BOTTLE
+                if (locations.any { it.distanceSquared(itemFrame.location) < 0.2 }) {
                     addBloodPack(itemFrame)
                 }
             }
         }
 
-        GameState.addListener(GameEvent.END) {
+        Game.addListener(GameEvent.ON_LEVEL_END) {
             list.forEach { pack ->
                 pack.refillJob?.cancel()
             }
@@ -48,7 +45,7 @@ object BloodPacks {
 
     fun drink(player: Player, itemFrame: ItemFrame, plugin: JavaPlugin) {
         val found = list.find { it.itemFrame == itemFrame } ?: return
-        player.getGP()!!.bloodLevel += if (GameState.dark) 1 else 2
+        player.getGP()!!.bloodLevel += if (Game.state == GameState.DARK) 1 else 2
 
         itemFrame.setItem(ItemStack(Material.GLASS_BOTTLE), false)
         itemFrame.world.playSound(

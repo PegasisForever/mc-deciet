@@ -8,16 +8,11 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.Material
-import org.bukkit.block.data.Directional
-import org.bukkit.block.data.type.Lantern
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
-import org.bukkit.entity.Cow
-import org.bukkit.entity.FallingBlock
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import kotlin.experimental.or
-import kotlin.random.Random
 
 
 val debug = true
@@ -30,7 +25,7 @@ open class Main : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(FuseListener(this), this)
         server.pluginManager.registerEvents(NoDropListener(this), this)
         server.pluginManager.registerEvents(ServerStopListener(), this)
-        GameState.init(this)
+        Game.init(this)
         Environment.init(this)
         FallingBlockManager.init(this)
         FuseSocketManager.init(this)
@@ -118,6 +113,6 @@ open class Main : JavaPlugin(), Listener {
         BloodPacks.hook()
         Environment.hook()
 
-        GameState.start()
+        Game.start()
     }
 }

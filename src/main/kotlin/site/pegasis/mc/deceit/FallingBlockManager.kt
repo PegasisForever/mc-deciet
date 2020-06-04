@@ -31,7 +31,7 @@ object FallingBlockManager {
     }
 
     fun hook() {
-        GameState.addListener(GameEvent.END) {
+        Game.addListener(GameEvent.ON_END) {
             cfbs.forEach { cfb->
                 cfb.renewJob?.cancel()
                 cfb.block.remove()

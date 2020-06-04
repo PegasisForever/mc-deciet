@@ -6,7 +6,6 @@ import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.Directional
 import org.bukkit.block.data.type.Lantern
-import org.bukkit.material.Redstone
 import org.bukkit.plugin.java.JavaPlugin
 import kotlin.random.Random
 
@@ -18,13 +17,10 @@ object Environment {
     }
 
     fun hook() {
-        GameState.addListener(GameEvent.START) {
-            consoleCommand("time set midnight")
-        }
-        GameState.addListener(GameEvent.LIGHT) {
+        Game.addListener(GameEvent.ON_LIGHT_ON) {
             lightOn()
         }
-        GameState.addListener(GameEvent.DARK) {
+        Game.addListener(GameEvent.ON_LIGHT_OFF) {
             lightOff()
         }
     }

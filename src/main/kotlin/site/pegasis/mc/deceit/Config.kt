@@ -12,6 +12,23 @@ fun World.getBlockAt(pos: BlockPos) = getBlockAt(pos.x, pos.y, pos.z)
 val Block.blockPos: BlockPos
     get() = BlockPos(x, y, z)
 
+data class EntityPos(val x: Double, val y: Double, val z: Double) {
+    fun toLocation(world: World?): Location {
+        return Location(world, x, y, z)
+    }
+}
+
+data class Level(
+    val lightTime: Int,
+    val darkTime: Int,
+    val rageTime: Int,
+    val runTime: Int,
+    val bloodPackPoses: List<EntityPos>,
+    val requiredFuses: Int,
+    val fusePositions: List<BlockPos>,
+    val fuseSocketPositions: List<BlockPos>
+)
+
 object Config {
     val lobbyLocation = Location(null, 731.0, 66.0, 28351.0)
     val originalSkinOverride = mapOf("Pegasis" to "yEco")
@@ -21,8 +38,6 @@ object Config {
     val bloodPackRestoreTime = 2 //Seconds
     val transformMaterial = Material.MUSIC_DISC_11
     val fuseMaterial = Material.YELLOW_STAINED_GLASS_PANE
-    val fusePositions = listOf(BlockPos(676, 75, 28365), BlockPos(677, 75, 28363))
-    val fuseSocketPositions = listOf(BlockPos(679, 74, 28364), BlockPos(678, 74, 28366))
     val lightSources = listOf(
         BlockPos(x = 673, y = 75, z = 28355),
         BlockPos(x = 675, y = 71, z = 28358),
@@ -318,5 +333,18 @@ object Config {
         BlockPos(x = 731, y = 67, z = 28382),
         BlockPos(x = 739, y = 66, z = 28348),
         BlockPos(x = 739, y = 66, z = 28354)
+    )
+    val spawnPoses = listOf<EntityPos>()
+    val levels = listOf(
+        Level(
+            10,
+            10,
+            10,
+            5,
+            listOf(),
+            1,
+            listOf(BlockPos(676, 75, 28365), BlockPos(677, 75, 28363)),
+            listOf(BlockPos(679, 74, 28364), BlockPos(678, 74, 28366))
+        )
     )
 }

@@ -11,25 +11,25 @@ import org.bukkit.plugin.java.JavaPlugin
 class NoDropListener(private val plugin: JavaPlugin) : Listener {
     @EventHandler
     fun onDrop(event: PlayerDropItemEvent) {
-        if (!GameState.started || debug) return
+        if (!Game.started || debug) return
         event.cancel()
     }
 
     @EventHandler
     fun onClickInventory(event: InventoryClickEvent) {
-        if (!GameState.started || debug) return
+        if (!Game.started || debug) return
         event.cancel()
     }
 
     @EventHandler
     fun onOpenInventory(event:InventoryOpenEvent){
-        if (!GameState.started || debug) return
+        if (!Game.started || debug) return
         event.cancel()
     }
 
     @EventHandler
     fun onSwapEvent(event: PlayerSwapHandItemsEvent) {
-        if (!GameState.started || debug) return
+        if (!Game.started || debug) return
         event.cancel()
     }
 }
