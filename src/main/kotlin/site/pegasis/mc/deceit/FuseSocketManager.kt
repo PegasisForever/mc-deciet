@@ -41,21 +41,20 @@ object FuseSocketManager {
         val world = Bukkit.getWorld(Config.worldName)!!
         Game.addListener(GameEvent.ON_LEVEL_START) {
             Game.level.fuseSocketPositions.forEach { pos ->
-                val block = world.getBlockAt(pos)
-                block.setType(Material.END_PORTAL_FRAME)
+                world.getBlockAt(pos).setType(Material.AIR)
             }
         }
         Game.addListener(GameEvent.ON_DARK) {
-            Game.level.fuseSocketPositions.forEach { pos ->
-                val block = world.getBlockAt(pos)
-                val originalBlockData = block.blockData
-                block.setType(Material.AIR)
-                val fallingBlock = FallingBlockManager.add(
-                    block.location.clone().apply { x += 0.5; z += 0.5 },
-                    originalBlockData
-                )
-                availableSockets += FuseSocket(block, fallingBlock)
-            }
+            Game.level.fuseSocketPositions.shuffled()
+                .take(Game.level.fuseSocketCount)
+                .forEach { pos ->
+                    val block = world.getBlockAt(pos)
+                    val fallingBlock = FallingBlockManager.add(
+                        block.location.clone().apply { x += 0.5; z += 0.5 },
+                        Material.END_PORTAL_FRAME.createBlockData()
+                    )
+                    availableSockets += FuseSocket(block, fallingBlock)
+                }
         }
         Game.addListener(GameEvent.ON_LEVEL_END) {
             filledSockets = 0

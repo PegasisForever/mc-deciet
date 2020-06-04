@@ -46,6 +46,7 @@ object Config {
     val bloodPackRestoreTime = 2 //Seconds
     val transformMaterial = Material.MUSIC_DISC_11
     val fuseMaterial = Material.YELLOW_STAINED_GLASS_PANE
+    val fuseBaseMaterial = Material.IRON_BARS
     val lightSources = listOf(
         BlockPos(x = 673, y = 75, z = 28355),
         BlockPos(x = 675, y = 71, z = 28358),
@@ -370,7 +371,7 @@ object Config {
                 EntityPos(x = 721.03125, y = 67.5, z = 28347.5)
             ),
             1,
-            4,
+            5,
             listOf(
                 BlockPos(x = 668, y = 67, z = 28345),
                 BlockPos(x = 666, y = 67, z = 28365),
@@ -384,7 +385,7 @@ object Config {
                 BlockPos(x = 725, y = 69, z = 28365),
                 BlockPos(x = 727, y = 71, z = 28381)
             ),
-            4,
+            5,
             listOf(
                 BlockPos(x = 671, y = 66, z = 28344),
                 BlockPos(x = 682, y = 66, z = 28342),

@@ -29,21 +29,23 @@ object FuseManager {
         val world = Bukkit.getWorld(Config.worldName)!!
         Game.addListener(GameEvent.ON_LEVEL_START) {
             Game.level.fusePositions.forEach { pos ->
-                val block = world.getBlockAt(pos)
-                block.setType(Config.fuseMaterial)
+                world.getBlockAt(pos).setType(Material.AIR)
+                world.getBlockAt(pos.copy(y = pos.y - 1)).setType(Material.AIR)
             }
         }
         Game.addListener(GameEvent.ON_DARK) {
-            Game.level.fusePositions.forEach { pos ->
-                val block = world.getBlockAt(pos)
-                val originalBlockData = block.blockData
-                block.setType(Material.AIR)
-                val fallingBlock = FallingBlockManager.add(
-                    block.location.clone().apply { x += 0.5; z += 0.5 },
-                    originalBlockData
-                )
-                availableFuses += Fuse(block, fallingBlock)
-            }
+            Game.level.fusePositions.shuffled()
+                .take(Game.level.fuseCount)
+                .forEach { pos ->
+                    world.getBlockAt(pos.copy(y = pos.y - 1)).setType(Config.fuseBaseMaterial)
+
+                    val block = world.getBlockAt(pos)
+                    val fallingBlock = FallingBlockManager.add(
+                        block.location.clone().apply { x += 0.5; z += 0.5 },
+                        Config.fuseMaterial.createBlockData()
+                    )
+                    availableFuses += Fuse(block, fallingBlock)
+                }
         }
         Game.addListener(GameEvent.ON_LEVEL_END) {
             availableFuses.forEach { fuse ->
@@ -54,8 +56,8 @@ object FuseManager {
             val positions = Game.level.fusePositions
             plugin.runDelayed(Config.removeEntityWaitSecond) {
                 positions.forEach { pos ->
-                    val block = world.getBlockAt(pos)
-                    block.setType(Config.fuseMaterial)
+                    world.getBlockAt(pos).setType(Config.fuseMaterial)
+                    world.getBlockAt(pos.copy(y = pos.y - 1)).setType(Config.fuseBaseMaterial)
                 }
             }
         }
