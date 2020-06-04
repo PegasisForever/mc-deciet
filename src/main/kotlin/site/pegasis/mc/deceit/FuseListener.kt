@@ -10,7 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin
 class FuseListener(private val plugin: JavaPlugin) : Listener {
     @EventHandler
     fun onInteractEntity(event: PlayerInteractEntityEvent) {
-        if (Game.state!=GameState.DARK && Game.state!=GameState.RAGE) return
+        if (Game.state != GameState.DARK && Game.state != GameState.RAGE) return
         val player = event.player
         val gp = player.getGP() ?: return
         val itemInHand = player.inventory.itemInMainHand
@@ -21,7 +21,7 @@ class FuseListener(private val plugin: JavaPlugin) : Listener {
             entity.blockData.material == Config.fuseMaterial &&
             !gp.hasFuse
         ) {
-            FuseManager.getFuse(entity)?.taken = true
+            FuseManager.getFuse(entity)!!.taken = true
             gp.hasFuse = true
         } else if (itemInHand.type == Config.fuseMaterial &&
             entity is FallingBlock &&

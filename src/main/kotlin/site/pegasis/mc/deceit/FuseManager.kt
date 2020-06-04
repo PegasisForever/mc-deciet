@@ -52,7 +52,7 @@ object FuseManager {
             availableFuses.clear()
 
             val positions = Game.level.fusePositions
-            plugin.runDelayed(0.3) {
+            plugin.runDelayed(Config.removeEntityWaitSecond) {
                 positions.forEach { pos ->
                     val block = world.getBlockAt(pos)
                     block.setType(Config.fuseMaterial)

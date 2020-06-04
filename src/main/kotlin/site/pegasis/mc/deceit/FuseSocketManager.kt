@@ -17,7 +17,7 @@ data class FuseSocket(val block: Block, val fallingBlock: ConsistentFallingBlock
                 fallingBlock.remove()
                 FuseSocketManager.availableSockets.remove(this)
 
-                FuseSocketManager.plugin.runDelayed(0.3) {
+                FuseSocketManager.plugin.runDelayed(Config.removeEntityWaitSecond) {
                     block.setType(Material.END_PORTAL_FRAME)
                     block.setBlockData(blockData)
                 }
@@ -66,7 +66,7 @@ object FuseSocketManager {
             availableSockets.clear()
 
             val positions = Game.level.fuseSocketPositions
-            runDelayed(0.3) {
+            runDelayed(Config.removeEntityWaitSecond) {
                 positions.forEach { pos ->
                     val block = world.getBlockAt(pos)
                     block.setType(Material.END_PORTAL_FRAME)

@@ -43,12 +43,12 @@ data class GamePlayer(
     val glowingEntityIDs: Set<Int>
         get() {
             val set = hashSetOf<Int>()
-            if (Game.state == GameState.DARK && !hasFuse) {
+            if ((Game.state == GameState.DARK || Game.state == GameState.RAGE) && !hasFuse) {
                 set += player.world
                     .getEntitiesByClass(FallingBlock::class.java)
                     .filter { it.blockData.material == Config.fuseMaterial }
                     .map { it.entityId }
-            } else if (Game.state == GameState.DARK && hasFuse) {
+            } else if ((Game.state == GameState.DARK || Game.state == GameState.RAGE) && hasFuse) {
                 set += player.world
                     .getEntitiesByClass(FallingBlock::class.java)
                     .filter { it.blockData.material == Material.END_PORTAL_FRAME }
@@ -198,29 +198,38 @@ data class GamePlayer(
             return scoreboard
         }
 
+        private val texts= arrayOf(
+            "Next Black out",
+            "Enrage in",
+            "Time remaining",
+            "Go to next area in",
+            "Game ended",
+            "Return to human in"
+        )
+
         fun updateScoreBoard(gp: GamePlayer) {
             val obj = gp.scoreboard.objectives.first()
             obj.displayName = when (Game.state) {
-                GameState.LIGHT -> "Light"
-                GameState.END -> "Game End"
-                GameState.DARK -> "Dark"
-                GameState.RAGE -> "Rage"
-                GameState.RUN -> "Run"
+                GameState.LIGHT -> "Light On"
+                GameState.DARK -> "Black out"
+                GameState.RAGE -> "Enrage"
+                GameState.RUN -> "Next Area"
+                GameState.END -> "Game ended"
             }
 
+            texts.forEach { gp.scoreboard.resetScores(it) }
+
             val text = when (Game.state) {
-                GameState.LIGHT -> "Light off in"
-                GameState.END -> "Game End"
-                GameState.DARK -> "Rage in"
-                GameState.RAGE -> "Time remaining"
-                GameState.RUN -> "Go to next area in"
+                GameState.LIGHT -> texts[0]
+                GameState.DARK -> texts[1]
+                GameState.RAGE -> texts[2]
+                GameState.RUN -> texts[3]
+                GameState.END -> texts[4]
             }
             obj.getScore(text).score = Game.secondToNextStage
 
             if (gp.transformed) {
-                obj.getScore("Return to human ").score = gp.secondToHuman
-            } else {
-                obj.scoreboard?.resetScores("Return to human ")
+                obj.getScore(texts[5]).score = gp.secondToHuman
             }
         }
     }

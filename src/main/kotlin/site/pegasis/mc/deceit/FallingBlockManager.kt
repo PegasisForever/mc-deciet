@@ -14,9 +14,10 @@ data class ConsistentFallingBlock(
     val location: Location,
     val data: BlockData,
     var block: FallingBlock,
-    var renewJob: Job? = null
-){
-    fun remove(){
+    var renewJob: Job? = null,
+    var removed: Boolean = false
+) {
+    fun remove() {
         FallingBlockManager.remove(this)
     }
 }
@@ -32,7 +33,7 @@ object FallingBlockManager {
 
     fun hook() {
         Game.addListener(GameEvent.ON_END) {
-            cfbs.forEach { cfb->
+            cfbs.forEach { cfb ->
                 cfb.renewJob?.cancel()
                 cfb.block.remove()
             }
@@ -50,6 +51,7 @@ object FallingBlockManager {
 
     fun remove(cfb: ConsistentFallingBlock) {
         if (cfb !in cfbs) return
+        cfb.removed=true
         cfb.renewJob?.cancel()
         cfb.block.remove()
         cfbs.remove(cfb)
@@ -66,9 +68,11 @@ object FallingBlockManager {
         return GlobalScope.launch {
             delay(1000)
             plugin.inMainThread {
-                cfb.block.remove()
-                cfb.block = createFallingBlock(cfb.location, cfb.data)
-                cfb.renewJob = createRenewJob(cfb)
+                if (!cfb.removed){
+                    cfb.block.remove()
+                    cfb.block = createFallingBlock(cfb.location, cfb.data)
+                    cfb.renewJob = createRenewJob(cfb)
+                }
             }
         }
     }
