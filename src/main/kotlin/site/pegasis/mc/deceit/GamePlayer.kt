@@ -5,6 +5,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
+import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Entity
@@ -58,7 +59,6 @@ data class GamePlayer(
             }
             return set
         }
-    val gameItems = arrayListOf<ItemStack>()
     var lockGetItem = false
 
     init {
@@ -139,26 +139,33 @@ data class GamePlayer(
     }
 
     fun addGameItem(item: ItemStack) {
-        if (gameItems.size >= 9) return
-        gameItems.add(item)
-        applyGameItem()
+        for (i in 0..8) {
+            if (player.inventory.contents[i]?.isSimilar(item) == true) {
+                player.inventory.contents[i].amount += item.amount
+                return
+            }
+        }
+        for (i in 0..8) {
+            if (player.inventory.contents[i] == null) {
+                player.inventory.setItem(i, item)
+                return
+            }
+        }
     }
 
     fun removeGameItem(item: ItemStack) {
-        for (i in gameItems.indices) {
-            if (item.type == gameItems[i].type) {
-                gameItems.removeAt(i)
-                break
+        for (i in 0..8) {
+            if (player.inventory.contents[i]?.isSimilar(item) == true) {
+                player.inventory.setItem(i, null)
+                return
             }
         }
-        applyGameItem()
     }
 
-    fun applyGameItem() {
-        gameItems.forEachIndexed { i, item ->
-            player.inventory.setItem(i, item)
-        }
-        if (!debug) for (i in gameItems.size..8) {
+    fun clearInventory() {
+        if (player.gameMode == GameMode.CREATIVE) return
+        player.inventory.setItemInOffHand(null)
+        for (i in 0..8) {
             player.inventory.setItem(i, null)
         }
     }
@@ -191,8 +198,10 @@ data class GamePlayer(
                     } else {
                         GamePlayer(player, randomInfectedList[i])
                     }
+                    gp.clearInventory()
                     gp.addGameItem(GameItem.getTransformItem(gp.isInfected))
                     gp.addGameItem(GameItem.getHandGun())
+                    gp.addGameItem(GameItem.getAmmo(4))
                     gps += gp
                     if (!debug) {
                         val spawn = Config.spawnPoses.random()
