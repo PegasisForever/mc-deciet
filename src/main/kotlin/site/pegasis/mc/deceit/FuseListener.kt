@@ -27,7 +27,6 @@ class FuseListener(private val plugin: JavaPlugin) : Listener {
             entity is FallingBlock &&
             entity.blockData.material == Material.END_PORTAL_FRAME
         ) {
-            //todo
             FuseSocketManager.getSocket(entity)?.filled = true
             gp.hasFuse = false
         }

@@ -34,9 +34,9 @@ data class GamePlayer(
     var hasFuse: Boolean = false
         set(value) {
             if (value) {
-                player.inventory.setItem(1, ItemStack(Config.fuseMaterial))
+                addGameItem(GameItem.getFuse())
             } else {
-                player.inventory.contents[1]?.let { player.inventory.remove(it) }
+                removeGameItem(GameItem.getFuse())
             }
             field = value
         }
@@ -146,7 +146,7 @@ data class GamePlayer(
 
     fun removeGameItem(item: ItemStack) {
         for (i in gameItems.indices) {
-            if (item.type==gameItems[i].type){
+            if (item.type == gameItems[i].type) {
                 gameItems.removeAt(i)
                 break
             }
@@ -157,6 +157,9 @@ data class GamePlayer(
     fun applyGameItem() {
         gameItems.forEachIndexed { i, item ->
             player.inventory.setItem(i, item)
+        }
+        if (!debug) for (i in gameItems.size..8) {
+            player.inventory.setItem(i, null)
         }
     }
 
@@ -188,7 +191,7 @@ data class GamePlayer(
                     } else {
                         GamePlayer(player, randomInfectedList[i])
                     }
-                    gp.addGameItem(GameItem.getTransformItem())
+                    gp.addGameItem(GameItem.getTransformItem(gp.isInfected))
                     gp.addGameItem(GameItem.getHandGun())
                     gps += gp
                     if (!debug) {
