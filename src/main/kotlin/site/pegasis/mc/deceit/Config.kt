@@ -45,8 +45,9 @@ data class Level(
     val fuseSocketCount: Int,
     val fuseSocketPositions: List<BlockPos>,
     val doorPositions: List<BlockPos>,
-    val objAs: List<Pair<BlockPos, BlockPos>>, // objective wait, lever
-    val objBs: List<ThreePair<BlockPos, BlockPos, BlockPos>> // objective tall, lever, item frame
+    val objAs: List<Pair<BlockPos, BlockPos>>, // objective wait (center floor block), lever
+    val objBs: List<ThreePair<BlockPos, BlockPos, BlockPos>>, // objective tall (bottom block), lever, item frame
+    val objCs: List<ThreePair<BlockPos, BlockPos, BlockPos>> // objective two person (half block), lever, pressure plate
 )
 
 object Config {
@@ -70,6 +71,8 @@ object Config {
     val objBL1Interval = 0.6
     val objBL2Interval = 0.4
     val objBButtonMaterial = Material.BIRCH_BUTTON
+    val objCPressurePlateMaterial = Material.HEAVY_WEIGHTED_PRESSURE_PLATE
+    val objCCoverMaterial = Material.DARK_OAK_PLANKS
     val lightSources = listOf(
         BlockPos(x = 673, y = 74, z = 28364),
         BlockPos(x = 673, y = 75, z = 28355),
@@ -558,6 +561,13 @@ object Config {
                     BlockPos(715, 66, 28379),
                     BlockPos(712, 67, 28373),
                     BlockPos(717, 66, 28379)
+                )
+            ),
+            listOf(
+                ThreePair(
+                    BlockPos(717, 66, 28355),
+                    BlockPos(710, 67, 28358),
+                    BlockPos(714, 66, 28356)
                 )
             )
         )

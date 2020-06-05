@@ -59,6 +59,7 @@ data class GamePlayer(
             return set
         }
     val gameItems = arrayListOf<ItemStack>()
+    var lockGetItem = false
 
     init {
         player.scoreboard = scoreboard

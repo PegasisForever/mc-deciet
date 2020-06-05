@@ -15,7 +15,7 @@ object ObjectiveManager {
 
     fun hook() {
         Game.addListener(GameEvent.ON_LEVEL_START) {
-            val gameItemPoolCount = Game.level.objAs.size + Game.level.objBs.size
+            val gameItemPoolCount = Game.level.objAs.size + Game.level.objBs.size + Game.level.objCs.size
             val gameItemPool = arrayListOf<ItemStack>()
             repeat(gameItemPoolCount) {
                 gameItemPool += ItemStack(Material.CROSSBOW)
@@ -27,8 +27,13 @@ object ObjectiveManager {
                 server.pluginManager.registerEvents(obj, this)
                 objectives.add(obj)
             }
-            Game.level.objBs.forEach { pair ->
-                val obj = ObjectiveB(pair.first, pair.second, pair.third, gameItemPool.removeAt(0), this)
+            Game.level.objBs.forEach { (pos, leverPos, framePos) ->
+                val obj = ObjectiveB(pos, leverPos, framePos, gameItemPool.removeAt(0), this)
+                server.pluginManager.registerEvents(obj, this)
+                objectives.add(obj)
+            }
+            Game.level.objCs.forEach { (pos, leverPos, platePos) ->
+                val obj = ObjectiveC(pos, leverPos, platePos, gameItemPool.removeAt(0), this)
                 server.pluginManager.registerEvents(obj, this)
                 objectives.add(obj)
             }
