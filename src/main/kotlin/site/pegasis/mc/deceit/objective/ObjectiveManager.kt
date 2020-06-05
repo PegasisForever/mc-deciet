@@ -12,14 +12,21 @@ interface Objective {
 object ObjectiveManager {
     val objectives = arrayListOf<Objective>()
 
+    fun getGameItemPool(size: Int): ArrayList<ItemStack> {
+        val list = arrayListOf<ItemStack>()
+        repeat(size) {
+            list += ItemStack(Material.CROSSBOW)
+//            when(Random.nextInt(3)){
+//
+//            }
+        }
+        return list
+    }
+
     fun hook() {
         Game.addListener(GameEvent.ON_LEVEL_START) {
-            val gameItemPoolCount = Game.level.objAs.size + Game.level.objBs.size + Game.level.objCs.size
-            val gameItemPool = arrayListOf<ItemStack>()
-            repeat(gameItemPoolCount) {
-                gameItemPool += ItemStack(Material.CROSSBOW)
-            }
-            gameItemPool.shuffle()
+            val gameItemPoolSize = Game.level.objAs.size + Game.level.objBs.size + Game.level.objCs.size
+            val gameItemPool = getGameItemPool(gameItemPoolSize)
 
             Game.level.objAs.forEach { (pos, leverPos) ->
                 val obj = ObjectiveA(pos, leverPos, gameItemPool.removeAt(0), this)

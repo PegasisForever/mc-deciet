@@ -139,14 +139,24 @@ data class GamePlayer(
     }
 
     fun addGameItem(item: ItemStack) {
-        if (gameItems.size >= 5) return
+        if (gameItems.size >= 9) return
         gameItems.add(item)
+        applyGameItem()
+    }
+
+    fun removeGameItem(item: ItemStack) {
+        for (i in gameItems.indices) {
+            if (item.type==gameItems[i].type){
+                gameItems.removeAt(i)
+                break
+            }
+        }
         applyGameItem()
     }
 
     fun applyGameItem() {
         gameItems.forEachIndexed { i, item ->
-            player.inventory.setItem(2 + i, item)
+            player.inventory.setItem(i, item)
         }
     }
 
@@ -173,15 +183,13 @@ data class GamePlayer(
                     player.level = 0
                     player.exp = 0f
                     player.foodLevel = 20
-                    player.inventory.apply {
-                        setItem(0, ItemStack(Config.transformMaterial))
-                        contents[1]?.let { remove(it) }
-                    }
                     val gp = if (debug) {
                         GamePlayer(player, true)
                     } else {
                         GamePlayer(player, randomInfectedList[i])
                     }
+                    gp.addGameItem(GameItem.getTransformItem())
+                    gp.addGameItem(GameItem.getHandGun())
                     gps += gp
                     if (!debug) {
                         val spawn = Config.spawnPoses.random()

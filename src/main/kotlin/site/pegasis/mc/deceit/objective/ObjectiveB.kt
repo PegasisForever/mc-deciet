@@ -100,6 +100,9 @@ class ObjectiveB(
     }
 
     fun moveButton(deltaBlockPos: BlockPos) {
+        if (button == null) {
+            plugin.log("Button is null, activated=$activated, level=$level")
+        }
         val buttonData = button!!.blockData
         button!!.setType(Material.AIR)
 
@@ -154,12 +157,12 @@ class ObjectiveB(
             if (leverData.isPowered) {
                 event.cancel()
             } else {
-                activated = true
                 button = world.getBlockAt(pos.copy(x = pos.x + 1))
                 button!!.setType(Config.objBButtonMaterial)
                 setButtonFacing(BlockFace.EAST)
+                activated = true
             }
-        } else if (event.clickedBlock == button && !completed) {
+        } else if (event.clickedBlock != null && event.clickedBlock == button && !completed) {
             level++
             if (level == 3) {
                 button!!.setType(Material.AIR)
