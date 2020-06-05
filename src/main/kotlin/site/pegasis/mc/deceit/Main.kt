@@ -14,6 +14,7 @@ import org.bukkit.entity.ItemFrame
 import org.bukkit.entity.Player
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
+import site.pegasis.mc.deceit.objective.ObjectiveManager
 import kotlin.experimental.or
 
 
@@ -23,6 +24,7 @@ open class Main : JavaPlugin(), Listener {
     override fun onEnable() {
         server.pluginManager.registerEvents(TPLobby(this), this)
         server.pluginManager.registerEvents(ItemFrameListener(this), this)
+        server.pluginManager.registerEvents(TrapDoorListener(this), this)
         server.pluginManager.registerEvents(TransformListener(this), this)
         server.pluginManager.registerEvents(FuseListener(this), this)
         server.pluginManager.registerEvents(NoDropListener(this), this)
@@ -154,6 +156,7 @@ open class Main : JavaPlugin(), Listener {
     private suspend fun startGame() {
         GamePlayer.preStart(this)
 
+        ObjectiveManager.hook()
         DoorManager.hook()
         FuseSocketManager.hook()
         FallingBlockManager.hook()

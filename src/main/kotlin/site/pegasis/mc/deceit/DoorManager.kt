@@ -15,7 +15,7 @@ object DoorManager {
         Game.addListener(GameEvent.ON_LEVEL_END) {
             val world = Bukkit.getWorld(Config.worldName)!!
             Game.level.doorPositions.forEach { pos ->
-                world.getBlockAt(pos).setType(Material.ANVIL)
+                world.getBlockAt(pos).setType(Config.doorMaterial)
             }
         }
     }

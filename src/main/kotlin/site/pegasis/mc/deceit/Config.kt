@@ -7,7 +7,9 @@ import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.ItemFrame
 
-data class BlockPos(val x: Int, val y: Int, val z: Int)
+data class BlockPos(val x: Int, val y: Int, val z: Int) {
+    fun toEntityPos() = EntityPos(x.toDouble(), y.toDouble(), z.toDouble())
+}
 
 fun World.getBlockAt(pos: BlockPos) = getBlockAt(pos.x, pos.y, pos.z)
 
@@ -35,7 +37,8 @@ data class Level(
     val fusePositions: List<BlockPos>,
     val fuseSocketCount: Int,
     val fuseSocketPositions: List<BlockPos>,
-    val doorPositions: List<BlockPos>
+    val doorPositions: List<BlockPos>,
+    val objAs: List<Pair<BlockPos, BlockPos>> // objective wait, lever
 )
 
 object Config {
@@ -51,6 +54,10 @@ object Config {
     val fuseBaseMaterial = Material.IRON_BARS
     val highLightDistance = 16
     val doorMaterial = Material.ANVIL
+    val objADuration = 12.0
+    val objAUnactivatedBlock = Material.BIRCH_PLANKS
+    val objANormalBlock = Material.WHITE_STAINED_GLASS
+    val objAProgressBlock = Material.LIME_STAINED_GLASS
     val lightSources = listOf(
         BlockPos(x = 673, y = 74, z = 28364),
         BlockPos(x = 673, y = 75, z = 28355),
@@ -518,6 +525,11 @@ object Config {
                 BlockPos(x = 728, y = 73, z = 28352),
                 BlockPos(x = 728, y = 73, z = 28353),
                 BlockPos(x = 722, y = 74, z = 28381)
+            ),
+            listOf(
+                BlockPos(x = 703, y = 65, z = 28335) to BlockPos(x = 700, y = 67, z = 28328),
+                BlockPos(x = 724, y = 65, z = 28347) to BlockPos(x = 728, y = 67, z = 28344),
+                BlockPos(x = 690, y = 65, z = 28371) to BlockPos(x = 688, y = 67, z = 28366)
             )
         )
     )

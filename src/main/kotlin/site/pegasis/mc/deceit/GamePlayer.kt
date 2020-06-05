@@ -34,13 +34,9 @@ data class GamePlayer(
     var hasFuse: Boolean = false
         set(value) {
             if (value) {
-                player.inventory.setItem(2, ItemStack(Config.fuseMaterial))
+                player.inventory.setItem(1, ItemStack(Config.fuseMaterial))
             } else {
-                player.inventory.contents.forEach { itemStack: ItemStack? ->
-                    if (itemStack?.type == Config.fuseMaterial) {
-                        player.inventory.remove(itemStack)
-                    }
-                }
+                player.inventory.contents[1]?.let { player.inventory.remove(it) }
             }
             field = value
         }
@@ -62,7 +58,7 @@ data class GamePlayer(
             }
             return set
         }
-
+    val gameItems = arrayListOf<ItemStack>()
 
     init {
         player.scoreboard = scoreboard
@@ -141,6 +137,18 @@ data class GamePlayer(
         endTransform(plugin)
     }
 
+    fun addGameItem(item: ItemStack) {
+        if (gameItems.size >= 5) return
+        gameItems.add(item)
+        applyGameItem()
+    }
+
+    fun applyGameItem() {
+        gameItems.forEachIndexed { i, item ->
+            player.inventory.setItem(2 + i, item)
+        }
+    }
+
     companion object {
         val gps = arrayListOf<GamePlayer>()
 
@@ -166,8 +174,7 @@ data class GamePlayer(
                     player.foodLevel = 20
                     player.inventory.apply {
                         setItem(0, ItemStack(Config.transformMaterial))
-                        setItem(1, ItemStack(Material.COMPASS))
-                        contents[2]?.let { remove(it) }
+                        contents[1]?.let { remove(it) }
                     }
                     val gp = if (debug) {
                         GamePlayer(player, true)
