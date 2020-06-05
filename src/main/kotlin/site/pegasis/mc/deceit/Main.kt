@@ -156,6 +156,7 @@ open class Main : JavaPlugin(), Listener {
     private suspend fun startGame() {
         GamePlayer.preStart(this)
 
+        // todo set entity invulnerable
         ObjectiveManager.hook()
         DoorManager.hook()
         FuseSocketManager.hook()

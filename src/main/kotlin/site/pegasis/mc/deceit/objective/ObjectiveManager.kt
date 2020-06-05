@@ -4,6 +4,7 @@ import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.Game
 import site.pegasis.mc.deceit.GameEvent
+import site.pegasis.mc.deceit.GameItem
 
 interface Objective {
     fun destroy()
@@ -15,10 +16,7 @@ object ObjectiveManager {
     fun getGameItemPool(size: Int): ArrayList<ItemStack> {
         val list = arrayListOf<ItemStack>()
         repeat(size) {
-            list += ItemStack(Material.CROSSBOW)
-//            when(Random.nextInt(3)){
-//
-//            }
+            list += GameItem.getRandomObjectiveItem()
         }
         return list
     }
