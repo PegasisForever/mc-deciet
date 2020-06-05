@@ -32,6 +32,8 @@ class ObjectiveB(
     var level = 0
     var button: Block? = null
     lateinit var buttonSide: BlockFace
+    val completed: Boolean
+        get() = level == 3
 
     private fun getRotateInterval(): Double {
         return when (level) {
@@ -57,7 +59,7 @@ class ObjectiveB(
         itemFrame.isInvulnerable = true
 
         rotateJob = GlobalScope.launch {
-            while (level < 3 && isActive) {
+            while (!completed && isActive) {
                 if (!activated) {
                     delay(1000)
                     continue
@@ -80,12 +82,12 @@ class ObjectiveB(
         rotateJob.cancel()
     }
 
-    fun resetBlocks(){
-        repeat(3){
-            world.getBlockAt(pos.copy(x=pos.x+1,y=pos.y+it)).setType(Material.AIR)
-            world.getBlockAt(pos.copy(x=pos.x-1,y=pos.y+it)).setType(Material.AIR)
-            world.getBlockAt(pos.copy(z=pos.z+1,y=pos.y+it)).setType(Material.AIR)
-            world.getBlockAt(pos.copy(z=pos.z-1,y=pos.y+it)).setType(Material.AIR)
+    fun resetBlocks() {
+        repeat(3) {
+            world.getBlockAt(pos.copy(x = pos.x + 1, y = pos.y + it)).setType(Material.AIR)
+            world.getBlockAt(pos.copy(x = pos.x - 1, y = pos.y + it)).setType(Material.AIR)
+            world.getBlockAt(pos.copy(z = pos.z + 1, y = pos.y + it)).setType(Material.AIR)
+            world.getBlockAt(pos.copy(z = pos.z - 1, y = pos.y + it)).setType(Material.AIR)
         }
     }
 
@@ -157,7 +159,7 @@ class ObjectiveB(
                 button!!.setType(Config.objBButtonMaterial)
                 setButtonFacing(BlockFace.EAST)
             }
-        } else if (event.clickedBlock == button) {
+        } else if (event.clickedBlock == button && !completed) {
             level++
             if (level == 3) {
                 button!!.setType(Material.AIR)

@@ -29,6 +29,8 @@ class ObjectiveA(
     val lever = world.getBlockAt(leverPos)
     var activated = false
     val itemFrame: ItemFrame
+    val completed: Boolean
+        get() = progress == 12
 
     private fun getProgressBlockPos(p: Int): BlockPos {
         return with(pos) {
@@ -78,7 +80,7 @@ class ObjectiveA(
         itemFrame.isInvulnerable = true
 
         changeProgressJob = GlobalScope.launch {
-            while (progress < 12 && isActive) {
+            while (!completed && isActive) {
                 if (insidePlayers.isEmpty() || !activated) {
                     plugin.inMainThread {
                         for (i in 1..progress) {
@@ -121,7 +123,7 @@ class ObjectiveA(
 
     @EventHandler
     fun onPlayerMove(event: PlayerMoveEvent) {
-        if (!Game.started || distroyed || !activated) return
+        if (!Game.started || distroyed || !activated || completed) return
         val gp = event.player.getGP() ?: return
         val location = event.player.location
         if (location.x < pos.x + 0.5 + 2 &&
@@ -131,7 +133,7 @@ class ObjectiveA(
             location.y < pos.y + 4 &&
             location.y > pos.y
         ) {
-            if (gp !in insidePlayers){
+            if (gp !in insidePlayers) {
                 insidePlayers += gp
             }
         } else {

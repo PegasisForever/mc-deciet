@@ -16,7 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin
 import site.pegasis.mc.deceit.*
 
 class ObjectiveC(
-    val pos: BlockPos,
+    pos: BlockPos,
     leverPos: BlockPos,
     val pressurePlatePos: BlockPos,
     val gameItem: ItemStack,
@@ -33,22 +33,23 @@ class ObjectiveC(
     val itemFrameLocation = pos.toEntityPos().toLocation(world).add(Location(world, 0.5, 1.03125, 0.5))
     var itemFrame: ItemFrame? = null
     var activated = false
-    val openCloseJob: Job
     private var opened = false
+    var taken = false
+    val completed: Boolean
+        get() = taken
 
     init {
         pressurePlate.setType(Material.AIR)
         powerOffLever()
         resetBlocks()
+    }
 
-        openCloseJob = GlobalScope.launch {
-//            while (isActive) {
-//                delay(500)
-//                plugin.inMainThread {
-//                    updateCoverBlocks(insidePlayers.isNotEmpty())
-//                }
-//            }
-        }
+    fun take(frame: ItemFrame, gp: GamePlayer):Boolean {
+        if (completed || gp.lockGetItem || frame != itemFrame) return false
+        gp.addGameItem(gameItem.clone())
+        itemFrame?.setItem(null)
+        taken = true
+        return true
     }
 
     private fun updateCoverBlocks(isOpen: Boolean, force: Boolean = false) {
@@ -59,7 +60,9 @@ class ObjectiveC(
 
             itemFrame = world.spawn(itemFrameLocation, ItemFrame::class.java)
             itemFrame?.setFacingDirection(BlockFace.UP)
-            itemFrame?.setItem(gameItem.clone())
+            if (!taken) {
+                itemFrame?.setItem(gameItem.clone())
+            }
             itemFrame?.isInvulnerable = true
         } else {
             itemFrame?.remove()
@@ -83,7 +86,6 @@ class ObjectiveC(
 
     override fun destroy() {
         distroyed = true
-        openCloseJob.cancel()
         resetBlocks()
         powerOffLever()
         pressurePlate.setType(Config.objCPressurePlateMaterial)
@@ -105,7 +107,7 @@ class ObjectiveC(
 
     @EventHandler
     fun onPlayerMove(event: PlayerMoveEvent) {
-        if (!Game.started || distroyed || !activated) return
+        if (!Game.started || distroyed || !activated || completed) return
         val gp = event.player.getGP() ?: return
         val location = event.player.location
         if (location.x < pressurePlatePos.x + 0.5 + 0.65 &&

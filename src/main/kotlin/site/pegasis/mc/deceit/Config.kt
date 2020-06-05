@@ -568,6 +568,16 @@ object Config {
                     BlockPos(717, 66, 28355),
                     BlockPos(710, 67, 28358),
                     BlockPos(714, 66, 28356)
+                ),
+                ThreePair(
+                    BlockPos(724, 66, 28381),
+                    BlockPos(725, 67, 28376),
+                    BlockPos(723, 66, 28378)
+                ),
+                ThreePair(
+                    BlockPos(723, 66, 28339),
+                    BlockPos(727, 67, 28333),
+                    BlockPos(724, 66, 28336)
                 )
             )
         )

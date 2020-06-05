@@ -4,7 +4,6 @@ import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.Game
 import site.pegasis.mc.deceit.GameEvent
-import site.pegasis.mc.deceit.log
 
 interface Objective {
     fun destroy()
