@@ -133,6 +133,18 @@ open class Main : JavaPlugin(), Listener {
                     }
                     log(list.joinToString())
                 }
+                "anvil" -> {
+                    val world = Bukkit.getWorld(Config.worldName)!!
+                    val list = arrayListOf<BlockPos>()
+                    world.loadedChunks.forEach { chunk ->
+                        chunk.forEachBlock { block ->
+                            if (block.type == Material.ANVIL) {
+                                list += block.blockPos
+                            }
+                        }
+                    }
+                    log(list.joinToString())
+                }
             }
             return true
         }
@@ -142,6 +154,7 @@ open class Main : JavaPlugin(), Listener {
     private suspend fun startGame() {
         GamePlayer.preStart(this)
 
+        DoorManager.hook()
         FuseSocketManager.hook()
         FallingBlockManager.hook()
         FuseManager.hook()

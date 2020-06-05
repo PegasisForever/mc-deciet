@@ -4,6 +4,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
+import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Entity
@@ -178,14 +179,20 @@ data class GamePlayer(
                         val spawn = Config.spawnPoses.random()
                         player.teleport(player.location.apply { x = spawn.x; y = spawn.y; z = spawn.z })
                     }
-                    player.sendTitle(if (gp.isInfected) "Infected" else "Innocent", "", 10, 60, 10)
+                    player.sendTitle(
+                        if (gp.isInfected) ChatColor.RED.toString() + "Infected" else "Innocent",
+                        "",
+                        10,
+                        60,
+                        10
+                    )
 
                     Game.addListener(GameEvent.ON_SECOND) {
                         updateScoreBoard(gp)
                         if (gp.canTransform()) {
-                            player.inventory.contents[0].enchant()
+                            player.inventory.contents[0]?.enchant()
                         } else {
-                            player.inventory.contents[0].removeEnchant()
+                            player.inventory.contents[0]?.removeEnchant()
                         }
                     }
                     Game.addListener(GameEvent.ON_END) inner@{
@@ -216,7 +223,7 @@ data class GamePlayer(
         }
 
         private val texts = arrayOf(
-            "Next Black out",
+            "Next Blackout",
             "Enrage in",
             "Time remaining",
             "Go to next area in",
@@ -228,7 +235,7 @@ data class GamePlayer(
             val obj = gp.scoreboard.objectives.first()
             obj.displayName = when (Game.state) {
                 GameState.LIGHT -> "Light On"
-                GameState.DARK -> "Black out"
+                GameState.DARK -> "Blackout"
                 GameState.RAGE -> "Enrage"
                 GameState.RUN -> "Next Area"
                 GameState.END -> "Game ended"
