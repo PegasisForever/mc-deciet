@@ -15,7 +15,7 @@ import kotlin.math.pow
 
 class ObjectiveA(
     val pos: BlockPos,
-    val leverPos: BlockPos,
+    leverPos: BlockPos,
     val gameItem: ItemStack,
     val plugin: JavaPlugin
 ) : Listener,

@@ -25,6 +25,13 @@ data class EntityPos(val x: Double, val y: Double, val z: Double) {
 val ItemFrame.entityPos: EntityPos
     get() = EntityPos(location.x, location.y, location.z)
 
+
+data class ThreePair<out A, out B, out C>(
+    val first: A,
+    val second: B,
+    val third: C
+)
+
 data class Level(
     val lightTime: Int,
     val darkTime: Int,
@@ -38,7 +45,8 @@ data class Level(
     val fuseSocketCount: Int,
     val fuseSocketPositions: List<BlockPos>,
     val doorPositions: List<BlockPos>,
-    val objAs: List<Pair<BlockPos, BlockPos>> // objective wait, lever
+    val objAs: List<Pair<BlockPos, BlockPos>>, // objective wait, lever
+    val objBs: List<ThreePair<BlockPos, BlockPos, BlockPos>> // objective tall, lever, item frame
 )
 
 object Config {
@@ -58,6 +66,10 @@ object Config {
     val objAUnactivatedBlock = Material.BIRCH_PLANKS
     val objANormalBlock = Material.WHITE_STAINED_GLASS
     val objAProgressBlock = Material.LIME_STAINED_GLASS
+    val objBL0Interval = 0.8
+    val objBL1Interval = 0.6
+    val objBL2Interval = 0.4
+    val objBButtonMaterial = Material.BIRCH_BUTTON
     val lightSources = listOf(
         BlockPos(x = 673, y = 74, z = 28364),
         BlockPos(x = 673, y = 75, z = 28355),
@@ -527,9 +539,26 @@ object Config {
                 BlockPos(x = 722, y = 74, z = 28381)
             ),
             listOf(
-                BlockPos(x = 703, y = 65, z = 28335) to BlockPos(x = 700, y = 67, z = 28328),
-                BlockPos(x = 724, y = 65, z = 28347) to BlockPos(x = 728, y = 67, z = 28344),
-                BlockPos(x = 690, y = 65, z = 28371) to BlockPos(x = 688, y = 67, z = 28366)
+                BlockPos(703, 65, 28335) to BlockPos(700, 67, 28328),
+                BlockPos(724, 65, 28347) to BlockPos(728, 67, 28344),
+                BlockPos(690, 65, 28371) to BlockPos(688, 67, 28366)
+            ),
+            listOf(
+                ThreePair(
+                    BlockPos(668, 66, 28362),
+                    BlockPos(676, 67, 28360),
+                    BlockPos(668, 66, 28364)
+                ),
+                ThreePair(
+                    BlockPos(702, 66, 28370),
+                    BlockPos(705, 67, 28366),
+                    BlockPos(702, 66, 28372)
+                ),
+                ThreePair(
+                    BlockPos(715, 66, 28379),
+                    BlockPos(712, 67, 28373),
+                    BlockPos(717, 66, 28379)
+                )
             )
         )
     )
