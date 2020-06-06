@@ -1,28 +1,21 @@
 package site.pegasis.mc.deceit
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bukkit.Bukkit
 import org.bukkit.Chunk
 import org.bukkit.Location
-import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 import org.bukkit.event.Cancellable
-import org.bukkit.event.Event
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
-import java.util.concurrent.Callable
-import java.util.concurrent.TimeUnit
+import org.bukkit.scoreboard.Team
 import java.util.logging.Level
 import java.util.logging.Logger
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 fun JavaPlugin.log(msg: Any) {
     logger.logInfo(msg.toString())
@@ -85,4 +78,12 @@ fun Player.getUnderBlockLocation(): Location {
         deltaY--
     }
     return location
+}
+
+fun Player.hideNameTag() {
+    val scoreBoard = Bukkit.getScoreboardManager().newScoreboard
+    scoreBoard.registerNewTeam(name).apply {
+        setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER)
+        addEntry(name)
+    }
 }

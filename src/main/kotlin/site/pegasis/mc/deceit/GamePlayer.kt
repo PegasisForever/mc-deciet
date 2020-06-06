@@ -17,7 +17,9 @@ import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scoreboard.DisplaySlot
+import org.bukkit.scoreboard.Objective
 import org.bukkit.scoreboard.Scoreboard
+import kotlin.random.Random
 
 enum class PlayerState {
     NORMAL,
@@ -29,8 +31,7 @@ enum class PlayerState {
 data class GamePlayer(
     val player: Player,
     val isInfected: Boolean,
-    var countDownSecond: Int = 0,
-    val scoreboard: Scoreboard = createScoreBoard()
+    var countDownSecond: Int = 0
 ) {
     var bloodLevel: Int = 0
         set(value) {
@@ -64,6 +65,7 @@ data class GamePlayer(
             }
             return set
         }
+    val objective: Objective
     var lockGetItem = false
     var rided: Mob? = null // used to let player ride on when dying
     var hologram: Hologram? = null // used to show vote count when dying
@@ -166,7 +168,8 @@ data class GamePlayer(
         }
 
     init {
-        player.scoreboard = scoreboard
+        objective = player.scoreboard.registerNewObjective(Random.nextLong().toString().take(16), "dummy", "MC Deciet")
+        objective.displaySlot = DisplaySlot.SIDEBAR
     }
 
     private fun inHighLightDistance(entity: Entity): Boolean {
@@ -250,6 +253,37 @@ data class GamePlayer(
         }
     }
 
+    private fun updateScoreBoard() {
+        val obj = objective
+        val board = obj.scoreboard!!
+        obj.displayName = when (Game.state) {
+            GameState.LIGHT -> "Light On"
+            GameState.DARK -> "Blackout"
+            GameState.RAGE -> "Enrage"
+            GameState.RUN -> "Next Area"
+            GameState.END -> "Game ended"
+        }
+
+        val text = when (Game.state) {
+            GameState.LIGHT -> "Next Blackout"
+            GameState.DARK -> "Enrage in"
+            GameState.RAGE -> "Time remaining"
+            GameState.RUN -> "Go to next area in"
+            GameState.END -> {
+                board.entries.forEach { board.resetScores(it) }
+                return
+            }
+        }
+        board.entries.filter { it != text }.forEach { board.resetScores(it) }
+        obj.getScore(text).score = Game.secondToNextStage
+
+        if (state == PlayerState.TRANSFORMED) {
+            obj.getScore("Return to human in").score = countDownSecond
+        } else if (state == PlayerState.DYING) {
+            obj.getScore("Respawn in").score = countDownSecond
+        }
+    }
+
     companion object {
         val gps = arrayListOf<GamePlayer>()
 
@@ -293,7 +327,7 @@ data class GamePlayer(
                     )
 
                     Game.addListener(GameEvent.ON_SECOND) {
-                        updateScoreBoard(gp)
+                        gp.updateScoreBoard()
                         if (gp.canTransform()) {
                             player.inventory.contents[0]?.enchant()
                         } else {
@@ -302,7 +336,7 @@ data class GamePlayer(
                     }
                     Game.addListener(GameEvent.ON_END) {
                         gp.resetItemAndState()
-                        updateScoreBoard(gp)
+                        gp.updateScoreBoard()
                         gp.state = PlayerState.NORMAL
                         gp.resetItemAndState()
                     }
@@ -315,52 +349,6 @@ data class GamePlayer(
         }
 
         fun get(player: Player) = gps.find { it.player == player }
-
-        private fun createScoreBoard(): Scoreboard {
-            val manager = Bukkit.getScoreboardManager()
-            val scoreboard = manager!!.newScoreboard
-            val obj = scoreboard.registerNewObjective("game-state", "dummy", "MC Deciet")
-            obj.displaySlot = DisplaySlot.SIDEBAR
-
-            return scoreboard
-        }
-
-        private val texts = arrayOf(
-            "Next Blackout",
-            "Enrage in",
-            "Time remaining",
-            "Go to next area in",
-            "Return to human in",
-            "Respawn in"
-        )
-
-        fun updateScoreBoard(gp: GamePlayer) {
-            val obj = gp.scoreboard.objectives.first()
-            obj.displayName = when (Game.state) {
-                GameState.LIGHT -> "Light On"
-                GameState.DARK -> "Blackout"
-                GameState.RAGE -> "Enrage"
-                GameState.RUN -> "Next Area"
-                GameState.END -> "Game ended"
-            }
-
-            texts.forEach { gp.scoreboard.resetScores(it) }
-
-            val text = when (Game.state) {
-                GameState.LIGHT -> texts[0]
-                GameState.DARK -> texts[1]
-                GameState.RAGE -> texts[2]
-                GameState.RUN -> texts[3]
-                GameState.END -> return
-            }
-            obj.getScore(text).score = Game.secondToNextStage
-
-            if (gp.state == PlayerState.TRANSFORMED) {
-                obj.getScore(texts[4]).score = gp.countDownSecond
-            } else if (gp.state == PlayerState.DYING) {
-                obj.getScore(texts[5]).score = gp.countDownSecond
-            }
-        }
 
         fun livingPlayers() = gps.filter { it.state != PlayerState.DEAD }
 
