@@ -11,6 +11,7 @@ import org.bukkit.Material
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.ItemFrame
+import org.bukkit.entity.Pig
 import org.bukkit.entity.Player
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
@@ -19,6 +20,9 @@ import site.pegasis.mc.deceit.objective.ObjectiveManager
 import kotlin.experimental.or
 
 val debug = true
+val tempPigs = arrayListOf<Pig>()
+var marking = false
+val globalGlowingIDs = hashSetOf<Int>()
 
 open class Main : JavaPlugin(), Listener {
     override fun onEnable() {
@@ -31,6 +35,7 @@ open class Main : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(ServerStopListener(), this)
         server.pluginManager.registerEvents(CombatListener(this), this)
         server.pluginManager.registerEvents(DisableAttackEntity(), this)
+        server.pluginManager.registerEvents(MarkListener(), this)
         Game.init(this)
         Environment.init(this)
         FallingBlockManager.init(this)
@@ -148,6 +153,16 @@ open class Main : JavaPlugin(), Listener {
                         }
                     }
                     log(list.joinToString())
+                }
+                "mark" -> {
+                    marking = true
+                }
+                "mark-done" -> {
+                    marking = false
+                    log(tempPigs.filter { !it.isDead }.map { it.entityPos }.joinToString())
+                    tempPigs.forEach { it.remove() }
+                    tempPigs.clear()
+                    globalGlowingIDs.clear()
                 }
             }
             return true

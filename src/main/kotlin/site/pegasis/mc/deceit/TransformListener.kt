@@ -8,11 +8,11 @@ import org.bukkit.plugin.java.JavaPlugin
 
 class TransformListener(private val plugin: JavaPlugin) : Listener {
     @EventHandler
-    fun onLeftClick(event: PlayerInteractEvent) {
+    fun onRightClick(event: PlayerInteractEvent) {
         val itemInHand = event.player.inventory.itemInMainHand
         val player = event.player
         val gp = player.getGP() ?: return
-        if ((event.action == Action.RIGHT_CLICK_AIR || event.action == Action.RIGHT_CLICK_AIR) &&
+        if ((event.action == Action.RIGHT_CLICK_AIR || event.action == Action.RIGHT_CLICK_BLOCK) &&
             itemInHand.type == Config.transformMaterial &&
             gp.canTransform()
         ) {
