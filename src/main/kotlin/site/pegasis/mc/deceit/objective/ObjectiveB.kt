@@ -5,11 +5,19 @@ import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
+import org.bukkit.block.data.Directional
 import org.bukkit.block.data.FaceAttachable
+import org.bukkit.block.data.type.Observer
 import org.bukkit.block.data.type.Switch
+import org.bukkit.entity.Arrow
 import org.bukkit.entity.ItemFrame
+import org.bukkit.entity.Player
+import org.bukkit.entity.Projectile
+import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.entity.EntityInteractEvent
+import org.bukkit.event.entity.ProjectileHitEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
@@ -21,8 +29,7 @@ class ObjectiveB(
     itemFrameBlockPos: BlockPos,
     val gameItem: ItemStack,
     val plugin: JavaPlugin
-) : Listener,
-    Objective {
+) : Objective {
     private var distroyed = false
     val world = Bukkit.getWorld(Config.worldName)!!
     val lever = world.getBlockAt(leverPos)
@@ -98,12 +105,12 @@ class ObjectiveB(
         })
     }
 
-    fun moveButton(deltaBlockPos: BlockPos) {
+    fun moveButton(deltaBlockPos: BlockPos, removePrevious: Boolean = true) {
         if (button == null) {
             plugin.log("Button is null, activated=$activated, level=$level")
         }
         val buttonData = button!!.blockData
-        button!!.setType(Material.AIR)
+        if (removePrevious) button!!.setType(Material.AIR)
 
         button = world.getBlockAt(
             button!!.location.add(
@@ -148,6 +155,17 @@ class ObjectiveB(
         }
     }
 
+    private fun plusLevel(gp: GamePlayer) {
+        level++
+        if (level == 3) {
+            button!!.setType(Material.AIR)
+            gp.addGameItem(gameItem)
+            itemFrame.setItem(null)
+        } else {
+            moveButton(BlockPos(0, 1, 0), false)
+        }
+    }
+
     @EventHandler
     fun onInteract(event: PlayerInteractEvent) {
         if (!Game.started || distroyed) return
@@ -163,14 +181,17 @@ class ObjectiveB(
                 activated = true
             }
         } else if (event.clickedBlock != null && event.clickedBlock == button && !completed) {
-            level++
-            if (level == 3) {
-                button!!.setType(Material.AIR)
-                event.player.getGP()?.addGameItem(gameItem)
-                itemFrame.setItem(null)
-            } else {
-                moveButton(BlockPos(0, 1, 0))
-            }
+            val gp = event.player.getGP() ?: return
+            plusLevel(gp)
+        }
+    }
+
+    @EventHandler
+    fun onArrowLand(event: EntityInteractEvent) {
+        button ?: return
+        val gp = (((event.entity as? Arrow)?.shooter) as? Player)?.getGP() ?: return
+        if (event.block == button && !completed) {
+            plusLevel(gp)
         }
     }
 

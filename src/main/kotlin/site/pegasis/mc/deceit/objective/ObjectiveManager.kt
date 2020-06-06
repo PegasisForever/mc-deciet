@@ -1,12 +1,14 @@
 package site.pegasis.mc.deceit.objective
 
 import org.bukkit.Material
+import org.bukkit.event.HandlerList
+import org.bukkit.event.Listener
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.Game
 import site.pegasis.mc.deceit.GameEvent
 import site.pegasis.mc.deceit.GameItem
 
-interface Objective {
+interface Objective: Listener {
     fun destroy()
 }
 
@@ -45,6 +47,7 @@ object ObjectiveManager {
 
         Game.addListener(GameEvent.ON_LEVEL_END) {
             objectives.forEach { obj ->
+                HandlerList.unregisterAll(obj)
                 obj.destroy()
             }
         }

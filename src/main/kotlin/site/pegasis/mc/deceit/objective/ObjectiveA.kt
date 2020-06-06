@@ -18,8 +18,7 @@ class ObjectiveA(
     leverPos: BlockPos,
     val gameItem: ItemStack,
     val plugin: JavaPlugin
-) : Listener,
-    Objective {
+) : Objective {
     val insidePlayers = arrayListOf<GamePlayer>()
     private var distroyed = false
     var progress = 0 // 0..12

@@ -20,8 +20,7 @@ class ObjectiveC(
     val pressurePlatePos: BlockPos,
     val gameItem: ItemStack,
     val plugin: JavaPlugin
-) : Listener,
-    Objective {
+) : Objective {
     val insidePlayers = arrayListOf<GamePlayer>()
     private var distroyed = false
     val world = Bukkit.getWorld(Config.worldName)!!
