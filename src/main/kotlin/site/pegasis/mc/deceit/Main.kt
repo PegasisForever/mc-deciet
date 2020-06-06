@@ -9,6 +9,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.block.data.Directional
+import org.bukkit.block.data.type.Lantern
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.ItemFrame
@@ -19,6 +21,7 @@ import org.bukkit.plugin.java.JavaPlugin
 import site.pegasis.mc.deceit.combat.CombatListener
 import site.pegasis.mc.deceit.objective.ObjectiveManager
 import kotlin.experimental.or
+import kotlin.random.Random
 
 val debug = true
 val tempPigs = arrayListOf<Pig>()
@@ -162,6 +165,28 @@ open class Main : JavaPlugin(), Listener {
                     log(tempPigs.filter { !it.isDead }.map { it.entityPos }.joinToString())
                     tempPigs.forEach { it.remove() }
                     tempPigs.clear()
+                }
+                "fix1" -> {
+                    val world = Bukkit.getWorld(Config.worldName)!!
+                    Config.lightSources.forEach { pos ->
+                        val block = world.getBlockAt(pos)
+                        if (block.type == Material.REDSTONE_TORCH) {
+                            block.setType(Material.TORCH)
+                        } else if (block.type == Material.CARVED_PUMPKIN) {
+                            val facing = (block.blockData as Directional).facing
+                            block.setType(Material.JACK_O_LANTERN)
+                            block.setBlockData((block.blockData as Directional).apply { setFacing(facing) })
+                        }
+                    }
+                }
+                "fix2" -> {
+                    val world = Bukkit.getWorld(Config.worldName)!!
+                    Config.lightSources.forEach { pos ->
+                        val block = world.getBlockAt(pos)
+                        if (block.type == Material.AIR) {
+                            block.setType(Material.TORCH)
+                        }
+                    }
                 }
             }
             return true
