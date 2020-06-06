@@ -28,7 +28,7 @@ class ObjectiveC(
     val lever = world.getBlockAt(leverPos)
     val closeBlock = world.getBlockAt(pos.copy(y = pos.y + 1))
     val openBlock = world.getBlockAt(pos.copy(y = pos.y + 2))
-    val itemFrameLocation = pos.toEntityPos().toLocation(world).add(Location(world, 0.5, 1.03125, 0.5))
+    val itemFrameLocation = pos.toEntityPos().toLocation().add(Location(world, 0.5, 1.03125, 0.5))
     var itemFrame: ItemFrame? = null
     var activated = false
     private var opened = false
@@ -82,7 +82,7 @@ class ObjectiveC(
         lever.setBlockData((lever.blockData as Switch).apply { isPowered = false })
     }
 
-    override fun destroy() {
+    override fun destroyAndReset() {
         distroyed = true
         resetBlocks()
         powerOffLever()

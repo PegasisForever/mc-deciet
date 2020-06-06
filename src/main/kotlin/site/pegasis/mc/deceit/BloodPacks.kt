@@ -19,7 +19,7 @@ object BloodPacks {
     fun hook() {
         Game.addListener(GameEvent.ON_LEVEL_START) {
             val world = Bukkit.getWorld(Config.worldName)!!
-            val locations = Game.level.bloodPackPoses.map { it.toLocation(world) }.shuffled()
+            val locations = Game.level.bloodPackPoses.map { it.toLocation() }.shuffled()
             val addLocations = locations.take(Game.level.bloodPackPosesCount).toMutableSet()
             val removeLocations = locations.takeLast(locations.size - Game.level.bloodPackPosesCount)
             val itemFrames = world.getEntitiesByClass(ItemFrame::class.java).toMutableSet()
@@ -48,7 +48,7 @@ object BloodPacks {
 
             val world = Bukkit.getWorld(Config.worldName)!!
             val itemFrames = world.getEntitiesByClass(ItemFrame::class.java).toMutableSet()
-            Game.level.bloodPackPoses.map { it.toLocation(world) }.forEach { location ->
+            Game.level.bloodPackPoses.map { it.toLocation() }.forEach { location ->
                 val itemFrame = itemFrames.find {
                     location.distanceSquared(it.location) < 0.3
                 } ?: world.spawn(location, ItemFrame::class.java)

@@ -157,7 +157,7 @@ data class GamePlayer(
                 player.health = Config.playerRespawnHealth
                 rided?.removePassenger(player)
                 rided?.remove()
-                player.teleport(Game.level.spawnPoses.random().toLocation(player.world))
+                player.teleport(Game.level.spawnPoses.random().toLocation())
             } else if (field == PlayerState.DYING && newValue == PlayerState.DEAD) {
                 // todo spectator can't activate listener
                 player.gameMode = GameMode.SPECTATOR
@@ -181,7 +181,7 @@ data class GamePlayer(
 
     fun respawn() {
         player.health = Config.playerRespawnHealth
-        player.teleport(Game.level.spawnPoses.random().toLocation(player.world))
+        player.teleport(Game.level.spawnPoses.random().toLocation())
     }
 
     private fun clearBloodLevel() {

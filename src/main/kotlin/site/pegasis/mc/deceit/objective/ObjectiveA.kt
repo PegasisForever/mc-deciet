@@ -73,7 +73,7 @@ class ObjectiveA(
         powerOffLever()
         val itemFramePos = pos.toEntityPos()
             .copy(y = pos.y + 2.0, x = pos.x + 0.5, z = pos.z + 0.5)
-            .toLocation(world)
+            .toLocation()
         itemFrame = world.getNearbyEntities(itemFramePos, 0.3, 0.3, 0.3).first()!! as ItemFrame
         itemFrame.isInvulnerable = true
 
@@ -111,7 +111,7 @@ class ObjectiveA(
         lever.setBlockData((lever.blockData as Switch).apply { isPowered = false })
     }
 
-    override fun destroy() {
+    override fun destroyAndReset() {
         distroyed = true
         itemFrame.setItem(null)
         powerOffLever()

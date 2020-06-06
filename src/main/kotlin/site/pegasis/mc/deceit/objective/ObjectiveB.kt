@@ -1,103 +1,109 @@
 package site.pegasis.mc.deceit.objective
 
 import kotlinx.coroutines.*
-import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
-import org.bukkit.block.data.Directional
 import org.bukkit.block.data.FaceAttachable
-import org.bukkit.block.data.type.Observer
 import org.bukkit.block.data.type.Switch
 import org.bukkit.entity.Arrow
 import org.bukkit.entity.ItemFrame
 import org.bukkit.entity.Player
-import org.bukkit.entity.Projectile
-import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
-import org.bukkit.event.Listener
+import org.bukkit.event.HandlerList
 import org.bukkit.event.entity.EntityInteractEvent
-import org.bukkit.event.entity.ProjectileHitEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
-import org.bukkit.plugin.java.JavaPlugin
 import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.objective.ObjectiveState.*
 
 class ObjectiveB(
     val pos: BlockPos,
     leverPos: BlockPos,
     itemFrameBlockPos: BlockPos,
-    val gameItem: ItemStack,
-    val plugin: JavaPlugin
+    private val gameItem: ItemStack
 ) : Objective {
-    private var distroyed = false
-    val world = Bukkit.getWorld(Config.worldName)!!
-    val lever = world.getBlockAt(leverPos)
-    val itemFrame: ItemFrame
-    val rotateJob: Job
-    var activated = false
-    var level = 0
-    var button: Block? = null
-    lateinit var buttonSide: BlockFace
-    val completed: Boolean
-        get() = level == 3
+    private val lever = Game.world.getBlockAt(leverPos)
+    private val itemFrame: ItemFrame
+    private var button: Block? = null
+    private lateinit var buttonSide: BlockFace
+    private var rotateJob: Job? = null
 
-    private fun getRotateInterval(): Double {
-        return when (level) {
-            0 -> Config.objBL0Interval
-            1 -> Config.objBL1Interval
-            2 -> Config.objBL2Interval
-            else -> error("Unknown level: $level")
-        }
-    }
+    private var level = 0
 
-    private fun powerOffLever() {
-        lever.setBlockData((lever.blockData as Switch).apply { isPowered = false })
-    }
-
-    init {
-        resetBlocks()
-        powerOffLever()
-        val itemFramePos = itemFrameBlockPos.toEntityPos()
-            .copy(y = itemFrameBlockPos.y + 1.0, x = itemFrameBlockPos.x + 0.5, z = itemFrameBlockPos.z + 0.5)
-            .toLocation(world)
-        itemFrame = world.getNearbyEntities(itemFramePos, 0.3, 0.3, 0.3).first() as ItemFrame
-        itemFrame.isInvulnerable = true
-
+    // state setter use only
+    private fun active() {
+        itemFrame.setItem(gameItem.clone())
+        button = Game.world.getBlockAt(pos.copy(x = pos.x + 1))
+        button!!.setType(Config.objBButtonMaterial)
+        setButtonFacing(BlockFace.EAST)
         rotateJob = GlobalScope.launch {
-            while (!completed && isActive) {
-                if (!activated) {
-                    delay(1000)
-                    continue
-                }
-
+            while (isActive) {
                 val rotateInterval = getRotateInterval()
                 delay((rotateInterval * 1000).toLong())
-                plugin.inMainThread {
+                Game.plugin.inMainThread {
                     rotateButton()
                 }
             }
         }
     }
 
-    override fun destroy() {
-        distroyed = true
+    // state setter use only
+    private fun complete() {
         itemFrame.setItem(null)
+        rotateJob?.cancel()
+        HandlerList.unregisterAll(this)
+    }
+
+    // state setter use only
+    private fun destroy() {
         resetBlocks()
-        powerOffLever()
-        rotateJob.cancel()
     }
 
-    fun resetBlocks() {
-        repeat(3) {
-            world.getBlockAt(pos.copy(x = pos.x + 1, y = pos.y + it)).setType(Material.AIR)
-            world.getBlockAt(pos.copy(x = pos.x - 1, y = pos.y + it)).setType(Material.AIR)
-            world.getBlockAt(pos.copy(z = pos.z + 1, y = pos.y + it)).setType(Material.AIR)
-            world.getBlockAt(pos.copy(z = pos.z - 1, y = pos.y + it)).setType(Material.AIR)
+    private var state = INACTIVATED
+        set(value) {
+            if (value == field) return
+            if (value == DESTROYED) {
+                if (field == ACTIVATED) {
+                    complete()
+                    destroy()
+                } else if (field == COMPLETED) {
+                    destroy()
+                }
+            } else if (field == INACTIVATED && value == ACTIVATED) {
+                active()
+            } else if (field == ACTIVATED && value == COMPLETED) {
+                complete()
+            } else {
+                error("Unknown state change: $field to $value")
+            }
+            field = value
         }
+
+    init {
+        resetBlocks()
+        val itemFramePos = itemFrameBlockPos.toEntityPos()
+            .copy(y = itemFrameBlockPos.y + 1.0, x = itemFrameBlockPos.x + 0.5, z = itemFrameBlockPos.z + 0.5)
+            .toLocation()
+        itemFrame = Game.world.getNearbyEntities(itemFramePos, 0.3, 0.3, 0.3).first() as ItemFrame
+        itemFrame.isInvulnerable = true
     }
 
-    fun setButtonFacing(blockFace: BlockFace) {
+    override fun destroyAndReset() {
+        state = DESTROYED
+    }
+
+    private fun resetBlocks() {
+        repeat(3) {
+            Game.world.getBlockAt(pos.copy(x = pos.x + 1, y = pos.y + it)).setType(Material.AIR)
+            Game.world.getBlockAt(pos.copy(x = pos.x - 1, y = pos.y + it)).setType(Material.AIR)
+            Game.world.getBlockAt(pos.copy(z = pos.z + 1, y = pos.y + it)).setType(Material.AIR)
+            Game.world.getBlockAt(pos.copy(z = pos.z - 1, y = pos.y + it)).setType(Material.AIR)
+        }
+        lever.setBlockData((lever.blockData as Switch).apply { isPowered = false })
+    }
+
+    private fun setButtonFacing(blockFace: BlockFace) {
         buttonSide = blockFace
         button!!.setBlockData((button!!.blockData as Switch).apply {
             attachedFace = FaceAttachable.AttachedFace.WALL
@@ -105,14 +111,11 @@ class ObjectiveB(
         })
     }
 
-    fun moveButton(deltaBlockPos: BlockPos, removePrevious: Boolean = true) {
-        if (button == null) {
-            plugin.log("Button is null, activated=$activated, level=$level")
-        }
+    private fun moveButton(deltaBlockPos: BlockPos, removePrevious: Boolean = true) {
         val buttonData = button!!.blockData
         if (removePrevious) button!!.setType(Material.AIR)
 
-        button = world.getBlockAt(
+        button = Game.world.getBlockAt(
             button!!.location.add(
                 deltaBlockPos.x.toDouble(),
                 deltaBlockPos.y.toDouble(),
@@ -123,7 +126,16 @@ class ObjectiveB(
         button!!.setBlockData(buttonData)
     }
 
-    fun rotateButtonClockWise() {
+    private fun getRotateInterval(): Double {
+        return when (level) {
+            0 -> Config.objBL0Interval
+            1 -> Config.objBL1Interval
+            2 -> Config.objBL2Interval
+            else -> error("Unknown level: $level")
+        }
+    }
+
+    private fun rotateButtonClockWise() {
         val deltaPos = when (buttonSide) {
             BlockFace.EAST -> BlockPos(-1, 0, 1)
             BlockFace.SOUTH -> BlockPos(-1, 0, -1)
@@ -135,7 +147,7 @@ class ObjectiveB(
         setButtonFacing(buttonSide.clockWiseNext())
     }
 
-    fun rotateButtonCounterClockWise() {
+    private fun rotateButtonCounterClockWise() {
         val deltaPos = when (buttonSide) {
             BlockFace.EAST -> BlockPos(-1, 0, -1)
             BlockFace.SOUTH -> BlockPos(1, 0, -1)
@@ -147,7 +159,7 @@ class ObjectiveB(
         setButtonFacing(buttonSide.counterClockWiseNext())
     }
 
-    fun rotateButton() {
+    private fun rotateButton() {
         when (level) {
             0 -> rotateButtonClockWise()
             1 -> rotateButtonCounterClockWise()
@@ -157,10 +169,9 @@ class ObjectiveB(
 
     private fun plusLevel(gp: GamePlayer) {
         level++
-        if (level == 3) {
-            button!!.setType(Material.AIR)
+        if (level >= 3) {
             gp.addGameItem(gameItem)
-            itemFrame.setItem(null)
+            state = COMPLETED
         } else {
             moveButton(BlockPos(0, 1, 0), false)
         }
@@ -168,19 +179,14 @@ class ObjectiveB(
 
     @EventHandler
     fun onInteract(event: PlayerInteractEvent) {
-        if (!Game.started || distroyed) return
-        if (event.clickedBlock == lever) {
-            val leverData = lever.blockData as Switch
-            if (leverData.isPowered) {
-                event.cancel()
+        val clickedBlock = event.clickedBlock ?: return
+        if (clickedBlock == lever) {
+            if (state == INACTIVATED) {
+                state = ACTIVATED
             } else {
-                itemFrame.setItem(gameItem.clone())
-                button = world.getBlockAt(pos.copy(x = pos.x + 1))
-                button!!.setType(Config.objBButtonMaterial)
-                setButtonFacing(BlockFace.EAST)
-                activated = true
+                event.cancel()
             }
-        } else if (event.clickedBlock != null && event.clickedBlock == button && !completed) {
+        } else if (state == ACTIVATED && clickedBlock == button) {
             val gp = event.player.getGP() ?: return
             plusLevel(gp)
         }
@@ -189,25 +195,9 @@ class ObjectiveB(
     @EventHandler
     fun onArrowLand(event: EntityInteractEvent) {
         button ?: return
-        val gp = (((event.entity as? Arrow)?.shooter) as? Player)?.getGP() ?: return
-        if (event.block == button && !completed) {
+        if (state == ACTIVATED && event.block == button) {
+            val gp = (((event.entity as? Arrow)?.shooter) as? Player)?.getGP() ?: return
             plusLevel(gp)
         }
-    }
-
-    private fun BlockFace.clockWiseNext() = when (this) {
-        BlockFace.EAST -> BlockFace.SOUTH
-        BlockFace.SOUTH -> BlockFace.WEST
-        BlockFace.WEST -> BlockFace.NORTH
-        BlockFace.NORTH -> BlockFace.EAST
-        else -> error("Unsupported block face: $this")
-    }
-
-    private fun BlockFace.counterClockWiseNext() = when (this) {
-        BlockFace.EAST -> BlockFace.NORTH
-        BlockFace.SOUTH -> BlockFace.EAST
-        BlockFace.WEST -> BlockFace.SOUTH
-        BlockFace.NORTH -> BlockFace.WEST
-        else -> error("Unsupported block face: $this")
     }
 }

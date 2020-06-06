@@ -16,8 +16,8 @@ val Block.blockPos: BlockPos
     get() = BlockPos(x, y, z)
 
 data class EntityPos(val x: Double, val y: Double, val z: Double) {
-    fun toLocation(world: World?): Location {
-        return Location(world, x, y, z)
+    fun toLocation(): Location {
+        return Location(Game.world, x, y, z)
     }
 }
 

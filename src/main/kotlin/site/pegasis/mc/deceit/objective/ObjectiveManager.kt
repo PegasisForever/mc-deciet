@@ -1,6 +1,5 @@
 package site.pegasis.mc.deceit.objective
 
-import org.bukkit.Material
 import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.inventory.ItemStack
@@ -9,7 +8,14 @@ import site.pegasis.mc.deceit.GameEvent
 import site.pegasis.mc.deceit.GameItem
 
 interface Objective: Listener {
-    fun destroy()
+    fun destroyAndReset()
+}
+
+enum class ObjectiveState{
+    INACTIVATED,
+    ACTIVATED,
+    COMPLETED,
+    DESTROYED
 }
 
 object ObjectiveManager {
@@ -34,7 +40,7 @@ object ObjectiveManager {
                 objectives.add(obj)
             }
             Game.level.objBs.forEach { (pos, leverPos, framePos) ->
-                val obj = ObjectiveB(pos, leverPos, framePos, gameItemPool.removeAt(0), this)
+                val obj = ObjectiveB(pos, leverPos, framePos, gameItemPool.removeAt(0))
                 server.pluginManager.registerEvents(obj, this)
                 objectives.add(obj)
             }
@@ -47,8 +53,7 @@ object ObjectiveManager {
 
         Game.addListener(GameEvent.ON_LEVEL_END) {
             objectives.forEach { obj ->
-                HandlerList.unregisterAll(obj)
-                obj.destroy()
+                obj.destroyAndReset()
             }
         }
     }

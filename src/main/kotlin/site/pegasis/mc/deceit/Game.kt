@@ -1,6 +1,8 @@
 package site.pegasis.mc.deceit
 
 import kotlinx.coroutines.delay
+import org.bukkit.Bukkit
+import org.bukkit.World
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -37,13 +39,19 @@ object Game {
     var level = Config.levels[levelIndex]
     private val listeners = CopyOnWriteArrayList<Pair<GameEvent, GameEventListener>>()
     lateinit var plugin: JavaPlugin
+    lateinit var world: World
 
     fun init(plugin: JavaPlugin) {
         this.plugin = plugin
+        world = Bukkit.getWorld(Config.worldName)!!
     }
 
     fun addListener(eventType: GameEvent, listener: JavaPlugin.() -> Unit) {
         listeners += (eventType to listener)
+    }
+
+    fun log(msg:Any?){
+        plugin.log(msg)
     }
 
     private fun clearListener() {
@@ -62,7 +70,7 @@ object Game {
 
     private fun fuseFilled() = FuseSocketManager.filledSockets >= level.requiredFuses
 
-    private suspend fun endGame(){
+    private suspend fun endGame() {
         dispatch(GameEvent.ON_LIGHT_ON)
         state = GameState.END
         dispatch(GameEvent.ON_END)

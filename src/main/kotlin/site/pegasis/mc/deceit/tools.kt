@@ -6,6 +6,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Chunk
 import org.bukkit.Location
 import org.bukkit.block.Block
+import org.bukkit.block.BlockFace
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 import org.bukkit.event.Cancellable
@@ -17,7 +18,7 @@ import org.bukkit.scoreboard.Team
 import java.util.logging.Level
 import java.util.logging.Logger
 
-fun JavaPlugin.log(msg: Any) {
+fun JavaPlugin.log(msg: Any?) {
     logger.logInfo(msg.toString())
 }
 
@@ -86,4 +87,20 @@ fun Player.hideNameTag() {
         setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER)
         addEntry(name)
     }
+}
+
+fun BlockFace.clockWiseNext() = when (this) {
+    BlockFace.EAST -> BlockFace.SOUTH
+    BlockFace.SOUTH -> BlockFace.WEST
+    BlockFace.WEST -> BlockFace.NORTH
+    BlockFace.NORTH -> BlockFace.EAST
+    else -> error("Unsupported block face: $this")
+}
+
+fun BlockFace.counterClockWiseNext() = when (this) {
+    BlockFace.EAST -> BlockFace.NORTH
+    BlockFace.SOUTH -> BlockFace.EAST
+    BlockFace.WEST -> BlockFace.SOUTH
+    BlockFace.NORTH -> BlockFace.WEST
+    else -> error("Unsupported block face: $this")
 }
