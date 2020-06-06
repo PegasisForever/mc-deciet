@@ -28,6 +28,7 @@ class CombatListener(val plugin: JavaPlugin) : Listener {
 
         if (attacked.health - event.finalDamage <= 0) {
             gp.state = PlayerState.DYING
+            event.cancel()
         }
     }
 

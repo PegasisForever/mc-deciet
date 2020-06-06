@@ -369,6 +369,8 @@ object Config {
     val knifeDistance = 1.5
     val knifeDamage = 5.0
     val gunDamage = 10.0
+    val playerRespawnHealth = 6.0
+    val playerRespawnDuration = 5
     val levels = listOf(
         Level(
             10,
@@ -553,17 +555,17 @@ object Config {
                 ThreePair(
                     BlockPos(668, 66, 28362),
                     BlockPos(676, 67, 28360),
-                    BlockPos(668, 66, 28364)
+                    BlockPos(669, 66, 28364)
                 ),
                 ThreePair(
                     BlockPos(702, 66, 28370),
                     BlockPos(705, 67, 28366),
-                    BlockPos(702, 66, 28372)
+                    BlockPos(700, 66, 28371)
                 ),
                 ThreePair(
                     BlockPos(715, 66, 28379),
                     BlockPos(712, 67, 28373),
-                    BlockPos(717, 66, 28379)
+                    BlockPos(714, 66, 28377)
                 )
             ),
             listOf(

@@ -44,6 +44,7 @@ object FuseManager {
                         block.location.clone().apply { x += 0.5; z += 0.5 },
                         Config.fuseMaterial.createBlockData()
                     )
+                    // todo add id to glowing list
                     availableFuses += Fuse(block, fallingBlock)
                 }
         }

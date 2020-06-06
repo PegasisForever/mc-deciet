@@ -53,6 +53,7 @@ object FuseSocketManager {
                         block.location.clone().apply { x += 0.5; z += 0.5 },
                         Material.END_PORTAL_FRAME.createBlockData()
                     )
+                    // todo add id to glowing list
                     availableSockets += FuseSocket(block, fallingBlock)
                 }
         }

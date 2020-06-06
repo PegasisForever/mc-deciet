@@ -8,9 +8,7 @@ import org.bukkit.ChatColor
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.attribute.Attribute
-import org.bukkit.entity.Entity
-import org.bukkit.entity.FallingBlock
-import org.bukkit.entity.Player
+import org.bukkit.entity.*
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.potion.PotionEffect
@@ -28,7 +26,7 @@ enum class PlayerState {
 data class GamePlayer(
     val player: Player,
     val isInfected: Boolean,
-    var secondToNormal: Int = 0,
+    var countDownSecond: Int = 0,
     val scoreboard: Scoreboard = createScoreBoard()
 ) {
     var bloodLevel: Int = 0
@@ -64,6 +62,7 @@ data class GamePlayer(
             return set
         }
     var lockGetItem = false
+    var rided: Mob? = null // used to let player ride on when dying
     var state = PlayerState.NORMAL
         set(newValue) {
             if (!isInMainThread()) error("Async player state change!")
@@ -71,26 +70,26 @@ data class GamePlayer(
 
             val plugin = Game.plugin
             if (field == PlayerState.TRANSFORMED && newValue == PlayerState.NORMAL) {
-                secondToNormal = 0
+                countDownSecond = 0
                 player.removeAllEffect()
                 GlobalScope.launch {
                     plugin.changeSkin(player, Config.originalSkinOverride[player.name] ?: player.name)
                 }
             } else if (field == PlayerState.NORMAL && newValue == PlayerState.TRANSFORMED) {
-                clearBloodLevel()
-                secondToNormal = Config.transformDuration
+                countDownSecond = Config.transformDuration
                 GlobalScope.launch {
                     // transform
                     plugin.changeSkin(player, Config.infectedSkin)
                     plugin.inMainThread {
+                        clearBloodLevel()
                         player.inventory.heldItemSlot = 8
                         player.addInfectedEffect()
                     }
 
                     // wait
-                    while (secondToNormal > 0) {
+                    while (countDownSecond > 0) {
                         delay(1000L)
-                        secondToNormal--
+                        countDownSecond--
                     }
 
                     // back
@@ -98,6 +97,34 @@ data class GamePlayer(
                         state = PlayerState.NORMAL
                     }
                 }
+            } else if (field == PlayerState.NORMAL && newValue == PlayerState.DYING) {
+                countDownSecond = Config.playerRespawnDuration
+
+                // sit
+                player.health = 1.0
+                rided = Bukkit.getWorld(Config.worldName)!!
+                    .spawn(player.getUnderBlock().location, Bat::class.java)
+                rided!!.isInvulnerable = true
+                rided!!.setAI(false)
+                rided!!.addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, 10000, 1, true, false))
+                rided!!.addPassenger(player)
+
+                GlobalScope.launch {
+                    // wait
+                    while (countDownSecond > 0) {
+                        delay(1000L)
+                        countDownSecond--
+                    }
+
+                    // back
+                    plugin.inMainThread {
+                        state = PlayerState.NORMAL
+                    }
+                }
+            } else if (field == PlayerState.DYING && newValue == PlayerState.NORMAL) {
+                player.health = Config.playerRespawnHealth
+                rided?.removePassenger(player)
+                rided?.remove()
             } else {
                 plugin.log("Unknown player ${player.name} transfer: $field to $newValue")
             }
@@ -238,6 +265,7 @@ data class GamePlayer(
                         gp.resetItemAndState()
                         updateScoreBoard(gp)
                         gp.state = PlayerState.NORMAL
+                        gp.resetItemAndState()
                     }
                 }
             }
@@ -263,7 +291,8 @@ data class GamePlayer(
             "Enrage in",
             "Time remaining",
             "Go to next area in",
-            "Return to human in"
+            "Return to human in",
+            "Respawn in"
         )
 
         fun updateScoreBoard(gp: GamePlayer) {
@@ -288,7 +317,9 @@ data class GamePlayer(
             obj.getScore(text).score = Game.secondToNextStage
 
             if (gp.state == PlayerState.TRANSFORMED) {
-                obj.getScore(texts[4]).score = gp.secondToNormal
+                obj.getScore(texts[4]).score = gp.countDownSecond
+            } else if (gp.state == PlayerState.DYING) {
+                obj.getScore(texts[5]).score = gp.countDownSecond
             }
         }
     }
