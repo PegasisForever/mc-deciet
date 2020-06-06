@@ -6,6 +6,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bukkit.Bukkit
 import org.bukkit.Chunk
+import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.enchantments.Enchantment
@@ -73,12 +74,15 @@ fun ItemStack.removeEnchant(): ItemStack {
 
 fun isInMainThread() = Thread.currentThread().name == "Server thread"
 
-fun Player.getUnderBlock(): Block {
+fun Player.getUnderBlockLocation(): Location {
     var deltaY = 0.0
     while (deltaY > -5) {
-        val block = world.getBlockAt(location.add(0.0, deltaY, 0.0))
-        if (block.type.isSolid) return block
+        val testLoc = location.clone().add(0.0, deltaY, 0.0)
+        val block = world.getBlockAt(testLoc)
+        if (block.type.isSolid) return testLoc.apply {
+            y = block.location.y
+        }
         deltaY--
     }
-    return world.getBlockAt(location)
+    return location
 }

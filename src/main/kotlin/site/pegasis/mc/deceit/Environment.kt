@@ -51,6 +51,7 @@ object Environment {
         }
     }
 
+    // fixme some torch wont off
     fun lightOff(full: Boolean = false) {
         if (!lightOn) return
         lightOn = false

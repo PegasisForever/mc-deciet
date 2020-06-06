@@ -16,19 +16,29 @@ class CombatListener(val plugin: JavaPlugin) : Listener {
         val attacked = event.entity
         if (!Game.started || attacked !is Player) return
         val gp = attacked.getGP() ?: return
-        if (attacker is Player) {
-            if (attacker.location.distanceSquared(attacked.location) > Config.knifeDistance * Config.knifeDistance) {
-                event.cancel()
-            } else {
-                event.damage = Config.knifeDamage
-            }
-        } else if (event.cause == EntityDamageEvent.DamageCause.PROJECTILE) {
-            event.damage = Config.gunDamage
-        }
-
-        if (attacked.health - event.finalDamage <= 0) {
-            gp.state = PlayerState.DYING
+        if (gp.state == PlayerState.DYING) {
+            val attackerGp = (attacker as? Player)?.getGP() ?: return
             event.cancel()
+            gp.vote(attackerGp)
+        } else {
+            if (attacker is Player) {
+                if (attacker.location.distanceSquared(attacked.location) > Config.knifeDistance * Config.knifeDistance) {
+                    event.cancel()
+                    return
+                }
+                event.damage = Config.knifeDamage
+            } else if (event.cause == EntityDamageEvent.DamageCause.PROJECTILE) {
+                event.damage = Config.gunDamage
+            }
+
+            if (attacked.health - event.finalDamage <= 0) {
+                if (Game.state == GameState.LIGHT || Game.state == GameState.RUN) {
+                    gp.state = PlayerState.DYING
+                } else {
+                    gp.respawn()
+                }
+                event.cancel()
+            }
         }
     }
 

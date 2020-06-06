@@ -4,6 +4,7 @@ import com.comphenix.protocol.PacketType
 import com.comphenix.protocol.ProtocolLibrary
 import com.comphenix.protocol.events.PacketAdapter
 import com.comphenix.protocol.events.PacketEvent
+import com.gmail.filoghost.holographicdisplays.api.HologramsAPI
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit

@@ -1,5 +1,8 @@
 package site.pegasis.mc.deceit
 
+import com.gmail.filoghost.holographicdisplays.api.Hologram
+import com.gmail.filoghost.holographicdisplays.api.HologramsAPI
+import com.gmail.filoghost.holographicdisplays.api.line.TextLine
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -63,6 +66,21 @@ data class GamePlayer(
         }
     var lockGetItem = false
     var rided: Mob? = null // used to let player ride on when dying
+    var hologram: Hologram? = null // used to show vote count when dying
+    var hologramVoteLine: TextLine? = null // used to show vote count when dying
+    private var votedGp: HashSet<GamePlayer> = hashSetOf()
+    fun vote(gp: GamePlayer) {
+        if (state != PlayerState.DYING || gp in votedGp) return
+        votedGp.add(gp)
+        hologramVoteLine?.text = ChatColor.GREEN.toString() +
+                "⬛".repeat(votedGp.size) +
+                ChatColor.GRAY.toString() +
+                "⬛".repeat(getRequiredVotes() - votedGp.size)
+        if (votedGp.size >= getRequiredVotes()) {
+            state = PlayerState.DEAD
+        }
+    }
+
     var state = PlayerState.NORMAL
         set(newValue) {
             if (!isInMainThread()) error("Async player state change!")
@@ -98,12 +116,21 @@ data class GamePlayer(
                     }
                 }
             } else if (field == PlayerState.NORMAL && newValue == PlayerState.DYING) {
+                val playerSitPos = player.getUnderBlockLocation()
+
                 countDownSecond = Config.playerRespawnDuration
+                votedGp.clear()
+                hologram = HologramsAPI.createHologram(
+                    Game.plugin,
+                    playerSitPos.clone().add(0.0, Config.votingTextHeight, 0.0)
+                ).apply {
+                    appendTextLine("Voting")
+                    hologramVoteLine = appendTextLine(ChatColor.GRAY.toString() + "⬛".repeat(getRequiredVotes()))
+                }
 
                 // sit
                 player.health = 1.0
-                rided = Bukkit.getWorld(Config.worldName)!!
-                    .spawn(player.getUnderBlock().location, Bat::class.java)
+                rided = player.world.spawn(playerSitPos, Bat::class.java)
                 rided!!.isInvulnerable = true
                 rided!!.setAI(false)
                 rided!!.addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, 10000, 1, true, false))
@@ -122,9 +149,16 @@ data class GamePlayer(
                     }
                 }
             } else if (field == PlayerState.DYING && newValue == PlayerState.NORMAL) {
+                votedGp.clear()
+                hologram?.delete()
+
                 player.health = Config.playerRespawnHealth
                 rided?.removePassenger(player)
                 rided?.remove()
+                player.teleport(Game.level.spawnPoses.random().toLocation(player.world))
+            } else if (field == PlayerState.DYING && newValue == PlayerState.DEAD) {
+                // todo spectator can't activate listener
+                player.gameMode = GameMode.SPECTATOR
             } else {
                 plugin.log("Unknown player ${player.name} transfer: $field to $newValue")
             }
@@ -141,6 +175,11 @@ data class GamePlayer(
 
     fun canTransform() =
         isInfected && ((Game.state == GameState.DARK && bloodLevel == 6) || Game.state == GameState.RAGE)
+
+    fun respawn() {
+        player.health = Config.playerRespawnHealth
+        player.teleport(Game.level.spawnPoses.random().toLocation(player.world))
+    }
 
     private fun clearBloodLevel() {
         bloodLevel = 0
@@ -322,6 +361,10 @@ data class GamePlayer(
                 obj.getScore(texts[5]).score = gp.countDownSecond
             }
         }
+
+        fun livingPlayers() = gps.filter { it.state != PlayerState.DEAD }
+
+        fun getRequiredVotes() = (livingPlayers().size - 1) / 2 + 1
     }
 }
 
