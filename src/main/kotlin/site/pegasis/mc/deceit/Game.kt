@@ -36,7 +36,7 @@ object Game {
     var levelIndex = 0
     var level = Config.levels[levelIndex]
     private val listeners = CopyOnWriteArrayList<Pair<GameEvent, GameEventListener>>()
-    private lateinit var plugin: JavaPlugin
+    lateinit var plugin: JavaPlugin
 
     fun init(plugin: JavaPlugin) {
         this.plugin = plugin

@@ -1,7 +1,5 @@
 package site.pegasis.mc.deceit
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
@@ -18,9 +16,7 @@ class TransformListener(private val plugin: JavaPlugin) : Listener {
             itemInHand.type == Config.transformMaterial &&
             gp.canTransform()
         ) {
-            GlobalScope.launch {
-                player.getGP()!!.transform(plugin)
-            }
+            player.getGP()!!.state = PlayerState.TRANSFORMED
         }
     }
 }

@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
 import java.util.concurrent.Callable
+import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.coroutines.resume
@@ -33,15 +34,8 @@ fun JavaPlugin.runDelayed(seconds: Double, action: () -> Unit) {
 
 }
 
-//suspend fun JavaPlugin.delay(seconds: Double): Unit = suspendCoroutine { cont ->
-//    object : BukkitRunnable() {
-//        override fun run() {
-//            cont.resume(Unit)
-//        }
-//    }.runTaskLater(this, (seconds * 20).toLong())
-//}
-
 fun <T> JavaPlugin.inMainThread(action: () -> T): T {
+    if (isInMainThread()) error("inMainThread called in main thread!")
     return Bukkit.getScheduler().callSyncMethod(this) { action() }.get()
 }
 
@@ -69,3 +63,5 @@ fun ItemStack.removeEnchant(): ItemStack {
     removeEnchantment(Enchantment.DURABILITY)
     return this
 }
+
+fun isInMainThread() = Thread.currentThread().name == "Server thread"

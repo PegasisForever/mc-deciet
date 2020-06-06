@@ -14,9 +14,9 @@ import org.bukkit.entity.ItemFrame
 import org.bukkit.entity.Player
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
+import site.pegasis.mc.deceit.combat.CombatListener
 import site.pegasis.mc.deceit.objective.ObjectiveManager
 import kotlin.experimental.or
-
 
 val debug = true
 
@@ -29,6 +29,8 @@ open class Main : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(FuseListener(this), this)
         server.pluginManager.registerEvents(NoDropListener(this), this)
         server.pluginManager.registerEvents(ServerStopListener(), this)
+        server.pluginManager.registerEvents(CombatListener(this), this)
+        server.pluginManager.registerEvents(DisableAttackEntity(), this)
         Game.init(this)
         Environment.init(this)
         FallingBlockManager.init(this)

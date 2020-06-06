@@ -7,11 +7,10 @@ import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.GameMode
 import org.bukkit.Material
-import org.bukkit.enchantments.Enchantment
+import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Entity
 import org.bukkit.entity.FallingBlock
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.potion.PotionEffect
@@ -19,12 +18,17 @@ import org.bukkit.potion.PotionEffectType
 import org.bukkit.scoreboard.DisplaySlot
 import org.bukkit.scoreboard.Scoreboard
 
+enum class PlayerState {
+    NORMAL,
+    TRANSFORMED,
+    DYING,
+    DEAD
+}
+
 data class GamePlayer(
     val player: Player,
     val isInfected: Boolean,
-    var isDead: Boolean = false,
-    var transformed: Boolean = false,
-    var secondToHuman: Int = 0,
+    var secondToNormal: Int = 0,
     val scoreboard: Scoreboard = createScoreBoard()
 ) {
     var bloodLevel: Int = 0
@@ -60,6 +64,45 @@ data class GamePlayer(
             return set
         }
     var lockGetItem = false
+    var state = PlayerState.NORMAL
+        set(newValue) {
+            if (!isInMainThread()) error("Async player state change!")
+            if (newValue == field) return
+
+            val plugin = Game.plugin
+            if (field == PlayerState.TRANSFORMED && newValue == PlayerState.NORMAL) {
+                secondToNormal = 0
+                player.removeAllEffect()
+                GlobalScope.launch {
+                    plugin.changeSkin(player, Config.originalSkinOverride[player.name] ?: player.name)
+                }
+            } else if (field == PlayerState.NORMAL && newValue == PlayerState.TRANSFORMED) {
+                clearBloodLevel()
+                secondToNormal = Config.transformDuration
+                GlobalScope.launch {
+                    // transform
+                    plugin.changeSkin(player, Config.infectedSkin)
+                    plugin.inMainThread {
+                        player.inventory.heldItemSlot = 8
+                        player.addInfectedEffect()
+                    }
+
+                    // wait
+                    while (secondToNormal > 0) {
+                        delay(1000L)
+                        secondToNormal--
+                    }
+
+                    // back
+                    plugin.inMainThread {
+                        state = PlayerState.NORMAL
+                    }
+                }
+            } else {
+                plugin.log("Unknown player ${player.name} transfer: $field to $newValue")
+            }
+            field = newValue
+        }
 
     init {
         player.scoreboard = scoreboard
@@ -105,39 +148,6 @@ data class GamePlayer(
         activePotionEffects.forEach { removePotionEffect(it.type) }
     }
 
-    private suspend fun startTransform(plugin: JavaPlugin) {
-        if (transformed) return
-        clearBloodLevel()
-        transformed = true
-        secondToHuman = Config.transformDuration
-
-        plugin.changeSkin(player, Config.infectedSkin)
-        plugin.inMainThread {
-            player.inventory.heldItemSlot = 8
-            player.addInfectedEffect()
-        }
-    }
-
-    private suspend fun endTransform(plugin: JavaPlugin) {
-        if (!transformed) return
-        transformed = false
-        secondToHuman = 0
-
-        plugin.inMainThread { player.removeAllEffect() }
-        plugin.changeSkin(player, Config.originalSkinOverride[player.name] ?: player.name)
-    }
-
-    suspend fun transform(plugin: JavaPlugin) {
-        startTransform(plugin)
-
-        repeat(Config.transformDuration) {
-            delay(1000L)
-            secondToHuman--
-        }
-
-        endTransform(plugin)
-    }
-
     fun addGameItem(item: ItemStack) {
         for (i in 0..8) {
             if (player.inventory.contents[i]?.isSimilar(item) == true) {
@@ -162,8 +172,12 @@ data class GamePlayer(
         }
     }
 
-    fun clearInventory() {
+    fun resetItemAndState() {
         if (player.gameMode == GameMode.CREATIVE) return
+        player.level = 0
+        player.exp = 0f
+        player.foodLevel = 20
+        player.health = player.getAttribute(Attribute.GENERIC_MAX_HEALTH)!!.value
         player.inventory.setItemInOffHand(null)
         for (i in 0..8) {
             player.inventory.setItem(i, null)
@@ -190,15 +204,12 @@ data class GamePlayer(
             Game.addListener(GameEvent.ON_START) {
                 val randomInfectedList = listOf(true, true, false, false, false, false).shuffled()
                 Bukkit.getOnlinePlayers().take(6).forEachIndexed { i, player ->
-                    player.level = 0
-                    player.exp = 0f
-                    player.foodLevel = 20
                     val gp = if (debug) {
                         GamePlayer(player, true)
                     } else {
                         GamePlayer(player, randomInfectedList[i])
                     }
-                    gp.clearInventory()
+                    gp.resetItemAndState()
                     gp.addGameItem(GameItem.getTransformItem(gp.isInfected))
                     gp.addGameItem(GameItem.getHandGun())
                     gp.addGameItem(GameItem.getAmmo(4))
@@ -223,13 +234,10 @@ data class GamePlayer(
                             player.inventory.contents[0]?.removeEnchant()
                         }
                     }
-                    Game.addListener(GameEvent.ON_END) inner@{
-                        GlobalScope.launch {
-                            gp.endTransform(this@inner)
-                            this@inner.inMainThread {
-                                updateScoreBoard(gp)
-                            }
-                        }
+                    Game.addListener(GameEvent.ON_END) {
+                        gp.resetItemAndState()
+                        updateScoreBoard(gp)
+                        gp.state = PlayerState.NORMAL
                     }
                 }
             }
@@ -255,7 +263,6 @@ data class GamePlayer(
             "Enrage in",
             "Time remaining",
             "Go to next area in",
-            "Game ended",
             "Return to human in"
         )
 
@@ -276,12 +283,12 @@ data class GamePlayer(
                 GameState.DARK -> texts[1]
                 GameState.RAGE -> texts[2]
                 GameState.RUN -> texts[3]
-                GameState.END -> texts[4]
+                GameState.END -> return
             }
             obj.getScore(text).score = Game.secondToNextStage
 
-            if (gp.transformed) {
-                obj.getScore(texts[5]).score = gp.secondToHuman
+            if (gp.state == PlayerState.TRANSFORMED) {
+                obj.getScore(texts[4]).score = gp.secondToNormal
             }
         }
     }
