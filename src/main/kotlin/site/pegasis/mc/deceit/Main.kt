@@ -22,7 +22,6 @@ import kotlin.experimental.or
 val debug = true
 val tempPigs = arrayListOf<Pig>()
 var marking = false
-val globalGlowingIDs = hashSetOf<Int>()
 
 open class Main : JavaPlugin(), Listener {
     override fun onEnable() {
@@ -162,7 +161,6 @@ open class Main : JavaPlugin(), Listener {
                     log(tempPigs.filter { !it.isDead }.map { it.entityPos }.joinToString())
                     tempPigs.forEach { it.remove() }
                     tempPigs.clear()
-                    globalGlowingIDs.clear()
                 }
             }
             return true
