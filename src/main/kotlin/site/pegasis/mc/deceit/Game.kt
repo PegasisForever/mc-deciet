@@ -50,7 +50,7 @@ object Game {
         listeners.clear()
     }
 
-    private fun dispatch(event: GameEvent) {
+    private suspend fun dispatch(event: GameEvent) {
         listeners.forEach { (eventType, listener) ->
             if (eventType == event) {
                 plugin.inMainThread {
@@ -62,7 +62,7 @@ object Game {
 
     private fun fuseFilled() = FuseSocketManager.filledSockets >= level.requiredFuses
 
-    private fun endGame(){
+    private suspend fun endGame(){
         dispatch(GameEvent.ON_LIGHT_ON)
         state = GameState.END
         dispatch(GameEvent.ON_END)

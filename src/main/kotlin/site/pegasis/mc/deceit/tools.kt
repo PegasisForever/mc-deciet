@@ -1,5 +1,9 @@
 package site.pegasis.mc.deceit
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.bukkit.Bukkit
 import org.bukkit.Chunk
 import org.bukkit.block.Block
@@ -34,9 +38,10 @@ fun JavaPlugin.runDelayed(seconds: Double, action: () -> Unit) {
 
 }
 
-fun <T> JavaPlugin.inMainThread(action: () -> T): T {
-    if (isInMainThread()) error("inMainThread called in main thread!")
-    return Bukkit.getScheduler().callSyncMethod(this) { action() }.get()
+suspend fun <T> JavaPlugin.inMainThread(action: () -> T): T {
+    return withContext(Dispatchers.IO) {
+        Bukkit.getScheduler().callSyncMethod(this@inMainThread) { action() }.get()
+    }
 }
 
 fun JavaPlugin.consoleCommand(cmd: String) {
