@@ -15,7 +15,7 @@ import org.bukkit.event.entity.EntityInteractEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
-import site.pegasis.mc.deceit.objective.ObjectiveState.*
+import site.pegasis.mc.deceit.objective.ObjectiveB.State.*
 
 class ObjectiveB(
     val pos: BlockPos,
@@ -23,6 +23,13 @@ class ObjectiveB(
     itemFrameBlockPos: BlockPos,
     private val gameItem: ItemStack
 ) : Objective {
+    private enum class State{
+        INACTIVATED,
+        ACTIVATED,
+        COMPLETED,
+        DESTROYED
+    }
+
     private val lever = Game.world.getBlockAt(leverPos)
     private val itemFrame: ItemFrame
     private var button: Block? = null
@@ -52,11 +59,11 @@ class ObjectiveB(
     private fun complete() {
         itemFrame.setItem(null)
         rotateJob?.cancel()
-        HandlerList.unregisterAll(this)
     }
 
     // state setter use only
     private fun destroy() {
+        HandlerList.unregisterAll(this)
         resetBlocks()
     }
 

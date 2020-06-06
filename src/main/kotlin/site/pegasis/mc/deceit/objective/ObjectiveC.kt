@@ -1,129 +1,161 @@
 package site.pegasis.mc.deceit.objective
 
-import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.type.Switch
 import org.bukkit.entity.ItemFrame
 import org.bukkit.event.EventHandler
-import org.bukkit.event.Listener
+import org.bukkit.event.HandlerList
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.ItemStack
-import org.bukkit.plugin.java.JavaPlugin
 import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.objective.ObjectiveC.State.*
 
 class ObjectiveC(
     pos: BlockPos,
     leverPos: BlockPos,
-    val pressurePlatePos: BlockPos,
-    val gameItem: ItemStack,
-    val plugin: JavaPlugin
+    pressurePlatePos: BlockPos,
+    private val gameItem: ItemStack
 ) : Objective {
-    val insidePlayers = arrayListOf<GamePlayer>()
-    private var distroyed = false
-    val world = Bukkit.getWorld(Config.worldName)!!
-    val pressurePlate = world.getBlockAt(pressurePlatePos)
-    val lever = world.getBlockAt(leverPos)
-    val closeBlock = world.getBlockAt(pos.copy(y = pos.y + 1))
-    val openBlock = world.getBlockAt(pos.copy(y = pos.y + 2))
-    val itemFrameLocation = pos.toEntityPos().toLocation().add(Location(world, 0.5, 1.03125, 0.5))
-    var itemFrame: ItemFrame? = null
-    var activated = false
-    private var opened = false
-    var taken = false
-    val completed: Boolean
-        get() = taken
+    private enum class State {
+        INACTIVATED,
+        CLOSED,
+        OPENED,
+        COMPLETED,
+        DESTROYED
+    }
+
+    private val pressurePlate = Game.world.getBlockAt(pressurePlatePos)
+    private val lever = Game.world.getBlockAt(leverPos)
+    private val closeBlock = Game.world.getBlockAt(pos.copy(y = pos.y + 1))
+    private val openBlock = Game.world.getBlockAt(pos.copy(y = pos.y + 2))
+    private val itemFrameLocation = pos.toEntityPos().toLocation().add(Location(Game.world, 0.5, 1.03125, 0.5))
+    private var itemFrame: ItemFrame? = null
+
+    private val insidePlayers = arrayListOf<GamePlayer>()
+
+    // state setter use only
+    private fun open() {
+        openBlock.setType(Config.objCCoverMaterial)
+        closeBlock.setType(Material.AIR)
+
+        itemFrame = Game.world.spawn(itemFrameLocation, ItemFrame::class.java) {
+            it.setFacingDirection(BlockFace.UP)
+            it.setItem(gameItem.clone())
+            it.isInvulnerable = true
+        }
+    }
+
+    // state setter use only
+    private fun close() {
+        itemFrame?.remove()
+        itemFrame = null
+        Game.plugin.runDelayed(Config.removeEntityWaitSecond) {
+            closeBlock.setType(Config.objCCoverMaterial)
+            openBlock.setType(Material.AIR)
+        }
+    }
+
+    // state setter use only
+    private fun complete() {
+        itemFrame!!.setItem(null)
+        insidePlayers.clear()
+    }
+
+    // state setter use only
+    private fun destroy() {
+        HandlerList.unregisterAll(this)
+        itemFrame?.remove()
+        itemFrame = null
+        Game.plugin.runDelayed(Config.removeEntityWaitSecond) {
+            resetBlocks(true)
+        }
+    }
+
+    private var state = INACTIVATED
+        set(value) {
+            if (value == field) return
+            if (value == DESTROYED) {
+                destroy()
+            } else if (field == INACTIVATED && value == CLOSED) {
+                pressurePlate.setType(Config.objCPressurePlateMaterial)
+            } else if (field == CLOSED && value == OPENED) {
+                open()
+            } else if (field == OPENED && value == CLOSED) {
+                close()
+            } else if (field == OPENED && value == COMPLETED) {
+                complete()
+            } else {
+                error("Unknown state change: $field to $value")
+            }
+            field = value
+        }
 
     init {
-        pressurePlate.setType(Material.AIR)
-        powerOffLever()
-        resetBlocks()
+        resetBlocks(false)
     }
 
-    fun take(frame: ItemFrame, gp: GamePlayer):Boolean {
-        if (completed || gp.lockGetItem || frame != itemFrame) return false
-        gp.addGameItem(gameItem.clone())
-        itemFrame?.setItem(null)
-        taken = true
-        return true
-    }
-
-    private fun updateCoverBlocks(isOpen: Boolean, force: Boolean = false) {
-        if (opened == isOpen && !force) return
-        if (isOpen) {
-            openBlock.setType(Config.objCCoverMaterial)
-            closeBlock.setType(Material.AIR)
-
-            itemFrame = world.spawn(itemFrameLocation, ItemFrame::class.java)
-            itemFrame?.setFacingDirection(BlockFace.UP)
-            if (!taken) {
-                itemFrame?.setItem(gameItem.clone())
-            }
-            itemFrame?.isInvulnerable = true
-        } else {
-            itemFrame?.remove()
-            itemFrame = null
-
-            plugin.runDelayed(Config.removeEntityWaitSecond) {
-                closeBlock.setType(Config.objCCoverMaterial)
-                openBlock.setType(Material.AIR)
-            }
-        }
-        opened = isOpen
-    }
-
-    private fun resetBlocks() {
-        updateCoverBlocks(false, true)
-    }
-
-    private fun powerOffLever() {
+    private fun resetBlocks(setPressurePlate: Boolean) {
+        closeBlock.setType(Config.objCCoverMaterial)
+        openBlock.setType(Material.AIR)
         lever.setBlockData((lever.blockData as Switch).apply { isPowered = false })
+        if (setPressurePlate) {
+            pressurePlate.setType(Config.objCPressurePlateMaterial)
+        } else {
+            pressurePlate.setType(Material.AIR)
+        }
     }
 
     override fun destroyAndReset() {
-        distroyed = true
-        resetBlocks()
-        powerOffLever()
-        pressurePlate.setType(Config.objCPressurePlateMaterial)
+        state = DESTROYED
+    }
+
+    fun take(frame: ItemFrame, gp: GamePlayer): Boolean {
+        if (state != OPENED || frame != itemFrame || gp in insidePlayers) return false
+        gp.addGameItem(gameItem.clone())
+        state = COMPLETED
+        return true
     }
 
     @EventHandler
     fun onLeverPull(event: PlayerInteractEvent) {
-        if (!Game.started || distroyed) return
-        if (event.clickedBlock == lever) {
-            val leverData = lever.blockData as Switch
-            if (leverData.isPowered) {
-                event.cancel()
+        val clickedBlock = event.clickedBlock ?: return
+        if (clickedBlock == lever) {
+            if (state == INACTIVATED) {
+                state = CLOSED
             } else {
-                activated = true
-                pressurePlate.setType(Config.objCPressurePlateMaterial)
+                event.cancel()
             }
         }
     }
 
+    private fun Location.isInPressurePlate(): Boolean {
+        val pressurePlatePos = pressurePlate.blockPos
+        return x < pressurePlatePos.x + 0.5 + 0.65 &&
+                x > pressurePlatePos.x + 0.5 - 0.65 &&
+                z < pressurePlatePos.z + 0.5 + 0.65 &&
+                z > pressurePlatePos.z + 0.5 - 0.65 &&
+                y < pressurePlatePos.y + 0.5 &&
+                y > pressurePlatePos.y - 0.5
+    }
+
     @EventHandler
     fun onPlayerMove(event: PlayerMoveEvent) {
-        if (!Game.started || distroyed || !activated || completed) return
-        val gp = event.player.getGP() ?: return
-        val location = event.player.location
-        if (location.x < pressurePlatePos.x + 0.5 + 0.65 &&
-            location.x > pressurePlatePos.x + 0.5 - 0.65 &&
-            location.z < pressurePlatePos.z + 0.5 + 0.65 &&
-            location.z > pressurePlatePos.z + 0.5 - 0.65 &&
-            location.y < pressurePlatePos.y + 0.5 &&
-            location.y > pressurePlatePos.y - 0.5
-        ) {
-            if (gp !in insidePlayers) {
-                insidePlayers += gp
-                gp.lockGetItem = true
-                updateCoverBlocks(insidePlayers.isNotEmpty())
-            }
-        } else {
-            if (insidePlayers.remove(gp)) {
-                updateCoverBlocks(insidePlayers.isNotEmpty())
-                gp.lockGetItem = false
+        if (state == OPENED || state == CLOSED) {
+            val gp = event.player.getGP() ?: return
+            if (event.player.location.isInPressurePlate()) {
+                if (gp !in insidePlayers) {
+                    insidePlayers += gp
+                    gp.lockGetItem = true
+                    state = if (insidePlayers.isEmpty()) CLOSED else OPENED
+                }
+            } else {
+                if (insidePlayers.remove(gp)) {
+                    state = if (insidePlayers.isEmpty()) CLOSED else OPENED
+                    gp.lockGetItem = false
+                }
             }
         }
     }
