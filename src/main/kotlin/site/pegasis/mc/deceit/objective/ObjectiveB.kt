@@ -55,7 +55,6 @@ class ObjectiveB(
             .copy(y = itemFrameBlockPos.y + 1.0, x = itemFrameBlockPos.x + 0.5, z = itemFrameBlockPos.z + 0.5)
             .toLocation(world)
         itemFrame = world.getNearbyEntities(itemFramePos, 0.3, 0.3, 0.3).first() as ItemFrame
-        itemFrame.setItem(gameItem.clone())
         itemFrame.isInvulnerable = true
 
         rotateJob = GlobalScope.launch {
@@ -157,6 +156,7 @@ class ObjectiveB(
             if (leverData.isPowered) {
                 event.cancel()
             } else {
+                itemFrame.setItem(gameItem.clone())
                 button = world.getBlockAt(pos.copy(x = pos.x + 1))
                 button!!.setType(Config.objBButtonMaterial)
                 setButtonFacing(BlockFace.EAST)

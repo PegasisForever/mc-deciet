@@ -76,7 +76,6 @@ class ObjectiveA(
             .copy(y = pos.y + 2.0, x = pos.x + 0.5, z = pos.z + 0.5)
             .toLocation(world)
         itemFrame = world.getNearbyEntities(itemFramePos, 0.3, 0.3, 0.3).first()!! as ItemFrame
-        itemFrame.setItem(gameItem.clone())
         itemFrame.isInvulnerable = true
 
         changeProgressJob = GlobalScope.launch {
@@ -150,6 +149,7 @@ class ObjectiveA(
                 event.cancel()
             } else {
                 activated = true
+                itemFrame.setItem(gameItem.clone())
                 resetBlocks()
             }
         }
