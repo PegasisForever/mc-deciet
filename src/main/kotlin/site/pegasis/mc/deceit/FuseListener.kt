@@ -8,7 +8,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.plugin.java.JavaPlugin
 
 class FuseListener(private val plugin: JavaPlugin) : Listener {
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     fun onInteractEntity(event: PlayerInteractEntityEvent) {
         if (Game.state != GameState.DARK && Game.state != GameState.RAGE) return
         val player = event.player

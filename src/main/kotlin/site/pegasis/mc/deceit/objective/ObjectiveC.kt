@@ -121,7 +121,7 @@ class ObjectiveC(
         return true
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     fun onLeverPull(event: PlayerInteractEvent) {
         val clickedBlock = event.clickedBlock ?: return
         if (clickedBlock == lever) {

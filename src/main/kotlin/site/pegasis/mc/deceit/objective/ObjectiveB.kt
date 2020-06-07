@@ -48,6 +48,7 @@ class ObjectiveB(
             while (isActive) {
                 val rotateInterval = getRotateInterval()
                 delay((rotateInterval * 1000).toLong())
+                if (!isActive) break
                 Game.plugin.inMainThread {
                     rotateButton()
                 }
@@ -181,7 +182,7 @@ class ObjectiveB(
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     fun onInteract(event: PlayerInteractEvent) {
         val clickedBlock = event.clickedBlock ?: return
         if (clickedBlock == lever) {

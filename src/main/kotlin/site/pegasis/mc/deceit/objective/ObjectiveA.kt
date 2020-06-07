@@ -35,13 +35,13 @@ class ObjectiveA(
     private val insidePlayers = arrayListOf<GamePlayer>()
     private var progress = 0 // 0..12
 
-    private fun complete(){
+    private fun complete() {
         changeProgressJob?.cancel()
         changeProgressJob = null
         itemFrame.setItem(null)
     }
 
-    private fun destroy(){
+    private fun destroy() {
         HandlerList.unregisterAll(this)
         changeProgressJob?.cancel()
         changeProgressJob = null
@@ -63,6 +63,7 @@ class ObjectiveA(
                     while (isActive) {
                         val changeInterval = baseChangeInterval * 0.8.pow(insidePlayers.size - 1)
                         delay((changeInterval * 1000).toLong())
+                        if (!isActive) break
                         progress++
 
                         val blockPos = getProgressBlockPos(progress)
@@ -164,7 +165,7 @@ class ObjectiveA(
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     fun onLeverPull(event: PlayerInteractEvent) {
         val clickedBlock = event.clickedBlock ?: return
         if (clickedBlock == lever) {

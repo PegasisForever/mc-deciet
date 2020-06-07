@@ -367,8 +367,9 @@ object Config {
         BlockPos(x = 670, y = 75, z = 28355)
     )
     val spawnPoses = listOf<EntityPos>()
-    val knifeDistance = 2
+    val knifeDistance = 2.0
     val knifeDamage = 5.0
+    val interactDistance = 2.0
     val gunDamage = 10.0
     val playerRespawnHealth = 6.0
     val playerRespawnDuration = 5

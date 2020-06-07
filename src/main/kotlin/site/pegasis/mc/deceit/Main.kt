@@ -39,6 +39,7 @@ open class Main : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(CombatListener(this), this)
         server.pluginManager.registerEvents(DisableAttackEntity(), this)
         server.pluginManager.registerEvents(MarkListener(), this)
+        server.pluginManager.registerEvents(InteractDistanceListener(), this)
         Game.init(this)
         Environment.init(this)
         FallingBlockManager.init(this)

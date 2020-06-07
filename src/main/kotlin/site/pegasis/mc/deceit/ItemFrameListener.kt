@@ -10,7 +10,7 @@ import site.pegasis.mc.deceit.objective.ObjectiveC
 import site.pegasis.mc.deceit.objective.ObjectiveManager
 
 class ItemFrameListener(private val plugin: JavaPlugin) : Listener {
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     fun onRightClick(event: PlayerInteractEntityEvent) {
         val player = event.player
         val itemFrame = event.rightClicked
