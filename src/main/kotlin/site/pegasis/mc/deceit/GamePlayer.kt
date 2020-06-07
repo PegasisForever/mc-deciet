@@ -4,10 +4,7 @@ import com.gmail.filoghost.holographicdisplays.api.Hologram
 import com.gmail.filoghost.holographicdisplays.api.HologramsAPI
 import com.gmail.filoghost.holographicdisplays.api.line.TextLine
 import kotlinx.coroutines.*
-import org.bukkit.Bukkit
-import org.bukkit.ChatColor
-import org.bukkit.GameMode
-import org.bukkit.Material
+import org.bukkit.*
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.*
 import org.bukkit.inventory.ItemStack
@@ -127,7 +124,7 @@ data class GamePlayer(
             } else if (field == NORMAL && newValue == VOTING) {
                 val playerSitPos = player.getUnderBlockLocation()
 
-                countDownSecond = Config.playerRespawnDuration
+                countDownSecond = Config.playerVotingDuration
                 votedGp.clear()
                 hologram = HologramsAPI.createHologram(
                     Game.plugin,
@@ -139,12 +136,7 @@ data class GamePlayer(
 
                 // sit
                 player.health = 1.0
-                rided = player.world.spawn(playerSitPos, Bat::class.java).apply {
-                    isInvulnerable = true
-                    setAI(false)
-                    addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, 10000, 1, true, false))
-                    addPassenger(player)
-                }
+                sit(playerSitPos)
 
                 countDownJob = GlobalScope.launch {
                     // wait
@@ -161,25 +153,54 @@ data class GamePlayer(
                 hologram!!.delete()
                 hologram = null
 
-                rided!!.removePassenger(player)
-                rided!!.remove()
-                rided = null
+                unSit()
 
                 player.health = Config.playerRespawnHealth
                 player.teleport(Game.level.spawnPoses.random().toLocation())
             } else if (field == VOTING && newValue == DEAD) {
                 // todo spectator can't activate listener
                 countDownJob!!.cancel()
+                countDownJob = null
                 votedGp.clear()
                 hologram!!.delete()
                 hologram = null
 
-                rided!!.removePassenger(player)
-                rided!!.remove()
-                rided = null
+                unSit()
 
                 resetItemAndState()
                 player.gameMode = GameMode.SPECTATOR
+            } else if (field == DYING && newValue == DEAD) {
+                countDownJob!!.cancel()
+                countDownJob = null
+
+                unSit()
+
+                resetItemAndState()
+                player.gameMode = GameMode.SPECTATOR
+            } else if (field == DEAD && newValue == NORMAL) {
+                player.gameMode = GameMode.ADVENTURE
+            } else if (field == DYING && newValue == NORMAL) {
+                countDownJob!!.cancel()
+                countDownJob = null
+
+                unSit()
+
+                player.health = Config.playerRespawnHealth
+            } else if (field == NORMAL && newValue == DYING) {
+                val playerSitPos = player.getUnderBlockLocation()
+                player.health = 1.0
+                sit(playerSitPos)
+
+                countDownSecond = Config.playerDyingDuration
+                countDownJob = GlobalScope.launch {
+                    waitCountDown()
+                    if (!isActive) return@launch
+
+                    plugin.inMainThread {
+                        state = DEAD
+                    }
+                }
+
             } else {
                 plugin.log("Unknown player ${player.name} transfer: $field to $newValue")
             }
@@ -203,6 +224,21 @@ data class GamePlayer(
 
     private fun inHighLightDistance(entity: Entity): Boolean {
         return entity.location.distanceSquared(player.location) < Config.highLightDistance * Config.highLightDistance
+    }
+
+    private fun sit(pos: Location) {
+        rided = player.world.spawn(pos, Bat::class.java).apply {
+            isInvulnerable = true
+            setAI(false)
+            addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, 10000, 1, true, false))
+            addPassenger(player)
+        }
+    }
+
+    private fun unSit() {
+        rided!!.removePassenger(player)
+        rided!!.remove()
+        rided = null
     }
 
     fun canTransform() =

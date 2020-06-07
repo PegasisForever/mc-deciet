@@ -31,14 +31,16 @@ class CombatListener(val plugin: JavaPlugin) : Listener {
             event.cancel()
             attacked.vote(attacker)
         } else {
-            if (isShoot) {
-                event.damage = Config.gunDamage
-            } else {
-                event.damage = Config.knifeDamage
+            event.damage = when {
+                attacker.state == PlayerState.TRANSFORMED -> Config.transformedDamage
+                isShoot -> Config.gunDamage
+                else -> Config.knifeDamage
             }
 
             if (attacked.player.health - event.finalDamage <= 0) {
-                if (Game.state == GameState.LIGHT || Game.state == GameState.RUN) {
+                if (attacker.state == PlayerState.TRANSFORMED) {
+                    attacked.state = PlayerState.DYING
+                } else if (Game.state == GameState.LIGHT || Game.state == GameState.RUN) {
                     attacked.state = PlayerState.VOTING
                 } else {
                     attacked.respawn()

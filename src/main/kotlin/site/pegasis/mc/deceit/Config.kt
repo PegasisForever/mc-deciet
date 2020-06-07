@@ -372,8 +372,10 @@ object Config {
     val interactDistance = 2.0
     val gunDamage = 10.0
     val playerRespawnHealth = 6.0
-    val playerRespawnDuration = 5
+    val playerVotingDuration = 5
+    val playerDyingDuration = 5
     val votingTextHeight = 3.0
+    val transformedDamage = 10.0
     val levels = listOf(
         Level(
             10,
