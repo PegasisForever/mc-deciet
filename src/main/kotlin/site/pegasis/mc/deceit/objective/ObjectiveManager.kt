@@ -27,7 +27,7 @@ object ObjectiveManager {
             val gameItemPool = getGameItemPool(gameItemPoolSize)
 
             Game.level.objAs.forEach { (pos, leverPos) ->
-                val obj = ObjectiveA(pos, leverPos, gameItemPool.removeAt(0), this)
+                val obj = ObjectiveA(pos, leverPos, gameItemPool.removeAt(0))
                 server.pluginManager.registerEvents(obj, this)
                 objectives.add(obj)
             }

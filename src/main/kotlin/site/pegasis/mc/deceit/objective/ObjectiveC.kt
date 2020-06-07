@@ -60,7 +60,8 @@ class ObjectiveC(
 
     // state setter use only
     private fun complete() {
-        itemFrame!!.setItem(null)
+        itemFrame?.setItem(null)
+        insidePlayers.forEach { it.lockGetItem = false }
         insidePlayers.clear()
     }
 
@@ -78,6 +79,7 @@ class ObjectiveC(
         set(value) {
             if (value == field) return
             if (value == DESTROYED) {
+                complete()
                 destroy()
             } else if (field == INACTIVATED && value == CLOSED) {
                 pressurePlate.setType(Config.objCPressurePlateMaterial)
@@ -143,19 +145,18 @@ class ObjectiveC(
 
     @EventHandler
     fun onPlayerMove(event: PlayerMoveEvent) {
-        if (state == OPENED || state == CLOSED) {
-            val gp = event.player.getGP() ?: return
-            if (event.player.location.isInPressurePlate()) {
-                if (gp !in insidePlayers) {
-                    insidePlayers += gp
-                    gp.lockGetItem = true
-                    state = if (insidePlayers.isEmpty()) CLOSED else OPENED
-                }
-            } else {
-                if (insidePlayers.remove(gp)) {
-                    state = if (insidePlayers.isEmpty()) CLOSED else OPENED
-                    gp.lockGetItem = false
-                }
+        if (state != OPENED && state != CLOSED) return
+        val gp = event.player.getGP() ?: return
+        if (event.player.location.isInPressurePlate()) {
+            if (gp !in insidePlayers) {
+                insidePlayers += gp
+                gp.lockGetItem = true
+                state = OPENED
+            }
+        } else {
+            if (insidePlayers.remove(gp)) {
+                state = if (insidePlayers.isEmpty()) CLOSED else OPENED
+                gp.lockGetItem = false
             }
         }
     }

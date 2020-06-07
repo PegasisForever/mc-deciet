@@ -23,7 +23,7 @@ class ObjectiveB(
     itemFrameBlockPos: BlockPos,
     private val gameItem: ItemStack
 ) : Objective {
-    private enum class State{
+    private enum class State {
         INACTIVATED,
         ACTIVATED,
         COMPLETED,
@@ -59,6 +59,7 @@ class ObjectiveB(
     private fun complete() {
         itemFrame.setItem(null)
         rotateJob?.cancel()
+        rotateJob = null
     }
 
     // state setter use only
@@ -71,12 +72,8 @@ class ObjectiveB(
         set(value) {
             if (value == field) return
             if (value == DESTROYED) {
-                if (field == ACTIVATED) {
-                    complete()
-                    destroy()
-                } else if (field == COMPLETED) {
-                    destroy()
-                }
+                complete()
+                destroy()
             } else if (field == INACTIVATED && value == ACTIVATED) {
                 active()
             } else if (field == ACTIVATED && value == COMPLETED) {
