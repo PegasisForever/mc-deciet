@@ -201,14 +201,20 @@ data class GamePlayer(
             PotionEffect(
                 PotionEffectType.NIGHT_VISION,
                 10000,
-                1
+                1,
+                false,
+                false,
+                false
             )
         )
         addPotionEffect(
             PotionEffect(
                 PotionEffectType.SPEED,
                 10000,
-                1
+                1,
+                false,
+                false,
+                false
             )
         )
     }
