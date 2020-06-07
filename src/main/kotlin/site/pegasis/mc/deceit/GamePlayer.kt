@@ -158,7 +158,6 @@ data class GamePlayer(
                 player.health = Config.playerRespawnHealth
                 player.teleport(Game.level.spawnPoses.random().toLocation())
             } else if (field == VOTING && newValue == DEAD) {
-                // todo spectator can't activate listener
                 countDownJob!!.cancel()
                 countDownJob = null
                 votedGp.clear()
@@ -212,7 +211,7 @@ data class GamePlayer(
         objective.displaySlot = DisplaySlot.SIDEBAR
     }
 
-    suspend fun CoroutineScope.waitCountDown() {
+    private suspend fun CoroutineScope.waitCountDown() {
         while (countDownSecond > 0 && isActive) {
             delay(1000L)
             countDownSecond--
@@ -362,7 +361,7 @@ data class GamePlayer(
     }
 
     companion object {
-        val gps = arrayListOf<GamePlayer>()
+        val gps = hashMapOf<Player, GamePlayer>()
 
         suspend fun preStart(plugin: JavaPlugin) {
             if (!debug) {
@@ -386,11 +385,14 @@ data class GamePlayer(
                     } else {
                         GamePlayer(player, randomInfectedList[i])
                     }
+                    if (!debug) {
+                        player.gameMode = GameMode.ADVENTURE
+                    }
                     gp.resetItemAndState()
                     gp.addGameItem(GameItem.getTransformItem(gp.isInfected))
                     gp.addGameItem(GameItem.getHandGun())
                     gp.addGameItem(GameItem.getAmmo(4))
-                    gps += gp
+                    gps[player] = gp
                     if (!debug) {
                         val spawn = Config.spawnPoses.random()
                         player.teleport(player.location.apply { x = spawn.x; y = spawn.y; z = spawn.z })
@@ -425,12 +427,10 @@ data class GamePlayer(
             }
         }
 
-        fun get(player: Player) = gps.find { it.player == player }
-
-        fun livingPlayers() = gps.filter { it.state != PlayerState.DEAD }
+        fun livingPlayers() = gps.values.filter { it.state != DEAD }
 
         fun getRequiredVotes() = (livingPlayers().size - 1) / 2 + 1
     }
 }
 
-fun Player.getGP() = GamePlayer.get(this)
+fun Player.getGP() = GamePlayer.gps[player]

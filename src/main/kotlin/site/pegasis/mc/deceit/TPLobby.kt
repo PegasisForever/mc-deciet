@@ -1,6 +1,7 @@
 package site.pegasis.mc.deceit
 
 import org.bukkit.Bukkit
+import org.bukkit.GameMode
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
@@ -13,6 +14,9 @@ class TPLobby(val plugin: JavaPlugin) : Listener {
     @EventHandler
     fun onLogin(event: PlayerJoinEvent) {
         event.player.hideNameTag()
+        if (Game.started) {
+            event.player.gameMode = GameMode.SPECTATOR
+        }
     }
 
     @EventHandler

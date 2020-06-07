@@ -23,7 +23,7 @@ import site.pegasis.mc.deceit.objective.ObjectiveManager
 import kotlin.experimental.or
 import kotlin.random.Random
 
-val debug = true
+var debug = true
 val tempPigs = arrayListOf<Pig>()
 var marking = false
 
@@ -190,6 +190,8 @@ open class Main : JavaPlugin(), Listener {
                         }
                     }
                 }
+                "true" -> debug = true
+                "false" -> debug = false
             }
             return true
         }

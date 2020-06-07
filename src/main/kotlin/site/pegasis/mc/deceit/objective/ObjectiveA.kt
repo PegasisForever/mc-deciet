@@ -153,6 +153,7 @@ class ObjectiveA(
     fun onPlayerMove(event: PlayerMoveEvent) {
         if (state != WAITING && state != PROGRESSING) return
         val gp = event.player.getGP() ?: return
+        if (gp.state == PlayerState.DEAD) return
         if (event.player.location.isInArea()) {
             if (gp !in insidePlayers) {
                 insidePlayers += gp

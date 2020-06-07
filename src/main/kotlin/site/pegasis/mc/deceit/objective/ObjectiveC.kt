@@ -147,6 +147,7 @@ class ObjectiveC(
     fun onPlayerMove(event: PlayerMoveEvent) {
         if (state != OPENED && state != CLOSED) return
         val gp = event.player.getGP() ?: return
+        if (gp.state == PlayerState.DEAD) return
         if (event.player.location.isInPressurePlate()) {
             if (gp !in insidePlayers) {
                 insidePlayers += gp
