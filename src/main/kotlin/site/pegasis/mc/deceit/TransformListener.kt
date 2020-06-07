@@ -4,11 +4,13 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.plugin.java.JavaPlugin
 
 class TransformListener(private val plugin: JavaPlugin) : Listener {
     @EventHandler
     fun onRightClick(event: PlayerInteractEvent) {
+        if (event.hand != EquipmentSlot.HAND) return
         val itemInHand = event.player.inventory.itemInMainHand
         val player = event.player
         val gp = player.getGP() ?: return

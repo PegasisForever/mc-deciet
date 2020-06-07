@@ -8,6 +8,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.HandlerList
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerMoveEvent
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
 import kotlin.math.pow
@@ -168,6 +169,7 @@ class ObjectiveA(
 
     @EventHandler(ignoreCancelled = true)
     fun onLeverPull(event: PlayerInteractEvent) {
+        if (event.hand != EquipmentSlot.HAND) return
         val clickedBlock = event.clickedBlock ?: return
         if (clickedBlock == lever) {
             if (state == INACTIVATED) {

@@ -5,11 +5,13 @@ import org.bukkit.entity.FallingBlock
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerInteractEntityEvent
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.plugin.java.JavaPlugin
 
 class FuseListener(private val plugin: JavaPlugin) : Listener {
     @EventHandler(ignoreCancelled = true)
     fun onInteractEntity(event: PlayerInteractEntityEvent) {
+        if (event.hand != EquipmentSlot.HAND) return
         if (Game.state != GameState.DARK && Game.state != GameState.RAGE) return
         val player = event.player
         val gp = player.getGP() ?: return

@@ -5,6 +5,7 @@ import org.bukkit.entity.ItemFrame
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerInteractEntityEvent
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.plugin.java.JavaPlugin
 import site.pegasis.mc.deceit.objective.ObjectiveC
 import site.pegasis.mc.deceit.objective.ObjectiveManager
@@ -12,6 +13,7 @@ import site.pegasis.mc.deceit.objective.ObjectiveManager
 class ItemFrameListener(private val plugin: JavaPlugin) : Listener {
     @EventHandler(ignoreCancelled = true)
     fun onRightClick(event: PlayerInteractEntityEvent) {
+        if (event.hand != EquipmentSlot.HAND) return
         val player = event.player
         val itemFrame = event.rightClicked
         val gp = player.getGP() ?: return

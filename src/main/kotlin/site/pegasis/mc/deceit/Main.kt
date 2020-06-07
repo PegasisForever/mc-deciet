@@ -1,27 +1,18 @@
 package site.pegasis.mc.deceit
 
-import com.comphenix.protocol.PacketType
-import com.comphenix.protocol.ProtocolLibrary
-import com.comphenix.protocol.events.PacketAdapter
-import com.comphenix.protocol.events.PacketEvent
-import com.gmail.filoghost.holographicdisplays.api.HologramsAPI
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.data.Directional
-import org.bukkit.block.data.type.Lantern
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.ItemFrame
 import org.bukkit.entity.Pig
-import org.bukkit.entity.Player
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import site.pegasis.mc.deceit.combat.CombatListener
 import site.pegasis.mc.deceit.objective.ObjectiveManager
-import kotlin.experimental.or
-import kotlin.random.Random
 
 var debug = true
 val tempPigs = arrayListOf<Pig>()
@@ -46,41 +37,6 @@ open class Main : JavaPlugin(), Listener {
         FallingBlockManager.init(this)
         FuseSocketManager.init(this)
         FuseManager.init(this)
-
-        val protocolManager = ProtocolLibrary.getProtocolManager()!!
-        protocolManager.addPacketListener(object : PacketAdapter(
-            this,
-            PacketType.Play.Server.ENTITY_METADATA,
-            PacketType.Play.Server.NAMED_ENTITY_SPAWN
-        ) {
-            override fun onPacketSending(event: PacketEvent) {
-                val player = event.player
-                val gp = player.getGP() ?: return
-                val entityID = event.packet.integers.read(0)
-                val packetType = event.packetType
-                if (entityID !in gp.glowingEntityIDs) return
-
-                if (packetType == PacketType.Play.Server.ENTITY_METADATA) {
-                    val dataWatchers = event.packet.watchableCollectionModifier.read(0)
-                    val watchableObject = dataWatchers.find { it.index == 0 } ?: return
-
-                    var byte = watchableObject.value as Byte
-                    byte = byte or 0b01000000
-                    watchableObject.setValue(byte)
-                } else if (packetType == PacketType.Play.Server.NAMED_ENTITY_SPAWN) {
-                    val dataWatcher = event.packet.dataWatcherModifier.read(0)
-                    if (!dataWatcher.hasIndex(0)) return
-
-                    var byte = dataWatcher.getByte(0)
-                    byte = byte or 0b01000000
-                    dataWatcher.setObject(0, byte)
-                }
-            }
-        })
-    }
-
-    override fun onDisable() {
-        super.onDisable()
     }
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {

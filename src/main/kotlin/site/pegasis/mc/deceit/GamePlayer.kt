@@ -413,10 +413,13 @@ data class GamePlayer(
                             player.inventory.contents[0]?.removeEnchant()
                         }
                     }
+                    Game.addListener(GameEvent.ON_LEVEL_END) {
+                        gp.hasFuse = false
+                    }
                     Game.addListener(GameEvent.ON_END) {
                         gp.resetItemAndState()
                         gp.updateScoreBoard()
-                        gp.state = PlayerState.NORMAL
+                        gp.state = NORMAL
                         gp.resetItemAndState()
                     }
                 }
