@@ -3,9 +3,7 @@ package site.pegasis.mc.deceit
 import com.gmail.filoghost.holographicdisplays.api.Hologram
 import com.gmail.filoghost.holographicdisplays.api.HologramsAPI
 import com.gmail.filoghost.holographicdisplays.api.line.TextLine
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.GameMode
@@ -18,21 +16,23 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scoreboard.DisplaySlot
 import org.bukkit.scoreboard.Objective
-import org.bukkit.scoreboard.Scoreboard
 import kotlin.random.Random
+import site.pegasis.mc.deceit.PlayerState.*
 
 enum class PlayerState {
     NORMAL,
     TRANSFORMED,
+    VOTING,
     DYING,
     DEAD
 }
 
 data class GamePlayer(
     val player: Player,
-    val isInfected: Boolean,
-    var countDownSecond: Int = 0
+    val isInfected: Boolean
 ) {
+    var countDownSecond: Int = 0
+    var countDownJob: Job? = null
     var bloodLevel: Int = 0
         set(value) {
             field = value.coerceAtMost(6)
@@ -70,54 +70,61 @@ data class GamePlayer(
     var rided: Mob? = null // used to let player ride on when dying
     var hologram: Hologram? = null // used to show vote count when dying
     var hologramVoteLine: TextLine? = null // used to show vote count when dying
+    var transformTempItems: List<ItemStack?>? = null
     private var votedGp: HashSet<GamePlayer> = hashSetOf()
     fun vote(gp: GamePlayer) {
-        if (state != PlayerState.DYING || gp in votedGp) return
+        if (state != VOTING || gp in votedGp) return
         votedGp.add(gp)
         hologramVoteLine?.text = ChatColor.GREEN.toString() +
                 "⬛".repeat(votedGp.size) +
                 ChatColor.GRAY.toString() +
                 "⬛".repeat(getRequiredVotes() - votedGp.size)
         if (votedGp.size >= getRequiredVotes()) {
-            state = PlayerState.DEAD
+            state = DEAD
         }
     }
 
-    var state = PlayerState.NORMAL
+    var state = NORMAL
         set(newValue) {
             if (!isInMainThread()) error("Async player state change!")
             if (newValue == field) return
 
             val plugin = Game.plugin
-            if (field == PlayerState.TRANSFORMED && newValue == PlayerState.NORMAL) {
-                countDownSecond = 0
+            if (field == TRANSFORMED && newValue == NORMAL) {
+                countDownJob!!.cancel()
+                countDownJob = null
                 player.removeAllEffect()
                 GlobalScope.launch {
                     plugin.changeSkin(player, Config.originalSkinOverride[player.name] ?: player.name)
+                    plugin.inMainThread {
+                        repeat(9) { player.inventory.setItem(it, transformTempItems!!.get(it)) }
+                        transformTempItems = null
+                    }
                 }
-            } else if (field == PlayerState.NORMAL && newValue == PlayerState.TRANSFORMED) {
+            } else if (field == NORMAL && newValue == TRANSFORMED) {
                 countDownSecond = Config.transformDuration
-                GlobalScope.launch {
+                countDownJob = GlobalScope.launch {
                     // transform
                     plugin.changeSkin(player, Config.infectedSkin)
                     plugin.inMainThread {
                         clearBloodLevel()
+                        transformTempItems = player.inventory.contents.take(9).map { it?.clone() }
+                        repeat(9) { player.inventory.setItem(it, null) }
+
                         player.inventory.heldItemSlot = 8
                         player.addInfectedEffect()
                     }
 
                     // wait
-                    while (countDownSecond > 0) {
-                        delay(1000L)
-                        countDownSecond--
-                    }
+                    waitCountDown()
+                    if (!isActive) return@launch
 
                     // back
                     plugin.inMainThread {
-                        state = PlayerState.NORMAL
+                        state = NORMAL
                     }
                 }
-            } else if (field == PlayerState.NORMAL && newValue == PlayerState.DYING) {
+            } else if (field == NORMAL && newValue == VOTING) {
                 val playerSitPos = player.getUnderBlockLocation()
 
                 countDownSecond = Config.playerRespawnDuration
@@ -132,34 +139,46 @@ data class GamePlayer(
 
                 // sit
                 player.health = 1.0
-                rided = player.world.spawn(playerSitPos, Bat::class.java)
-                rided!!.isInvulnerable = true
-                rided!!.setAI(false)
-                rided!!.addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, 10000, 1, true, false))
-                rided!!.addPassenger(player)
+                rided = player.world.spawn(playerSitPos, Bat::class.java).apply {
+                    isInvulnerable = true
+                    setAI(false)
+                    addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, 10000, 1, true, false))
+                    addPassenger(player)
+                }
 
-                GlobalScope.launch {
+                countDownJob = GlobalScope.launch {
                     // wait
-                    while (countDownSecond > 0) {
-                        delay(1000L)
-                        countDownSecond--
-                    }
+                    waitCountDown()
+                    if (!isActive) return@launch
 
                     // back
                     plugin.inMainThread {
-                        state = PlayerState.NORMAL
+                        state = NORMAL
                     }
                 }
-            } else if (field == PlayerState.DYING && newValue == PlayerState.NORMAL) {
+            } else if (field == VOTING && newValue == NORMAL) {
                 votedGp.clear()
-                hologram?.delete()
+                hologram!!.delete()
+                hologram = null
+
+                rided!!.removePassenger(player)
+                rided!!.remove()
+                rided = null
 
                 player.health = Config.playerRespawnHealth
-                rided?.removePassenger(player)
-                rided?.remove()
                 player.teleport(Game.level.spawnPoses.random().toLocation())
-            } else if (field == PlayerState.DYING && newValue == PlayerState.DEAD) {
+            } else if (field == VOTING && newValue == DEAD) {
                 // todo spectator can't activate listener
+                countDownJob!!.cancel()
+                votedGp.clear()
+                hologram!!.delete()
+                hologram = null
+
+                rided!!.removePassenger(player)
+                rided!!.remove()
+                rided = null
+
+                resetItemAndState()
                 player.gameMode = GameMode.SPECTATOR
             } else {
                 plugin.log("Unknown player ${player.name} transfer: $field to $newValue")
@@ -172,6 +191,16 @@ data class GamePlayer(
         objective.displaySlot = DisplaySlot.SIDEBAR
     }
 
+    suspend fun CoroutineScope.waitCountDown() {
+        while (countDownSecond > 0 && isActive) {
+            delay(1000L)
+            countDownSecond--
+        }
+        if (!isActive) {
+            countDownSecond = 0
+        }
+    }
+
     private fun inHighLightDistance(entity: Entity): Boolean {
         return entity.location.distanceSquared(player.location) < Config.highLightDistance * Config.highLightDistance
     }
@@ -180,7 +209,11 @@ data class GamePlayer(
         isInfected && ((Game.state == GameState.DARK && bloodLevel == 6) || Game.state == GameState.RAGE)
 
     fun respawn() {
-        player.health = Config.playerRespawnHealth
+        player.health = if (state == TRANSFORMED) {
+            player.getAttribute(Attribute.GENERIC_MAX_HEALTH)!!.value
+        } else {
+            Config.playerRespawnHealth
+        }
         player.teleport(Game.level.spawnPoses.random().toLocation())
     }
 
@@ -218,6 +251,8 @@ data class GamePlayer(
             )
         )
     }
+
+    fun distanceSquared(other: GamePlayer) = player.location.distanceSquared(other.player.location)
 
     private fun Player.removeAllEffect() {
         activePotionEffects.forEach { removePotionEffect(it.type) }
@@ -285,7 +320,7 @@ data class GamePlayer(
 
         if (state == PlayerState.TRANSFORMED) {
             obj.getScore("Return to human in").score = countDownSecond
-        } else if (state == PlayerState.DYING) {
+        } else if (state == PlayerState.VOTING) {
             obj.getScore("Respawn in").score = countDownSecond
         }
     }

@@ -1,5 +1,6 @@
 package site.pegasis.mc.deceit.combat
 
+import org.bukkit.entity.Arrow
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -12,30 +13,35 @@ import site.pegasis.mc.deceit.*
 class CombatListener(val plugin: JavaPlugin) : Listener {
     @EventHandler
     fun onAttack(event: EntityDamageByEntityEvent) {
-        val attacker = event.damager
-        val attacked = event.entity
-        if (!Game.started || attacked !is Player) return
-        val gp = attacked.getGP() ?: return
-        if (gp.state == PlayerState.DYING) {
-            val attackerGp = (attacker as? Player)?.getGP() ?: return
-            event.cancel()
-            gp.vote(attackerGp)
+        if (!Game.started) return
+        val isShoot = event.cause == EntityDamageEvent.DamageCause.PROJECTILE
+        val attacker = if (isShoot) {
+            (((event.damager as? Arrow)?.shooter) as? Player)
         } else {
-            if (attacker is Player) {
-                if (attacker.location.distanceSquared(attacked.location) > Config.knifeDistance * Config.knifeDistance) {
-                    event.cancel()
-                    return
-                }
-                event.damage = Config.knifeDamage
-            } else if (event.cause == EntityDamageEvent.DamageCause.PROJECTILE) {
+            event.damager as? Player
+        }?.getGP() ?: return
+        val attacked = (event.entity as? Player)?.getGP() ?: return
+
+        if (!isShoot && attacker.distanceSquared(attacked) > Config.knifeDistance * Config.knifeDistance) {
+            event.cancel()
+            return
+        }
+
+        if (attacked.state == PlayerState.VOTING) {
+            event.cancel()
+            attacked.vote(attacker)
+        } else {
+            if (isShoot) {
                 event.damage = Config.gunDamage
+            } else {
+                event.damage = Config.knifeDamage
             }
 
-            if (attacked.health - event.finalDamage <= 0) {
+            if (attacked.player.health - event.finalDamage <= 0) {
                 if (Game.state == GameState.LIGHT || Game.state == GameState.RUN) {
-                    gp.state = PlayerState.DYING
+                    attacked.state = PlayerState.VOTING
                 } else {
-                    gp.respawn()
+                    attacked.respawn()
                 }
                 event.cancel()
             }
@@ -44,8 +50,7 @@ class CombatListener(val plugin: JavaPlugin) : Listener {
 
     @EventHandler
     fun onHealthRegen(event: EntityRegainHealthEvent) {
-        val player = event.entity
-        if (!Game.started || player !is Player) return
+        if (!Game.started || event.entity !is Player) return
         event.cancel()
     }
 }

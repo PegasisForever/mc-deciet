@@ -13,6 +13,7 @@ import org.bukkit.plugin.java.JavaPlugin
 
 data class BloodPack(val itemFrame: ItemFrame, var refillJob: Job? = null)
 
+// fixme two blood packs when itemframe facing wall
 object BloodPacks {
     val list = arrayListOf<BloodPack>()
 
