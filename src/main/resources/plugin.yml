@@ -3,7 +3,8 @@ main: site.pegasis.mc.deceit.Main
 version: "1.0"
 api-version: "1.15"
 depend: [HolographicDisplays,
-             ProtocolLib]
+         ProtocolLib,
+         LightAPI]
 commands:
   start-deciet:
     description: Start deciet game.

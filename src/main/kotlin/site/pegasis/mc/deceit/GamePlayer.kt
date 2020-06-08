@@ -394,7 +394,7 @@ data class GamePlayer(
                     gp.addGameItem(GameItem.getAmmo(4))
                     gps[player] = gp
                     if (!debug) {
-                        val spawn = Config.spawnPoses.random()
+                        val spawn = Game.level.spawnPoses.random()
                         player.teleport(player.location.apply { x = spawn.x; y = spawn.y; z = spawn.z })
                     }
                     player.sendTitle(

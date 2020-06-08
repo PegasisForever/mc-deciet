@@ -3,6 +3,7 @@ package site.pegasis.mc.deceit
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
+import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.data.Directional
 import org.bukkit.command.Command
@@ -11,12 +12,15 @@ import org.bukkit.entity.ItemFrame
 import org.bukkit.entity.Pig
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
+import ru.beykerykt.lightapi.LightAPI
+import ru.beykerykt.lightapi.LightType
 import site.pegasis.mc.deceit.combat.CombatListener
 import site.pegasis.mc.deceit.objective.ObjectiveManager
 
 var debug = true
 val tempPigs = arrayListOf<Pig>()
 var marking = false
+lateinit var lightPos: Location
 
 open class Main : JavaPlugin(), Listener {
     override fun onEnable() {
@@ -148,6 +152,30 @@ open class Main : JavaPlugin(), Listener {
                 }
                 "true" -> debug = true
                 "false" -> debug = false
+                "cl" -> {
+                    lightPos = Bukkit.getPlayer("Pegasis")!!.location
+                    LightAPI.createLight(lightPos, LightType.BLOCK, 15, false)
+                    LightAPI.collectChunks(lightPos, LightType.BLOCK, 15).forEach {
+                        LightAPI.updateChunk(it, LightType.BLOCK)
+                    }
+
+                }
+                "dl" -> {
+                    LightAPI.deleteLight(lightPos, LightType.BLOCK, false)
+                    LightAPI.collectChunks(lightPos, LightType.BLOCK, 15).forEach {
+                        LightAPI.updateChunk(it, LightType.BLOCK)
+                    }
+                }
+                "dl-all"->{
+                    Game.world.loadedChunks.forEach {
+                        it.forEachBlock { block->
+                            LightAPI.deleteLight(block.location, LightType.BLOCK, false)
+                        }
+                    }
+                    LightAPI.collectChunks(lightPos, LightType.BLOCK, 15).forEach {
+                        LightAPI.updateChunk(it, LightType.BLOCK)
+                    }
+                }
             }
             return true
         }

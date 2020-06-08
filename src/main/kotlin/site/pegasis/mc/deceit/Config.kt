@@ -366,7 +366,6 @@ object Config {
         BlockPos(x = 670, y = 70, z = 28355),
         BlockPos(x = 670, y = 75, z = 28355)
     )
-    val spawnPoses = listOf<EntityPos>()
     val knifeDistance = 2.0
     val knifeDamage = 5.0
     val interactDistance = 2.0
