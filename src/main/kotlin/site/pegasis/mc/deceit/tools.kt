@@ -15,6 +15,9 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scoreboard.Team
+import org.bukkit.util.RayTraceResult
+import ru.beykerykt.lightapi.LightAPI
+import ru.beykerykt.lightapi.LightType
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -86,6 +89,35 @@ fun Player.hideNameTag() {
     scoreBoard.registerNewTeam(name).apply {
         setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER)
         addEntry(name)
+    }
+}
+
+fun RayTraceResult.adjacentBlock(): Block? {
+    hitBlock ?: return null
+    val adjacentPos = with(hitBlockFace!!) {
+        hitBlock!!.location.clone().add(modX.toDouble(), modY.toDouble(), modZ.toDouble())
+    }
+    return hitBlock!!.world.getBlockAt(adjacentPos)
+}
+
+fun Block.setLight(level: Int) {
+    LightAPI.createLight(location, LightType.BLOCK, level, false)
+}
+
+fun Block.deleteLight() {
+    LightAPI.deleteLight(location, LightType.BLOCK, false)
+}
+
+fun Player.rayTraceEndBlock(distance: Double): Block {
+    val tracedLocation = location.direction.clone()
+        .normalize()
+        .multiply(distance)
+    return world.getBlockAt(location.clone().add(tracedLocation))
+}
+
+fun updateLight(location: Location) {
+    LightAPI.collectChunks(location, LightType.BLOCK, 15).forEach {
+        LightAPI.updateChunk(it, LightType.BLOCK)
     }
 }
 

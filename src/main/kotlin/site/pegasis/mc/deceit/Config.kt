@@ -62,6 +62,15 @@ object Config {
     val transformMaterial = Material.MUSIC_DISC_11
     val fuseMaterial = Material.YELLOW_STAINED_GLASS_PANE
     val fuseBaseMaterial = Material.IRON_BARS
+    val trackerMaterial = Material.STONE_BUTTON
+    val cameraMaterial = Material.ITEM_FRAME
+    val inspectionKitMaterial = Material.DAYLIGHT_DETECTOR
+    val healthPackMaterial = Material.GOLDEN_APPLE
+    val antidoteMaterial = Material.EMERALD
+    val lethalInjectionMaterial = Material.PUFFERFISH
+    val torchMaterial = Material.LEVER
+    val torchDistance = 10.0
+    val torchBrightness = 15
     val highLightDistance = 16
     val doorMaterial = Material.ANVIL
     val objADuration = 12.0

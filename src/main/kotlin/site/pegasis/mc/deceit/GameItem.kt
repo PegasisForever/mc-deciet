@@ -6,6 +6,7 @@ import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import kotlin.random.Random
+import site.pegasis.mc.deceit.GameItemType.*
 
 fun ItemStack.rename(name: String) {
     val meta = itemMeta ?: return
@@ -16,69 +17,94 @@ fun ItemStack.rename(name: String) {
     setItemMeta(meta)
 }
 
-object GameItem {
-    fun getTransformItem(infected: Boolean) = ItemStack(Config.transformMaterial).apply {
-        if (infected) {
+enum class GameItemType {
+    TRANSFORM_ITEM,
+    CROSSBOW,
+    FUSE,
+    AMMO,
+    TRACKER,
+    ARMOR,
+    CAMERA,
+    INSPECTION_KIT,
+    HEALTH_PACK,
+    ANTIDOTE,
+    LETHAL_INJECTION,
+    TORCH
+}
+
+fun GameItemType.getItem(infected: Boolean? = null, count: Int = 1) = when (this) {
+    TRANSFORM_ITEM -> ItemStack(Config.transformMaterial).apply {
+        if (infected == true) {
             rename("Right Click to Transform")
         } else {
             rename("[FOR INFECTED] Right Click to Transform")
         }
     }
-
-    fun getHandGun() = ItemStack(Material.CROSSBOW).apply {
+    CROSSBOW -> ItemStack(Material.CROSSBOW).apply {
         rename("Crossbow")
         addUnsafeEnchantment(Enchantment.QUICK_CHARGE, 4)
     }
-
-    fun getFuse() = ItemStack(Config.fuseMaterial).apply {
+    FUSE -> ItemStack(Config.fuseMaterial).apply {
         rename("Fuse")
     }
-
-    fun getAmmo(count: Int) = ItemStack(Material.ARROW).apply {
+    AMMO -> ItemStack(Material.ARROW).apply {
         rename("Arrow")
         amount = count
     }
-
-    fun getTracker() = ItemStack(Material.STONE_BUTTON).apply {
+    TRACKER -> ItemStack(Config.trackerMaterial).apply {
         rename("Tracker")
     }
-
-    fun getArmor() = ItemStack(Material.IRON_CHESTPLATE).apply {
+    ARMOR -> ItemStack(Material.IRON_CHESTPLATE).apply {
         rename("Armor")
     }
-
-    fun getCamera() = ItemStack(Material.ITEM_FRAME).apply {
+    CAMERA -> ItemStack(Config.cameraMaterial).apply {
         rename("Camera")
     }
-
-    fun getInspectionKit() = ItemStack(Material.DAYLIGHT_DETECTOR).apply {
+    INSPECTION_KIT -> ItemStack(Config.inspectionKitMaterial).apply {
         rename("Inspection Kit")
     }
-
-    fun getHealthPack() = ItemStack(Material.GOLDEN_APPLE).apply {
+    HEALTH_PACK -> ItemStack(Config.healthPackMaterial).apply {
         rename("Health Pack")
     }
-
-    fun getAntidote() = ItemStack(Material.EMERALD).apply {
+    ANTIDOTE -> ItemStack(Config.antidoteMaterial).apply {
         rename("Antidote")
     }
-
-    fun getLethalInjection() = ItemStack(Material.PUFFERFISH).apply {
+    LETHAL_INJECTION -> ItemStack(Config.lethalInjectionMaterial).apply {
         rename(ChatColor.RED.toString() + "PUFFER FISH")
     }
-
-    fun getTorch() = ItemStack(Material.LEVER).apply {
+    TORCH -> ItemStack(Config.torchMaterial).apply {
         rename("Torch")
+    }
+}
+
+fun ItemStack.getGameItemType()=GameItem.getType(this)
+
+object GameItem {
+    fun getType(item: ItemStack): GameItemType? {
+        return when (item.type) {
+            Config.transformMaterial -> TRANSFORM_ITEM
+            Material.CROSSBOW -> CROSSBOW
+            Config.fuseMaterial -> FUSE
+            Material.ARROW -> AMMO
+            Config.trackerMaterial -> TRACKER
+            Material.IRON_CHESTPLATE -> ARMOR
+            Config.cameraMaterial -> CAMERA
+            Config.inspectionKitMaterial -> INSPECTION_KIT
+            Config.healthPackMaterial -> HEALTH_PACK
+            Config.antidoteMaterial -> ANTIDOTE
+            Config.lethalInjectionMaterial -> LETHAL_INJECTION
+            Config.torchMaterial -> TORCH
+            else -> null
+        }
     }
 
     fun getRandomObjectiveItem(): ItemStack = when (Random.nextInt(6)) {
-        0 -> getAntidote()
-        1 -> getCamera()
-        2 -> getInspectionKit()
-        3 -> getLethalInjection()
-        4 -> getTracker()
-        5 -> getTorch()
+        0 -> ANTIDOTE.getItem()
+        1 -> CAMERA.getItem()
+        2 -> INSPECTION_KIT.getItem()
+        3 -> LETHAL_INJECTION.getItem()
+        4 -> TRACKER.getItem()
+        5 -> TORCH.getItem()
         else -> error("wtf")
     }
-
 }

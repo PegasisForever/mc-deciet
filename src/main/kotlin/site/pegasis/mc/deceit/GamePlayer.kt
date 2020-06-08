@@ -6,7 +6,13 @@ import com.gmail.filoghost.holographicdisplays.api.line.TextLine
 import kotlinx.coroutines.*
 import org.bukkit.*
 import org.bukkit.attribute.Attribute
+import org.bukkit.block.Block
 import org.bukkit.entity.*
+import org.bukkit.event.EventHandler
+import org.bukkit.event.HandlerList
+import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerItemHeldEvent
+import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.potion.PotionEffect
@@ -27,7 +33,8 @@ enum class PlayerState {
 data class GamePlayer(
     val player: Player,
     val isInfected: Boolean
-) {
+) : Listener {
+    var torchLightBlock: Block? = null
     var countDownSecond: Int = 0
     var countDownJob: Job? = null
     var bloodLevel: Int = 0
@@ -38,9 +45,9 @@ data class GamePlayer(
     var hasFuse: Boolean = false
         set(value) {
             if (value) {
-                addGameItem(GameItem.getFuse())
+                addGameItem(GameItemType.FUSE.getItem())
             } else {
-                removeGameItem(GameItem.getFuse())
+                removeGameItem(GameItemType.FUSE.getItem())
             }
             field = value
         }
@@ -267,16 +274,6 @@ data class GamePlayer(
     private fun Player.addInfectedEffect() {
         addPotionEffect(
             PotionEffect(
-                PotionEffectType.NIGHT_VISION,
-                10000,
-                1,
-                false,
-                false,
-                false
-            )
-        )
-        addPotionEffect(
-            PotionEffect(
                 PotionEffectType.SPEED,
                 10000,
                 1,
@@ -353,11 +350,51 @@ data class GamePlayer(
         board.entries.filter { it != text }.forEach { board.resetScores(it) }
         obj.getScore(text).score = Game.secondToNextStage
 
-        if (state == PlayerState.TRANSFORMED) {
+        if (state == TRANSFORMED) {
             obj.getScore("Return to human in").score = countDownSecond
-        } else if (state == PlayerState.VOTING) {
+        } else if (state == VOTING) {
             obj.getScore("Respawn in").score = countDownSecond
         }
+    }
+
+    private fun holdingItemType(slot: Int? = null): GameItemType? {
+        return if (slot != null) {
+            player.inventory.contents[slot]
+        } else {
+            player.inventory.itemInMainHand
+        }?.getGameItemType()
+    }
+
+    private fun torchUpdate(slot: Int? = null) {
+        if (holdingItemType(slot) == GameItemType.TORCH) {
+            val lightBlock = player.rayTraceBlocks(Config.torchDistance)?.adjacentBlock() ?: player.rayTraceEndBlock(
+                Config.torchDistance
+            )
+            if (lightBlock == torchLightBlock) return
+
+            torchLightBlock?.deleteLight()
+            lightBlock.setLight(Config.torchBrightness)
+            torchLightBlock = lightBlock
+
+            updateLight(player.location)
+        } else if (torchLightBlock != null) {
+            torchLightBlock!!.deleteLight()
+            torchLightBlock = null
+            updateLight(player.location)
+        }
+    }
+
+    @EventHandler
+    fun onPlayerMove(event: PlayerMoveEvent) {
+        if (event.player != player) return
+        torchUpdate()
+    }
+
+    @EventHandler
+    fun onChangeHotBar(event: PlayerItemHeldEvent) {
+        if (event.player != player) return
+        Game.plugin.log(event)
+        torchUpdate(event.newSlot)
     }
 
     companion object {
@@ -389,14 +426,16 @@ data class GamePlayer(
                         player.gameMode = GameMode.ADVENTURE
                     }
                     gp.resetItemAndState()
-                    gp.addGameItem(GameItem.getTransformItem(gp.isInfected))
-                    gp.addGameItem(GameItem.getHandGun())
-                    gp.addGameItem(GameItem.getAmmo(4))
+                    gp.addGameItem(GameItemType.TRANSFORM_ITEM.getItem(gp.isInfected))
+                    gp.addGameItem(GameItemType.CROSSBOW.getItem())
+                    gp.addGameItem(GameItemType.AMMO.getItem(count = 4))
+                    gp.addGameItem(GameItemType.TORCH.getItem())
                     gps[player] = gp
                     if (!debug) {
                         val spawn = Game.level.spawnPoses.random()
                         player.teleport(player.location.apply { x = spawn.x; y = spawn.y; z = spawn.z })
                     }
+                    server.pluginManager.registerEvents(gp, Game.plugin)
                     player.sendTitle(
                         if (gp.isInfected) ChatColor.RED.toString() + "Infected" else "Innocent",
                         "",
@@ -417,6 +456,12 @@ data class GamePlayer(
                         gp.hasFuse = false
                     }
                     Game.addListener(GameEvent.ON_END) {
+                        HandlerList.unregisterAll(gp)
+                        if (gp.torchLightBlock != null) {
+                            gp.torchLightBlock!!.deleteLight()
+                            gp.torchLightBlock = null
+                            updateLight(gp.player.location)
+                        }
                         gp.resetItemAndState()
                         gp.updateScoreBoard()
                         gp.state = NORMAL
