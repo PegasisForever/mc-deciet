@@ -15,6 +15,8 @@ import org.bukkit.plugin.java.JavaPlugin
 import ru.beykerykt.lightapi.LightAPI
 import ru.beykerykt.lightapi.LightType
 import site.pegasis.mc.deceit.combat.CombatListener
+import site.pegasis.mc.deceit.objective.FuseManager
+import site.pegasis.mc.deceit.objective.FuseSocketManager
 import site.pegasis.mc.deceit.objective.ObjectiveManager
 
 var debug = true
@@ -35,7 +37,6 @@ open class Main : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(TPLobby(this), this)
         server.pluginManager.registerEvents(ItemFrameListener(this), this)
         server.pluginManager.registerEvents(TrapDoorListener(this), this)
-        server.pluginManager.registerEvents(FuseListener(this), this)
         server.pluginManager.registerEvents(NoDropListener(this), this)
         server.pluginManager.registerEvents(ServerStopListener(), this)
         server.pluginManager.registerEvents(CombatListener(this), this)
@@ -44,6 +45,7 @@ open class Main : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(InteractDistanceListener(), this)
         server.pluginManager.registerEvents(NoArrowPickupListener(), this)
         Game.init(this)
+        GlowingManager.init(this)
         Environment.init(this)
         FallingBlockManager.init(this)
         FuseSocketManager.init(this)

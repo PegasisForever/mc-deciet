@@ -4,6 +4,7 @@ import kotlinx.coroutines.delay
 import org.bukkit.Bukkit
 import org.bukkit.World
 import org.bukkit.plugin.java.JavaPlugin
+import site.pegasis.mc.deceit.objective.FuseSocketManager
 import java.util.concurrent.CopyOnWriteArrayList
 
 typealias GameEventListener = JavaPlugin.() -> Unit

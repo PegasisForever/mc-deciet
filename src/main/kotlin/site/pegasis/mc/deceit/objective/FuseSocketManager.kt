@@ -1,4 +1,4 @@
-package site.pegasis.mc.deceit
+package site.pegasis.mc.deceit.objective
 
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -6,6 +6,7 @@ import org.bukkit.block.Block
 import org.bukkit.block.data.type.EndPortalFrame
 import org.bukkit.entity.FallingBlock
 import org.bukkit.plugin.java.JavaPlugin
+import site.pegasis.mc.deceit.*
 
 data class FuseSocket(val block: Block, val fallingBlock: ConsistentFallingBlock) {
     var filled: Boolean = false
@@ -17,7 +18,9 @@ data class FuseSocket(val block: Block, val fallingBlock: ConsistentFallingBlock
                 fallingBlock.remove()
                 FuseSocketManager.availableSockets.remove(this)
 
-                FuseSocketManager.plugin.runDelayed(Config.removeEntityWaitSecond) {
+                FuseSocketManager.plugin.runDelayed(
+                    Config.removeEntityWaitSecond
+                ) {
                     block.setType(Material.END_PORTAL_FRAME)
                     block.setBlockData(blockData)
                 }
@@ -34,7 +37,7 @@ object FuseSocketManager {
     lateinit var plugin: JavaPlugin
 
     fun init(plugin: JavaPlugin) {
-        this.plugin = plugin
+        FuseSocketManager.plugin = plugin
     }
 
     fun hook() {
@@ -53,8 +56,10 @@ object FuseSocketManager {
                         block.location.clone().apply { x += 0.5; z += 0.5 },
                         Material.END_PORTAL_FRAME.createBlockData()
                     )
-                    // todo add id to glowing list
-                    availableSockets += FuseSocket(block, fallingBlock)
+                    availableSockets += FuseSocket(
+                        block,
+                        fallingBlock
+                    )
                 }
         }
         Game.addListener(GameEvent.ON_LEVEL_END) {

@@ -42,16 +42,8 @@ data class GamePlayer(
             field = value.coerceAtMost(6)
             player.exp = field / 6f
         }
-    var hasFuse: Boolean = false
-        set(value) {
-            if (value) {
-                addGameItem(Fuse())
-            } else {
-                // fixme
-                removeGameItem(Fuse())
-            }
-            field = value
-        }
+    val hasFuse: Boolean
+        get() = gameItems.any { it is Fuse }
     val glowingEntityIDs: Set<Int>
         get() {
             val set = hashSetOf<Int>()
@@ -423,7 +415,7 @@ data class GamePlayer(
                         }
                     }
                     Game.addListener(GameEvent.ON_LEVEL_END) {
-                        gp.hasFuse = false
+                        gp.gameItems.removeIf { it is Fuse }
                     }
                     Game.addListener(GameEvent.ON_END) {
                         HandlerList.unregisterAll(gp)

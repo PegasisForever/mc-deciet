@@ -24,7 +24,8 @@ object GlowingManager {
                     event.makeEntityGlow()
                 } else {
                     val gp = event.player.getGP() ?: return
-                    if (entityID in gp.glowingEntityIDs){
+                    val set = gp.glowingEntityIDs
+                    if (entityID in set) {
                         event.makeEntityGlow()
                     }
                 }
