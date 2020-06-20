@@ -26,7 +26,8 @@ enum class PlayerState {
     TRANSFORMED,
     VOTING,
     DYING,
-    DEAD
+    DEAD,
+    REMOVED
 }
 
 data class GamePlayer(
@@ -74,7 +75,6 @@ data class GamePlayer(
     var rided: Mob? = null // used to let player ride on when dying
     var hologram: Hologram? = null // used to show vote count when dying
     var hologramVoteLine: TextLine? = null // used to show vote count when dying
-    var transformTempItems: List<ItemStack?>? = null
     var gameItems = arrayListOf<GameItem>()
     private var votedGp: HashSet<GamePlayer> = hashSetOf()
     fun vote(gp: GamePlayer) {
@@ -102,8 +102,7 @@ data class GamePlayer(
                 GlobalScope.launch {
                     plugin.changeSkin(player, Config.originalSkinOverride[player.name] ?: player.name)
                     plugin.inMainThread {
-                        repeat(9) { player.inventory.setItem(it, transformTempItems!!.get(it)) }
-                        transformTempItems = null
+                        updateGameItemToHotBar(false)
                     }
                 }
             } else if (field == NORMAL && newValue == TRANSFORMED) {
@@ -113,8 +112,7 @@ data class GamePlayer(
                     plugin.changeSkin(player, Config.infectedSkin)
                     plugin.inMainThread {
                         clearBloodLevel()
-                        transformTempItems = player.inventory.contents.take(9).map { it?.clone() }
-                        repeat(9) { player.inventory.setItem(it, null) }
+                        updateGameItemToHotBar(true)
 
                         player.inventory.heldItemSlot = 8
                         player.addInfectedEffect()
@@ -291,12 +289,18 @@ data class GamePlayer(
         activePotionEffects.forEach { removePotionEffect(it.type) }
     }
 
-    fun updateGameItemToHotBar() {
+    fun updateGameItemToHotBar(isTransformed: Boolean = state == TRANSFORMED) {
         gameItems.removeIf {
             it.itemStack.amount == 0
         }
-        gameItems.forEachIndexed { index, gameItem ->
-            player.inventory.setItem(index, gameItem.itemStack)
+        if (isTransformed) {
+            repeat(9) { i ->
+                player.inventory.setItem(i, null)
+            }
+        } else {
+            repeat(9) { i ->
+                player.inventory.setItem(i, gameItems.getOrNull(i)?.itemStack)
+            }
         }
     }
 
@@ -392,7 +396,7 @@ data class GamePlayer(
                     }
                     gp.resetItemAndState()
                     // fixme
-//                    gp.addGameItem(GameItemType.TRANSFORM_ITEM.getItem(gp.isInfected))
+                    gp.addGameItem(TransformItem(gp.isInfected))
 //                    gp.addGameItem(GameItemType.CROSSBOW.getItem())
 //                    gp.addGameItem(GameItemType.AMMO.getItem(count = 4))
                     gp.addGameItem(Torch())

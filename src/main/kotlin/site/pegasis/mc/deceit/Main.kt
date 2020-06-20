@@ -35,7 +35,6 @@ open class Main : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(TPLobby(this), this)
         server.pluginManager.registerEvents(ItemFrameListener(this), this)
         server.pluginManager.registerEvents(TrapDoorListener(this), this)
-        server.pluginManager.registerEvents(TransformListener(this), this)
         server.pluginManager.registerEvents(FuseListener(this), this)
         server.pluginManager.registerEvents(NoDropListener(this), this)
         server.pluginManager.registerEvents(ServerStopListener(), this)

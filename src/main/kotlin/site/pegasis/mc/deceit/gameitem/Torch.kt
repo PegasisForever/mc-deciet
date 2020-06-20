@@ -14,7 +14,7 @@ import site.pegasis.mc.deceit.*
 
 class Torch : GameItem(
     ItemStack(Config.torchMaterial).apply {
-        amount = 64
+        amount = if (debug) 10 else 64
         rename("Torch")
         setItemMeta(itemMeta.apply {
             (this as Damageable).damage = 10
@@ -36,8 +36,8 @@ class Torch : GameItem(
             if (field == State.OFF && value == State.ON) {
                 reduceCountJob = GlobalScope.launch {
                     while (itemStack.amount > 0 && isActive) {
-                        itemStack.amount--
                         Game.plugin.inMainThread {
+                            itemStack.amount--
                             gp!!.updateGameItemToHotBar()
                         }
                         delay(durationPerCount)
@@ -46,6 +46,7 @@ class Torch : GameItem(
 
                     Game.plugin.inMainThread {
                         state = State.REMOVED
+                        gp!!.updateGameItemToHotBar()
                         torchUpdate()
                     }
                 }
