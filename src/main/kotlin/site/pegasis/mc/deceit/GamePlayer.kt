@@ -8,11 +8,8 @@ import org.bukkit.*
 import org.bukkit.attribute.Attribute
 import org.bukkit.block.Block
 import org.bukkit.entity.*
-import org.bukkit.event.EventHandler
 import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
-import org.bukkit.event.player.PlayerItemHeldEvent
-import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.potion.PotionEffect
@@ -21,6 +18,8 @@ import org.bukkit.scoreboard.DisplaySlot
 import org.bukkit.scoreboard.Objective
 import kotlin.random.Random
 import site.pegasis.mc.deceit.PlayerState.*
+import site.pegasis.mc.deceit.gameitem.*
+import site.pegasis.mc.deceit.gameitem.Fuse
 
 enum class PlayerState {
     NORMAL,
@@ -45,9 +44,10 @@ data class GamePlayer(
     var hasFuse: Boolean = false
         set(value) {
             if (value) {
-                addGameItem(GameItemType.FUSE.getItem())
+                addGameItem(Fuse())
             } else {
-                removeGameItem(GameItemType.FUSE.getItem())
+                // fixme
+                removeGameItem(Fuse())
             }
             field = value
         }
@@ -75,6 +75,7 @@ data class GamePlayer(
     var hologram: Hologram? = null // used to show vote count when dying
     var hologramVoteLine: TextLine? = null // used to show vote count when dying
     var transformTempItems: List<ItemStack?>? = null
+    var gameItems = arrayListOf<GameItem>()
     private var votedGp: HashSet<GamePlayer> = hashSetOf()
     fun vote(gp: GamePlayer) {
         if (state != VOTING || gp in votedGp) return
@@ -290,28 +291,24 @@ data class GamePlayer(
         activePotionEffects.forEach { removePotionEffect(it.type) }
     }
 
-    fun addGameItem(item: ItemStack) {
-        for (i in 0..8) {
-            if (player.inventory.contents[i]?.isSimilar(item) == true) {
-                player.inventory.contents[i].amount += item.amount
-                return
-            }
+    fun updateGameItemToHotBar() {
+        gameItems.removeIf {
+            it.itemStack.amount == 0
         }
-        for (i in 0..8) {
-            if (player.inventory.contents[i] == null) {
-                player.inventory.setItem(i, item)
-                return
-            }
+        gameItems.forEachIndexed { index, gameItem ->
+            player.inventory.setItem(index, gameItem.itemStack)
         }
     }
 
-    fun removeGameItem(item: ItemStack) {
-        for (i in 0..8) {
-            if (player.inventory.contents[i]?.isSimilar(item) == true) {
-                player.inventory.setItem(i, null)
-                return
-            }
-        }
+    fun addGameItem(item: GameItem) {
+        item.onAttach(this)
+        gameItems.add(item)
+        updateGameItemToHotBar()
+    }
+
+    fun removeGameItem(item: GameItem) {
+        gameItems.remove(item)
+        updateGameItemToHotBar()
     }
 
     fun resetItemAndState() {
@@ -357,44 +354,12 @@ data class GamePlayer(
         }
     }
 
-    private fun holdingItemType(slot: Int? = null): GameItemType? {
+    fun holdingItem(slot: Int? = null): ItemStack? {
         return if (slot != null) {
             player.inventory.contents[slot]
         } else {
             player.inventory.itemInMainHand
-        }?.getGameItemType()
-    }
-
-    private fun torchUpdate(slot: Int? = null) {
-        if (holdingItemType(slot) == GameItemType.TORCH) {
-            val lightBlock = player.rayTraceBlocks(Config.torchDistance)?.adjacentBlock() ?: player.rayTraceEndBlock(
-                Config.torchDistance
-            )
-            if (lightBlock == torchLightBlock) return
-
-            torchLightBlock?.deleteLight()
-            lightBlock.setLight(Config.torchBrightness)
-            torchLightBlock = lightBlock
-
-            updateLight(player.location)
-        } else if (torchLightBlock != null) {
-            torchLightBlock!!.deleteLight()
-            torchLightBlock = null
-            updateLight(player.location)
         }
-    }
-
-    @EventHandler
-    fun onPlayerMove(event: PlayerMoveEvent) {
-        if (event.player != player) return
-        torchUpdate()
-    }
-
-    @EventHandler
-    fun onChangeHotBar(event: PlayerItemHeldEvent) {
-        if (event.player != player) return
-        Game.plugin.log(event)
-        torchUpdate(event.newSlot)
     }
 
     companion object {
@@ -426,10 +391,11 @@ data class GamePlayer(
                         player.gameMode = GameMode.ADVENTURE
                     }
                     gp.resetItemAndState()
-                    gp.addGameItem(GameItemType.TRANSFORM_ITEM.getItem(gp.isInfected))
-                    gp.addGameItem(GameItemType.CROSSBOW.getItem())
-                    gp.addGameItem(GameItemType.AMMO.getItem(count = 4))
-                    gp.addGameItem(GameItemType.TORCH.getItem())
+                    // fixme
+//                    gp.addGameItem(GameItemType.TRANSFORM_ITEM.getItem(gp.isInfected))
+//                    gp.addGameItem(GameItemType.CROSSBOW.getItem())
+//                    gp.addGameItem(GameItemType.AMMO.getItem(count = 4))
+                    gp.addGameItem(Torch())
                     gps[player] = gp
                     if (!debug) {
                         val spawn = Game.level.spawnPoses.random()

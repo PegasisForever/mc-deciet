@@ -1,12 +1,16 @@
-package site.pegasis.mc.deceit
+package site.pegasis.mc.deceit.gameitem
 
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
+import org.bukkit.event.Listener
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.Damageable
+import site.pegasis.mc.deceit.Config
+import site.pegasis.mc.deceit.GamePlayer
+import site.pegasis.mc.deceit.gameitem.GameItemType.*
 import kotlin.random.Random
-import site.pegasis.mc.deceit.GameItemType.*
 
 fun ItemStack.rename(name: String) {
     val meta = itemMeta ?: return
@@ -44,9 +48,6 @@ fun GameItemType.getItem(infected: Boolean? = null, count: Int = 1) = when (this
         rename("Crossbow")
         addUnsafeEnchantment(Enchantment.QUICK_CHARGE, 4)
     }
-    FUSE -> ItemStack(Config.fuseMaterial).apply {
-        rename("Fuse")
-    }
     AMMO -> ItemStack(Material.ARROW).apply {
         rename("Arrow")
         amount = count
@@ -72,39 +73,27 @@ fun GameItemType.getItem(infected: Boolean? = null, count: Int = 1) = when (this
     LETHAL_INJECTION -> ItemStack(Config.lethalInjectionMaterial).apply {
         rename(ChatColor.RED.toString() + "PUFFER FISH")
     }
-    TORCH -> ItemStack(Config.torchMaterial).apply {
-        rename("Torch")
-    }
+    else -> TODO()
 }
 
-fun ItemStack.getGameItemType()=GameItem.getType(this)
+abstract class GameItem(
+    val itemStack:ItemStack,
+    var gp: GamePlayer? = null
+) : Listener {
 
-object GameItem {
-    fun getType(item: ItemStack): GameItemType? {
-        return when (item.type) {
-            Config.transformMaterial -> TRANSFORM_ITEM
-            Material.CROSSBOW -> CROSSBOW
-            Config.fuseMaterial -> FUSE
-            Material.ARROW -> AMMO
-            Config.trackerMaterial -> TRACKER
-            Material.IRON_CHESTPLATE -> ARMOR
-            Config.cameraMaterial -> CAMERA
-            Config.inspectionKitMaterial -> INSPECTION_KIT
-            Config.healthPackMaterial -> HEALTH_PACK
-            Config.antidoteMaterial -> ANTIDOTE
-            Config.lethalInjectionMaterial -> LETHAL_INJECTION
-            Config.torchMaterial -> TORCH
-            else -> null
+    abstract fun onAttach(gp: GamePlayer)
+
+    companion object {
+        fun getRandomObjectiveItem(): GameItem = when (Random.nextInt(6)) {
+            // fixme
+//            0 -> ANTIDOTE.getItem()
+//            1 -> CAMERA.getItem()
+//            2 -> INSPECTION_KIT.getItem()
+//            3 -> LETHAL_INJECTION.getItem()
+//            4 -> TRACKER.getItem()
+            5 -> Torch()
+            else -> Torch()
         }
     }
-
-    fun getRandomObjectiveItem(): ItemStack = when (Random.nextInt(6)) {
-        0 -> ANTIDOTE.getItem()
-        1 -> CAMERA.getItem()
-        2 -> INSPECTION_KIT.getItem()
-        3 -> LETHAL_INJECTION.getItem()
-        4 -> TRACKER.getItem()
-        5 -> TORCH.getItem()
-        else -> error("wtf")
-    }
 }
+

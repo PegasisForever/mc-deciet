@@ -23,7 +23,15 @@ var marking = false
 lateinit var lightPos: Location
 
 open class Main : JavaPlugin(), Listener {
+    companion object {
+        lateinit var plugin: JavaPlugin
+        fun registerEvents(l: Listener) {
+            plugin.server.pluginManager.registerEvents(l, plugin)
+        }
+    }
+
     override fun onEnable() {
+        plugin = this
         server.pluginManager.registerEvents(TPLobby(this), this)
         server.pluginManager.registerEvents(ItemFrameListener(this), this)
         server.pluginManager.registerEvents(TrapDoorListener(this), this)
@@ -166,9 +174,9 @@ open class Main : JavaPlugin(), Listener {
                         LightAPI.updateChunk(it, LightType.BLOCK)
                     }
                 }
-                "dl-all"->{
+                "dl-all" -> {
                     Game.world.loadedChunks.forEach {
-                        it.forEachBlock { block->
+                        it.forEachBlock { block ->
                             LightAPI.deleteLight(block.location, LightType.BLOCK, false)
                         }
                     }

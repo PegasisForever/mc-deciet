@@ -4,7 +4,7 @@ import org.bukkit.event.Listener
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.Game
 import site.pegasis.mc.deceit.GameEvent
-import site.pegasis.mc.deceit.GameItem
+import site.pegasis.mc.deceit.gameitem.GameItem
 
 interface Objective: Listener {
     fun destroyAndReset()
@@ -13,8 +13,8 @@ interface Objective: Listener {
 object ObjectiveManager {
     val objectives = arrayListOf<Objective>()
 
-    fun getGameItemPool(size: Int): ArrayList<ItemStack> {
-        val list = arrayListOf<ItemStack>()
+    fun getGameItemPool(size: Int): ArrayList<GameItem> {
+        val list = arrayListOf<GameItem>()
         repeat(size) {
             list += GameItem.getRandomObjectiveItem()
         }

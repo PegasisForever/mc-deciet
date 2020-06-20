@@ -11,13 +11,14 @@ import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.gameitem.GameItem
 import kotlin.math.pow
 import site.pegasis.mc.deceit.objective.ObjectiveA.State.*
 
 class ObjectiveA(
     private val pos: BlockPos,
     leverPos: BlockPos,
-    private val gameItem: ItemStack
+    private val gameItem: GameItem
 ) : Objective {
     private enum class State {
         INACTIVATED,
@@ -58,7 +59,7 @@ class ObjectiveA(
                 destroy()
             } else if (field == INACTIVATED && value == WAITING) {
                 setBlocksWaiting()
-                itemFrame.setItem(gameItem.clone())
+                itemFrame.setItem(gameItem.itemStack.clone())
             } else if (field == WAITING && value == PROGRESSING) {
                 changeProgressJob = GlobalScope.launch {
                     while (isActive) {
@@ -85,6 +86,8 @@ class ObjectiveA(
                 progress = 0
             } else if (field == PROGRESSING && value == COMPLETED) {
                 complete()
+            } else {
+                error("Unknown state change: $field to $value")
             }
             field = value
         }

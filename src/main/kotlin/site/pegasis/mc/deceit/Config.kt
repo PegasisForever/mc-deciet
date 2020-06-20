@@ -384,10 +384,11 @@ object Config {
     val playerDyingDuration = 5
     val votingTextHeight = 3.0
     val transformedDamage = 10.0
+    val torchDuration = 20.0
     val levels = listOf(
         Level(
             10,
-            10,
+            30,
             10,
             5,
             10,

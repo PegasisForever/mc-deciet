@@ -93,11 +93,16 @@ fun Player.hideNameTag() {
 }
 
 fun RayTraceResult.adjacentBlock(): Block? {
-    hitBlock ?: return null
-    val adjacentPos = with(hitBlockFace!!) {
-        hitBlock!!.location.clone().add(modX.toDouble(), modY.toDouble(), modZ.toDouble())
+    if (hitEntity != null) {
+        return hitBlock!!.world.getBlockAt(hitEntity!!.location)
+    } else if (hitBlock != null) {
+        val adjacentPos = with(hitBlockFace!!) {
+            hitBlock!!.location.clone().add(modX.toDouble(), modY.toDouble(), modZ.toDouble())
+        }
+        return hitBlock!!.world.getBlockAt(adjacentPos)
+    } else {
+        return null
     }
-    return hitBlock!!.world.getBlockAt(adjacentPos)
 }
 
 fun Block.setLight(level: Int) {
@@ -112,7 +117,7 @@ fun Player.rayTraceEndBlock(distance: Double): Block {
     val tracedLocation = location.direction.clone()
         .normalize()
         .multiply(distance)
-    return world.getBlockAt(location.clone().add(tracedLocation))
+    return world.getBlockAt(location.clone().add(tracedLocation).add(0.0, 1.8, 0.0))
 }
 
 fun updateLight(location: Location) {

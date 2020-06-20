@@ -16,13 +16,14 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.gameitem.GameItem
 import site.pegasis.mc.deceit.objective.ObjectiveB.State.*
 
 class ObjectiveB(
     val pos: BlockPos,
     leverPos: BlockPos,
     itemFrameBlockPos: BlockPos,
-    private val gameItem: ItemStack
+    private val gameItem: GameItem
 ) : Objective {
     private enum class State {
         INACTIVATED,
@@ -41,7 +42,7 @@ class ObjectiveB(
 
     // state setter use only
     private fun active() {
-        itemFrame.setItem(gameItem.clone())
+        itemFrame.setItem(gameItem.itemStack.clone())
         button = Game.world.getBlockAt(pos.copy(x = pos.x + 1))
         button!!.setType(Config.objBButtonMaterial)
         setButtonFacing(BlockFace.EAST)

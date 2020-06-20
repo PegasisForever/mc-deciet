@@ -12,13 +12,14 @@ import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.gameitem.GameItem
 import site.pegasis.mc.deceit.objective.ObjectiveC.State.*
 
 class ObjectiveC(
     pos: BlockPos,
     leverPos: BlockPos,
     pressurePlatePos: BlockPos,
-    private val gameItem: ItemStack
+    private val gameItem: GameItem
 ) : Objective {
     private enum class State {
         INACTIVATED,
@@ -44,7 +45,7 @@ class ObjectiveC(
 
         itemFrame = Game.world.spawn(itemFrameLocation, ItemFrame::class.java) {
             it.setFacingDirection(BlockFace.UP)
-            it.setItem(gameItem.clone())
+            it.setItem(gameItem.itemStack.clone())
             it.isInvulnerable = true
         }
     }
@@ -117,7 +118,7 @@ class ObjectiveC(
 
     fun take(frame: ItemFrame, gp: GamePlayer): Boolean {
         if (state != OPENED || frame != itemFrame || gp in insidePlayers) return false
-        gp.addGameItem(gameItem.clone())
+        gp.addGameItem(gameItem)
         state = COMPLETED
         return true
     }
