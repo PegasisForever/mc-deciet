@@ -1,4 +1,4 @@
-package site.pegasis.mc.deceit
+package site.pegasis.mc.deceit.debug
 
 import org.bukkit.GameMode
 import org.bukkit.Material
@@ -9,6 +9,8 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
+import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.environment.GlowingManager
 
 class MarkListener : Listener {
     @EventHandler

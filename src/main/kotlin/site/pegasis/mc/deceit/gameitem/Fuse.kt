@@ -3,11 +3,12 @@ package site.pegasis.mc.deceit.gameitem
 import org.bukkit.Material
 import org.bukkit.entity.FallingBlock
 import org.bukkit.event.EventHandler
+import org.bukkit.event.HandlerList
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
-import site.pegasis.mc.deceit.objective.FuseSocketManager
+import site.pegasis.mc.deceit.objective.fuse.FuseSocketManager
 
 class Fuse : GameItem(
     ItemStack(Config.fuseMaterial).apply {
@@ -36,6 +37,7 @@ class Fuse : GameItem(
             used = true
             itemStack.amount = 0
             gp!!.updateGameItemToHotBar()
+            HandlerList.unregisterAll(this)
         }
     }
 }

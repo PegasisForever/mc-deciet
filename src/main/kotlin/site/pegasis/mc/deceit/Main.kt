@@ -15,9 +15,16 @@ import org.bukkit.plugin.java.JavaPlugin
 import ru.beykerykt.lightapi.LightAPI
 import ru.beykerykt.lightapi.LightType
 import site.pegasis.mc.deceit.combat.CombatListener
-import site.pegasis.mc.deceit.objective.FuseManager
-import site.pegasis.mc.deceit.objective.FuseSocketManager
+import site.pegasis.mc.deceit.debug.MarkListener
+import site.pegasis.mc.deceit.debug.ServerStopListener
+import site.pegasis.mc.deceit.environment.DoorManager
+import site.pegasis.mc.deceit.environment.FallingBlockManager
+import site.pegasis.mc.deceit.environment.GlowingManager
+import site.pegasis.mc.deceit.environment.LightManager
+import site.pegasis.mc.deceit.objective.fuse.FuseManager
+import site.pegasis.mc.deceit.objective.fuse.FuseSocketManager
 import site.pegasis.mc.deceit.objective.ObjectiveManager
+import site.pegasis.mc.deceit.objective.bloodbag.BloodBagManager
 import site.pegasis.mc.deceit.rules.*
 
 var debug = true
@@ -46,7 +53,7 @@ open class Main : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(NoArrowPickupListener(), this)
         Game.init(this)
         GlowingManager.init(this)
-        Environment.init(this)
+        LightManager.init(this)
         FallingBlockManager.init(this)
         FuseSocketManager.init(this)
         FuseManager.init(this)
@@ -59,10 +66,10 @@ open class Main : JavaPlugin(), Listener {
             }
             return true
         } else if (command.name == "light-off") {
-            Environment.lightOff(args.firstOrNull() == "full")
+            LightManager.lightOff(args.firstOrNull() == "full")
             return true
         } else if (command.name == "light-on") {
-            Environment.lightOn()
+            LightManager.lightOn()
             return true
         } else if (command.name == "debug-deceit") {
             when (args.firstOrNull()) {
@@ -200,8 +207,8 @@ open class Main : JavaPlugin(), Listener {
         FallingBlockManager.hook()
         FuseManager.hook()
         GamePlayer.hook()
-        BloodPackManager.hook()
-        Environment.hook()
+        BloodBagManager.hook()
+        LightManager.hook()
 
         Game.start()
     }

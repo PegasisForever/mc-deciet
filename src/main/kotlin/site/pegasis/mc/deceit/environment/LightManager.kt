@@ -1,4 +1,4 @@
-package site.pegasis.mc.deceit
+package site.pegasis.mc.deceit.environment
 
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -7,13 +7,14 @@ import org.bukkit.block.BlockFace
 import org.bukkit.block.data.Directional
 import org.bukkit.block.data.type.Lantern
 import org.bukkit.plugin.java.JavaPlugin
+import site.pegasis.mc.deceit.*
 import kotlin.random.Random
 
-object Environment {
+object LightManager {
     lateinit var plugin: JavaPlugin
 
     fun init(plugin: JavaPlugin) {
-        this.plugin = plugin
+        LightManager.plugin = plugin
     }
 
     fun hook() {

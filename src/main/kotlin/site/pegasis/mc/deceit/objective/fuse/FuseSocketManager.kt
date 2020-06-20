@@ -1,35 +1,11 @@
-package site.pegasis.mc.deceit.objective
+package site.pegasis.mc.deceit.objective.fuse
 
 import org.bukkit.Bukkit
 import org.bukkit.Material
-import org.bukkit.block.Block
-import org.bukkit.block.data.type.EndPortalFrame
 import org.bukkit.entity.FallingBlock
 import org.bukkit.plugin.java.JavaPlugin
 import site.pegasis.mc.deceit.*
-
-data class FuseSocket(val block: Block, val fallingBlock: ConsistentFallingBlock) {
-    var filled: Boolean = false
-        set(value) {
-            if (value) {
-                val blockData = fallingBlock.block.blockData as EndPortalFrame
-                blockData.setEye(true)
-
-                fallingBlock.remove()
-                FuseSocketManager.availableSockets.remove(this)
-
-                FuseSocketManager.plugin.runDelayed(
-                    Config.removeEntityWaitSecond
-                ) {
-                    block.setType(Material.END_PORTAL_FRAME)
-                    block.setBlockData(blockData)
-                }
-
-                FuseSocketManager.filledSockets++
-                field = true
-            }
-        }
-}
+import site.pegasis.mc.deceit.environment.FallingBlockManager
 
 object FuseSocketManager {
     val availableSockets = arrayListOf<FuseSocket>()

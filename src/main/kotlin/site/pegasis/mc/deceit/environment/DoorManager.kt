@@ -1,7 +1,11 @@
-package site.pegasis.mc.deceit
+package site.pegasis.mc.deceit.environment
 
 import org.bukkit.Bukkit
 import org.bukkit.Material
+import site.pegasis.mc.deceit.Config
+import site.pegasis.mc.deceit.Game
+import site.pegasis.mc.deceit.GameEvent
+import site.pegasis.mc.deceit.getBlockAt
 
 object DoorManager {
     fun hook() {

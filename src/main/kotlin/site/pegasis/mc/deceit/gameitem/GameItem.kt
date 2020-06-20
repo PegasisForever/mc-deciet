@@ -3,11 +3,14 @@ package site.pegasis.mc.deceit.gameitem
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
+import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.Damageable
 import site.pegasis.mc.deceit.Config
+import site.pegasis.mc.deceit.Game
+import site.pegasis.mc.deceit.GameEvent
 import site.pegasis.mc.deceit.GamePlayer
 import site.pegasis.mc.deceit.gameitem.GameItemType.*
 import kotlin.random.Random
@@ -77,9 +80,14 @@ fun GameItemType.getItem(infected: Boolean? = null, count: Int = 1) = when (this
 }
 
 abstract class GameItem(
-    val itemStack:ItemStack,
+    val itemStack: ItemStack,
     var gp: GamePlayer? = null
 ) : Listener {
+    init {
+        Game.addListener(GameEvent.ON_END) {
+            HandlerList.unregisterAll(this@GameItem)
+        }
+    }
 
     abstract fun onAttach(gp: GamePlayer)
 

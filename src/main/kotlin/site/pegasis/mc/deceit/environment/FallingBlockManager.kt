@@ -1,4 +1,4 @@
-package site.pegasis.mc.deceit
+package site.pegasis.mc.deceit.environment
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -9,6 +9,10 @@ import org.bukkit.Location
 import org.bukkit.block.data.BlockData
 import org.bukkit.entity.FallingBlock
 import org.bukkit.plugin.java.JavaPlugin
+import site.pegasis.mc.deceit.Config
+import site.pegasis.mc.deceit.Game
+import site.pegasis.mc.deceit.GameEvent
+import site.pegasis.mc.deceit.inMainThread
 
 data class ConsistentFallingBlock(
     val location: Location,
@@ -28,7 +32,7 @@ object FallingBlockManager {
     lateinit var plugin: JavaPlugin
 
     fun init(plugin: JavaPlugin) {
-        this.plugin = plugin
+        FallingBlockManager.plugin = plugin
     }
 
     fun hook() {
@@ -42,8 +46,10 @@ object FallingBlockManager {
     }
 
     fun add(location: Location, data: BlockData): ConsistentFallingBlock {
-        val fallingBlock = createFallingBlock(location, data)
-        val cfb = ConsistentFallingBlock(location, data, fallingBlock)
+        val fallingBlock =
+            createFallingBlock(location, data)
+        val cfb =
+            ConsistentFallingBlock(location, data, fallingBlock)
         cfb.renewJob = createRenewJob(cfb)
         cfbs += cfb
         return cfb
@@ -70,8 +76,13 @@ object FallingBlockManager {
             plugin.inMainThread {
                 if (!cfb.removed){
                     cfb.block.remove()
-                    cfb.block = createFallingBlock(cfb.location, cfb.data)
-                    cfb.renewJob = createRenewJob(cfb)
+                    cfb.block =
+                        createFallingBlock(
+                            cfb.location,
+                            cfb.data
+                        )
+                    cfb.renewJob =
+                        createRenewJob(cfb)
                 }
             }
         }

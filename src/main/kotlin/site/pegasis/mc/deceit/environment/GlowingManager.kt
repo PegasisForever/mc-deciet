@@ -1,4 +1,4 @@
-package site.pegasis.mc.deceit
+package site.pegasis.mc.deceit.environment
 
 import com.comphenix.protocol.PacketType
 import com.comphenix.protocol.ProtocolLibrary
@@ -6,6 +6,7 @@ import com.comphenix.protocol.events.PacketAdapter
 import com.comphenix.protocol.events.PacketEvent
 import org.bukkit.entity.Entity
 import org.bukkit.plugin.java.JavaPlugin
+import site.pegasis.mc.deceit.getGP
 import kotlin.experimental.or
 
 object GlowingManager {
