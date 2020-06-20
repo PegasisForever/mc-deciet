@@ -1,4 +1,4 @@
-package site.pegasis.mc.deceit
+package site.pegasis.mc.deceit.rules
 
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
@@ -6,6 +6,8 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent
+import site.pegasis.mc.deceit.Game
+import site.pegasis.mc.deceit.cancel
 
 class DisableAttackEntity : Listener {
     @EventHandler

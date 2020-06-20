@@ -1,4 +1,4 @@
-package site.pegasis.mc.deceit
+package site.pegasis.mc.deceit.rules
 
 import org.bukkit.GameMode
 import org.bukkit.event.EventHandler
@@ -8,6 +8,8 @@ import org.bukkit.event.inventory.InventoryOpenEvent
 import org.bukkit.event.player.PlayerDropItemEvent
 import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.plugin.java.JavaPlugin
+import site.pegasis.mc.deceit.Game
+import site.pegasis.mc.deceit.cancel
 
 class NoDropListener(private val plugin: JavaPlugin) : Listener {
     @EventHandler

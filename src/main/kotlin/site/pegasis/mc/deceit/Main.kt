@@ -18,6 +18,7 @@ import site.pegasis.mc.deceit.combat.CombatListener
 import site.pegasis.mc.deceit.objective.FuseManager
 import site.pegasis.mc.deceit.objective.FuseSocketManager
 import site.pegasis.mc.deceit.objective.ObjectiveManager
+import site.pegasis.mc.deceit.rules.*
 
 var debug = true
 val tempPigs = arrayListOf<Pig>()

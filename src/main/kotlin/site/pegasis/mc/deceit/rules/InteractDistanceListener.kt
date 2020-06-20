@@ -1,4 +1,4 @@
-package site.pegasis.mc.deceit
+package site.pegasis.mc.deceit.rules
 
 import org.bukkit.GameMode
 import org.bukkit.event.EventHandler
@@ -6,6 +6,9 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import site.pegasis.mc.deceit.Config
+import site.pegasis.mc.deceit.Game
+import site.pegasis.mc.deceit.cancel
 
 class InteractDistanceListener : Listener {
     @EventHandler(priority = EventPriority.LOW)
