@@ -7,14 +7,67 @@ import kotlinx.coroutines.launch
 import org.bukkit.*
 import org.bukkit.entity.ItemFrame
 import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.HandlerList
+import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerInteractEntityEvent
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.PotionMeta
 import org.bukkit.plugin.java.JavaPlugin
+import site.pegasis.mc.deceit.objective.ObjectiveC
+import site.pegasis.mc.deceit.objective.ObjectiveManager
 
-data class BloodPack(val itemFrame: ItemFrame, var refillJob: Job? = null)
+class BloodPack(val itemFrame: ItemFrame, var refillJob: Job? = null) : Listener {
+    init {
+        Main.registerEvents(this)
+    }
+
+    fun destroy(){
+        refillJob?.cancel()
+        HandlerList.unregisterAll(this)
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    fun onRightClick(event: PlayerInteractEntityEvent) {
+        if (event.hand != EquipmentSlot.HAND) return
+        if (event.rightClicked != itemFrame) return
+        val player = event.player
+        if (!Game.started || player.gameMode == GameMode.CREATIVE) return
+        val gp = player.getGP() ?: return
+
+        event.cancel()
+
+        val item = itemFrame.item
+        if (gp.isInfected && item.type == Material.POTION) {
+            drink(gp)
+        } else if (gp.isInfected && item.type == Material.GLASS_BOTTLE) {
+            player.sendMessage("The blood pack is empty!")
+        }
+    }
+
+    private fun drink(gp: GamePlayer) {
+        gp.bloodLevel += if (Game.state == GameState.DARK) 1 else 2
+
+        itemFrame.setItem(ItemStack(Material.GLASS_BOTTLE), false)
+        itemFrame.world.playSound(
+            itemFrame.location,
+            Sound.ITEM_BUCKET_EMPTY_LAVA,
+            SoundCategory.BLOCKS,
+            1f, 1f
+        )
+
+        refillJob = GlobalScope.launch {
+            delay(Config.bloodPackRestoreTime * 1000L)
+            Game.plugin.inMainThread {
+                itemFrame.setItem(BloodPackManager.getBloodItemStack(), false)
+            }
+        }
+    }
+}
 
 // fixme two blood packs when itemframe facing wall
-object BloodPacks {
+object BloodPackManager {
     val list = arrayListOf<BloodPack>()
 
     fun hook() {
@@ -43,7 +96,7 @@ object BloodPacks {
 
         Game.addListener(GameEvent.ON_LEVEL_END) {
             list.forEach { pack ->
-                pack.refillJob?.cancel()
+                pack.destroy()
             }
             list.clear()
 
@@ -66,27 +119,7 @@ object BloodPacks {
         itemFrame.rotation = Rotation.NONE
     }
 
-    fun drink(player: Player, itemFrame: ItemFrame, plugin: JavaPlugin) {
-        val found = list.find { it.itemFrame == itemFrame } ?: return
-        player.getGP()!!.bloodLevel += if (Game.state == GameState.DARK) 1 else 2
-
-        itemFrame.setItem(ItemStack(Material.GLASS_BOTTLE), false)
-        itemFrame.world.playSound(
-            itemFrame.location,
-            Sound.ITEM_BUCKET_EMPTY_LAVA,
-            SoundCategory.BLOCKS,
-            1f, 1f
-        )
-
-        found.refillJob = GlobalScope.launch {
-            delay(Config.bloodPackRestoreTime * 1000L)
-            plugin.inMainThread {
-                itemFrame.setItem(getBloodItemStack(), false)
-            }
-        }
-    }
-
-    private fun getBloodItemStack() = ItemStack(Material.POTION).apply {
+    fun getBloodItemStack() = ItemStack(Material.POTION).apply {
         this.setItemMeta((this.itemMeta as PotionMeta).apply {
             color = Color.RED
         })

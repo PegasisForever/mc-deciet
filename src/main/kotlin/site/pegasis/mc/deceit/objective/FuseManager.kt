@@ -4,6 +4,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.event.EventHandler
+import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.inventory.EquipmentSlot
@@ -23,6 +24,11 @@ data class FuseEntityBlock(val block: Block, val fallingBlock: ConsistentFalling
 
     init {
         Main.registerEvents(this)
+    }
+
+    fun destroy(){
+        fallingBlock.remove()
+        HandlerList.unregisterAll(this)
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -76,7 +82,7 @@ object FuseManager {
         }
         Game.addListener(GameEvent.ON_LEVEL_END) {
             availableFuses.forEach { fuse ->
-                fuse.fallingBlock.remove()
+                fuse.destroy()
             }
             availableFuses.clear()
 

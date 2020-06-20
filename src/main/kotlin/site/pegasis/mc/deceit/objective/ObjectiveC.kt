@@ -1,5 +1,6 @@
 package site.pegasis.mc.deceit.objective
 
+import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
@@ -7,6 +8,7 @@ import org.bukkit.block.data.type.Switch
 import org.bukkit.entity.ItemFrame
 import org.bukkit.event.EventHandler
 import org.bukkit.event.HandlerList
+import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.EquipmentSlot
@@ -163,5 +165,21 @@ class ObjectiveC(
                 gp.lockGetItem = false
             }
         }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    fun onRightClick(event: PlayerInteractEntityEvent) {
+        if (event.hand != EquipmentSlot.HAND) return
+        if (event.rightClicked != itemFrame) return
+        if (state != OPENED) return
+        if (!Game.started) return
+        val player = event.player
+        val gp = player.getGP() ?: return
+        if (gp in insidePlayers) return
+
+        event.cancel()
+
+        gp.addGameItem(gameItem)
+        state = COMPLETED
     }
 }

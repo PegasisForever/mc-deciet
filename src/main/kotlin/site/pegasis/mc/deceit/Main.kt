@@ -36,7 +36,6 @@ open class Main : JavaPlugin(), Listener {
     override fun onEnable() {
         plugin = this
         server.pluginManager.registerEvents(TPLobby(this), this)
-        server.pluginManager.registerEvents(ItemFrameListener(this), this)
         server.pluginManager.registerEvents(TrapDoorListener(this), this)
         server.pluginManager.registerEvents(NoDropListener(this), this)
         server.pluginManager.registerEvents(ServerStopListener(), this)
@@ -201,7 +200,7 @@ open class Main : JavaPlugin(), Listener {
         FallingBlockManager.hook()
         FuseManager.hook()
         GamePlayer.hook()
-        BloodPacks.hook()
+        BloodPackManager.hook()
         Environment.hook()
 
         Game.start()
