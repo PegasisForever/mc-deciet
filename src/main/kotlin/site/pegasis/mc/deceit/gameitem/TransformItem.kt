@@ -36,9 +36,8 @@ class TransformItem(private val isInfected: Boolean) : GameItem(
         if (event.hand != EquipmentSlot.HAND) return
         if (event.player != gp?.player) return
 
-        val itemInHand = event.player.inventory.itemInMainHand
         if ((event.action == Action.RIGHT_CLICK_AIR || event.action == Action.RIGHT_CLICK_BLOCK) &&
-            itemInHand == getItemStack() &&
+            isHolding() &&
             gp!!.canTransform()
         ) {
             gp!!.state = PlayerState.TRANSFORMED

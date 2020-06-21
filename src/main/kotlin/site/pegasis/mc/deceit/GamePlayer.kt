@@ -342,7 +342,7 @@ data class GamePlayer(
 
     fun holdingItem(slot: Int? = null): ItemStack? {
         return if (slot != null) {
-            player.inventory.contents[slot]
+            player.inventory.getItem(slot)
         } else {
             player.inventory.itemInMainHand
         }
@@ -377,7 +377,6 @@ data class GamePlayer(
                         player.gameMode = GameMode.ADVENTURE
                     }
                     gp.resetItemAndState()
-                    // fixme
                     gp.addGameItem(TransformItem(gp.isInfected))
                     gp.addGameItem(Crossbow())
                     gp.addGameItem(Arrow(4))

@@ -75,6 +75,8 @@ abstract class GameItem(
         gp!!.player.inventory.setItem(slotIndex!!, itemStack)
     }
 
+    fun isHolding(slot: Int? = slotIndex) = slot != null && gp!!.player.inventory.heldItemSlot == slot
+
     open fun onAttach(gp: GamePlayer, index: Int) {
         slotIndex = index
         this.gp = gp

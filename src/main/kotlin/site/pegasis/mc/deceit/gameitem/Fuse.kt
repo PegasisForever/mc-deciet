@@ -29,7 +29,7 @@ class Fuse : GameItem(
         if (event.hand != EquipmentSlot.HAND) return
         if (Game.state != GameState.DARK && Game.state != GameState.RAGE) return
         if (event.player != gp?.player) return
-        if (event.player.inventory.itemInMainHand != getItemStack()) return
+        if (!isHolding()) return
         val entity = event.rightClicked
 
         if (entity is FallingBlock &&

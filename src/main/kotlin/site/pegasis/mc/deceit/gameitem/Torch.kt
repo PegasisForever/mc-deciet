@@ -34,6 +34,7 @@ class Torch : GameItem(
         set(value) {
             if (value == field) return
             if (field == State.OFF && value == State.ON) {
+                torchUpdate(value)
                 reduceCountJob = GlobalScope.launch {
                     while (getItemStack() != null && isActive) {
                         Game.plugin.inMainThread {
@@ -52,6 +53,7 @@ class Torch : GameItem(
             } else if (field == State.ON && value == State.OFF) {
                 reduceCountJob!!.cancel()
                 reduceCountJob = null
+                torchUpdate(value)
             } else if (field == State.ON && value == State.REMOVED) {
                 reduceCountJob!!.cancel()
                 reduceCountJob = null
@@ -87,7 +89,7 @@ class Torch : GameItem(
     fun onInteract(event: PlayerInteractEvent) {
         if (event.player != gp?.player ||
             event.hand != EquipmentSlot.HAND ||
-            gp?.holdingItem() != getItemStack() ||
+            !isHolding() ||
             state == State.REMOVED
         ) return
         state = if (state == State.OFF) {
@@ -95,18 +97,14 @@ class Torch : GameItem(
         } else {
             State.OFF
         }
-        torchUpdate()
     }
 
     @EventHandler
     fun onSwitchSlot(event: PlayerItemHeldEvent) {
         if (event.player != gp?.player || state == State.REMOVED) return
-        state = if (gp?.holdingItem(event.newSlot) == getItemStack()) {
-            State.ON
-        } else {
-            State.OFF
+        if (!isHolding(event.newSlot)) {
+            state = State.OFF
         }
-        torchUpdate()
     }
 
     @EventHandler
