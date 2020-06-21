@@ -236,6 +236,7 @@ data class GamePlayer(
         rided!!.removePassenger(player)
         rided!!.remove()
         rided = null
+        player.teleport(player.location.clone().add(0.0, 1.0, 0.0))
     }
 
     fun canTransform() =
@@ -381,6 +382,7 @@ data class GamePlayer(
                     gp.addGameItem(Crossbow())
                     gp.addGameItem(Arrow(4))
                     gp.addGameItem(LethalInjection())
+                    gp.addGameItem(Antidote())
                     gps[player] = gp
                     if (!debug) {
                         val spawn = Game.level.spawnPoses.random()
@@ -419,9 +421,6 @@ data class GamePlayer(
             }
 
             Game.addListener(GameEvent.ON_END) {
-                gps.values.forEach {
-                    it.player.gameMode = GameMode.ADVENTURE
-                }
                 gps.clear()
             }
         }

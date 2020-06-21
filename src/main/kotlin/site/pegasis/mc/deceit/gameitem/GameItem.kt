@@ -34,17 +34,11 @@ fun GameItemType.getItem(infected: Boolean? = null, count: Int = 1) = when (this
     CAMERA -> ItemStack(Config.cameraMaterial).apply {
         rename("Camera")
     }
-    INSPECTION_KIT -> ItemStack(Config.inspectionKitMaterial).apply {
-        rename("Inspection Kit")
-    }
     HEALTH_PACK -> ItemStack(Config.healthPackMaterial).apply {
         rename("Health Pack")
     }
     ANTIDOTE -> ItemStack(Config.antidoteMaterial).apply {
         rename("Antidote")
-    }
-    LETHAL_INJECTION -> ItemStack(Config.lethalInjectionMaterial).apply {
-        rename(ChatColor.RED.toString() + "PUFFER FISH")
     }
     else -> TODO()
 }
