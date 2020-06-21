@@ -47,7 +47,7 @@ class ObjectiveC(
 
         itemFrame = Game.world.spawn(itemFrameLocation, ItemFrame::class.java) {
             it.setFacingDirection(BlockFace.UP)
-            it.setItem(gameItem.itemStack.clone())
+            it.setItem(gameItem.getItemStack()!!.clone())
             it.isInvulnerable = true
         }
     }

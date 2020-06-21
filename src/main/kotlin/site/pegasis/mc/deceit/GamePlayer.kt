@@ -19,6 +19,7 @@ import org.bukkit.scoreboard.Objective
 import kotlin.random.Random
 import site.pegasis.mc.deceit.PlayerState.*
 import site.pegasis.mc.deceit.gameitem.*
+import site.pegasis.mc.deceit.gameitem.Arrow
 import site.pegasis.mc.deceit.gameitem.Fuse
 
 enum class PlayerState {
@@ -67,7 +68,7 @@ data class GamePlayer(
     var rided: Mob? = null // used to let player ride on when dying
     var hologram: Hologram? = null // used to show vote count when dying
     var hologramVoteLine: TextLine? = null // used to show vote count when dying
-    var gameItems = arrayListOf<GameItem>()
+    var gameItems = Array<GameItem?>(9) { null }
     private var votedGp: HashSet<GamePlayer> = hashSetOf()
     fun vote(gp: GamePlayer) {
         if (state != VOTING || gp in votedGp) return
@@ -94,7 +95,7 @@ data class GamePlayer(
                 GlobalScope.launch {
                     plugin.changeSkin(player, Config.originalSkinOverride[player.name] ?: player.name)
                     plugin.inMainThread {
-                        updateGameItemToHotBar(false)
+                        player.inventory.heldItemSlot = 0
                     }
                 }
             } else if (field == NORMAL && newValue == TRANSFORMED) {
@@ -104,7 +105,6 @@ data class GamePlayer(
                     plugin.changeSkin(player, Config.infectedSkin)
                     plugin.inMainThread {
                         clearBloodLevel()
-                        updateGameItemToHotBar(true)
 
                         player.inventory.heldItemSlot = 8
                         player.addInfectedEffect()
@@ -281,30 +281,20 @@ data class GamePlayer(
         activePotionEffects.forEach { removePotionEffect(it.type) }
     }
 
-    fun updateGameItemToHotBar(isTransformed: Boolean = state == TRANSFORMED) {
-        gameItems.removeIf {
-            it.itemStack.amount == 0
-        }
-        if (isTransformed) {
-            repeat(9) { i ->
-                player.inventory.setItem(i, null)
-            }
-        } else {
-            repeat(9) { i ->
-                player.inventory.setItem(i, gameItems.getOrNull(i)?.itemStack)
-            }
-        }
-    }
-
     fun addGameItem(item: GameItem) {
-        item.onAttach(this)
-        gameItems.add(item)
-        updateGameItemToHotBar()
+        val index = gameItems.indexOfFirst { it == null }
+        if (index != -1) {
+            item.onAttach(this, index)
+            gameItems[index] = item
+        }
     }
 
     fun removeGameItem(item: GameItem) {
-        gameItems.remove(item)
-        updateGameItemToHotBar()
+        val index = gameItems.indexOfFirst { it == item }
+        if (index != -1) {
+            item.onDetach()
+            gameItems[index] = null
+        }
     }
 
     fun resetItemAndState() {
@@ -389,8 +379,8 @@ data class GamePlayer(
                     gp.resetItemAndState()
                     // fixme
                     gp.addGameItem(TransformItem(gp.isInfected))
-//                    gp.addGameItem(GameItemType.CROSSBOW.getItem())
-//                    gp.addGameItem(GameItemType.AMMO.getItem(count = 4))
+                    gp.addGameItem(Crossbow())
+                    gp.addGameItem(Arrow(4))
                     gp.addGameItem(Torch())
                     gps[player] = gp
                     if (!debug) {
@@ -413,9 +403,6 @@ data class GamePlayer(
                         } else {
                             player.inventory.contents[0]?.removeEnchant()
                         }
-                    }
-                    Game.addListener(GameEvent.ON_LEVEL_END) {
-                        gp.gameItems.removeIf { it is Fuse }
                     }
                     Game.addListener(GameEvent.ON_END) {
                         HandlerList.unregisterAll(gp)

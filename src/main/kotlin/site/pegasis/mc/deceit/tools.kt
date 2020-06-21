@@ -141,3 +141,12 @@ fun BlockFace.counterClockWiseNext() = when (this) {
     BlockFace.NORTH -> BlockFace.WEST
     else -> error("Unsupported block face: $this")
 }
+
+fun ItemStack.rename(name: String) {
+    val meta = itemMeta ?: return
+    meta.setDisplayName(name)
+    meta.lore?.clear()
+    meta.isUnbreakable = true
+    meta.addItemFlags(*ItemFlag.values())
+    setItemMeta(meta)
+}

@@ -17,9 +17,11 @@ class Fuse : GameItem(
 ) {
     var used = false
 
-    override fun onAttach(gp: GamePlayer) {
-        this.gp = gp
-        Main.registerEvents(this)
+    override fun onAttach(gp: GamePlayer, index: Int) {
+        super.onAttach(gp, index)
+        Game.addListener(GameEvent.ON_LEVEL_END) {
+            gp.removeGameItem(this@Fuse)
+        }
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -27,7 +29,7 @@ class Fuse : GameItem(
         if (event.hand != EquipmentSlot.HAND) return
         if (Game.state != GameState.DARK && Game.state != GameState.RAGE) return
         if (event.player != gp?.player) return
-        if (event.player.inventory.itemInMainHand != itemStack) return
+        if (event.player.inventory.itemInMainHand != getItemStack()) return
         val entity = event.rightClicked
 
         if (entity is FallingBlock &&
@@ -35,8 +37,7 @@ class Fuse : GameItem(
         ) {
             FuseSocketManager.getSocket(entity)?.filled = true
             used = true
-            itemStack.amount = 0
-            gp!!.updateGameItemToHotBar()
+            gp!!.removeGameItem(this)
             HandlerList.unregisterAll(this)
         }
     }

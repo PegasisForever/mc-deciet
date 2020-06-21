@@ -16,16 +16,18 @@ class TransformItem(private val isInfected: Boolean) : GameItem(
         }
     }
 ) {
-    override fun onAttach(gp: GamePlayer) {
-        this.gp = gp
-        Main.registerEvents(this)
+    override fun onAttach(gp: GamePlayer, index: Int) {
+        super.onAttach(gp, index)
         Game.addListener(GameEvent.ON_SECOND) {
-            if (gp.canTransform()) {
-                itemStack.enchant()
-            } else {
-                itemStack.removeEnchant()
+            if (getItemStack()!!.enchantments.isEmpty() && gp.canTransform()) {
+                modifyItemStack {
+                    enchant()
+                }
+            } else if (getItemStack()!!.enchantments.isNotEmpty() && !gp.canTransform()) {
+                modifyItemStack {
+                    removeEnchant()
+                }
             }
-            gp.updateGameItemToHotBar()
         }
     }
 
@@ -36,7 +38,7 @@ class TransformItem(private val isInfected: Boolean) : GameItem(
 
         val itemInHand = event.player.inventory.itemInMainHand
         if ((event.action == Action.RIGHT_CLICK_AIR || event.action == Action.RIGHT_CLICK_BLOCK) &&
-            itemInHand.type == Config.transformMaterial &&
+            itemInHand == getItemStack() &&
             gp!!.canTransform()
         ) {
             gp!!.state = PlayerState.TRANSFORMED

@@ -8,21 +8,9 @@ import org.bukkit.event.Listener
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.Damageable
-import site.pegasis.mc.deceit.Config
-import site.pegasis.mc.deceit.Game
-import site.pegasis.mc.deceit.GameEvent
-import site.pegasis.mc.deceit.GamePlayer
+import site.pegasis.mc.deceit.*
 import site.pegasis.mc.deceit.gameitem.GameItemType.*
 import kotlin.random.Random
-
-fun ItemStack.rename(name: String) {
-    val meta = itemMeta ?: return
-    meta.setDisplayName(name)
-    meta.lore?.clear()
-    meta.isUnbreakable = true
-    meta.addItemFlags(*ItemFlag.values())
-    setItemMeta(meta)
-}
 
 enum class GameItemType {
     TRANSFORM_ITEM,
@@ -40,21 +28,6 @@ enum class GameItemType {
 }
 
 fun GameItemType.getItem(infected: Boolean? = null, count: Int = 1) = when (this) {
-    TRANSFORM_ITEM -> ItemStack(Config.transformMaterial).apply {
-        if (infected == true) {
-            rename("Right Click to Transform")
-        } else {
-            rename("[FOR INFECTED] Right Click to Transform")
-        }
-    }
-    CROSSBOW -> ItemStack(Material.CROSSBOW).apply {
-        rename("Crossbow")
-        addUnsafeEnchantment(Enchantment.QUICK_CHARGE, 4)
-    }
-    AMMO -> ItemStack(Material.ARROW).apply {
-        rename("Arrow")
-        amount = count
-    }
     TRACKER -> ItemStack(Config.trackerMaterial).apply {
         rename("Tracker")
     }
@@ -80,8 +53,9 @@ fun GameItemType.getItem(infected: Boolean? = null, count: Int = 1) = when (this
 }
 
 abstract class GameItem(
-    val itemStack: ItemStack,
-    var gp: GamePlayer? = null
+    private val itemStack: ItemStack,
+    var gp: GamePlayer? = null,
+    var slotIndex: Int? = null
 ) : Listener {
     init {
         Game.addListener(GameEvent.ON_END) {
@@ -89,7 +63,31 @@ abstract class GameItem(
         }
     }
 
-    abstract fun onAttach(gp: GamePlayer)
+    fun getItemStack() = if (gp == null) itemStack else gp!!.player.inventory.getItem(slotIndex!!)
+
+    fun modifyItemStack(action: ItemStack.() -> Unit) {
+        val itemStack = getItemStack()!!
+        action(itemStack)
+        setItemStack(itemStack)
+    }
+
+    fun setItemStack(itemStack: ItemStack?) {
+        gp!!.player.inventory.setItem(slotIndex!!, itemStack)
+    }
+
+    open fun onAttach(gp: GamePlayer, index: Int) {
+        slotIndex = index
+        this.gp = gp
+        setItemStack(itemStack)
+        Main.registerEvents(this)
+    }
+
+    open fun onDetach() {
+        HandlerList.unregisterAll(this)
+        setItemStack(null)
+        gp = null
+        slotIndex = null
+    }
 
     companion object {
         fun getRandomObjectiveItem(): GameItem = when (Random.nextInt(6)) {
@@ -104,4 +102,3 @@ abstract class GameItem(
         }
     }
 }
-

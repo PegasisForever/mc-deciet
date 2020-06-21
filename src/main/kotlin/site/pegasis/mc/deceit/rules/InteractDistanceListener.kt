@@ -10,6 +10,7 @@ import site.pegasis.mc.deceit.Config
 import site.pegasis.mc.deceit.Game
 import site.pegasis.mc.deceit.cancel
 
+// fixme can't load crossbow facing wall
 class InteractDistanceListener : Listener {
     @EventHandler(priority = EventPriority.LOW)
     fun onInteractEntity(event: PlayerInteractEntityEvent) {

@@ -42,7 +42,7 @@ class ObjectiveB(
 
     // state setter use only
     private fun active() {
-        itemFrame.setItem(gameItem.itemStack.clone())
+        itemFrame.setItem(gameItem.getItemStack()!!.clone())
         button = Game.world.getBlockAt(pos.copy(x = pos.x + 1))
         button!!.setType(Config.objBButtonMaterial)
         setButtonFacing(BlockFace.EAST)

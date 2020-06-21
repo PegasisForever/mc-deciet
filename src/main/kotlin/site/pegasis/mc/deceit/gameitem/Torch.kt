@@ -35,10 +35,11 @@ class Torch : GameItem(
             if (value == field) return
             if (field == State.OFF && value == State.ON) {
                 reduceCountJob = GlobalScope.launch {
-                    while (itemStack.amount > 0 && isActive) {
+                    while (getItemStack() != null && isActive) {
                         Game.plugin.inMainThread {
-                            itemStack.amount--
-                            gp!!.updateGameItemToHotBar()
+                            modifyItemStack {
+                                amount--
+                            }
                         }
                         delay(durationPerCount)
                     }
@@ -46,24 +47,23 @@ class Torch : GameItem(
 
                     Game.plugin.inMainThread {
                         state = State.REMOVED
-                        gp!!.updateGameItemToHotBar()
-                        torchUpdate()
                     }
                 }
             } else if (field == State.ON && value == State.OFF) {
                 reduceCountJob!!.cancel()
                 reduceCountJob = null
             } else if (field == State.ON && value == State.REMOVED) {
-                HandlerList.unregisterAll(this)
                 reduceCountJob!!.cancel()
                 reduceCountJob = null
+                torchUpdate(State.REMOVED)
+                gp!!.removeGameItem(this@Torch)
             } else {
                 error("Unknown state change: $field to $value")
             }
             field = value
         }
 
-    private fun torchUpdate() {
+    private fun torchUpdate(state: State = this.state) {
         val player = gp?.player ?: return
         if (state == State.ON) {
             val lightBlock = player.rayTraceBlocks(Config.torchDistance)?.adjacentBlock() ?: player.rayTraceEndBlock(
@@ -83,16 +83,11 @@ class Torch : GameItem(
         }
     }
 
-    override fun onAttach(gp: GamePlayer) {
-        this.gp = gp
-        Main.registerEvents(this)
-    }
-
     @EventHandler
     fun onInteract(event: PlayerInteractEvent) {
         if (event.player != gp?.player ||
             event.hand != EquipmentSlot.HAND ||
-            gp?.holdingItem() != itemStack ||
+            gp?.holdingItem() != getItemStack() ||
             state == State.REMOVED
         ) return
         state = if (state == State.OFF) {
@@ -106,7 +101,7 @@ class Torch : GameItem(
     @EventHandler
     fun onSwitchSlot(event: PlayerItemHeldEvent) {
         if (event.player != gp?.player || state == State.REMOVED) return
-        state = if (gp?.holdingItem(event.newSlot) == itemStack) {
+        state = if (gp?.holdingItem(event.newSlot) == getItemStack()) {
             State.ON
         } else {
             State.OFF

@@ -59,7 +59,7 @@ class ObjectiveA(
                 destroy()
             } else if (field == INACTIVATED && value == WAITING) {
                 setBlocksWaiting()
-                itemFrame.setItem(gameItem.itemStack.clone())
+                itemFrame.setItem(gameItem.getItemStack()!!.clone())
             } else if (field == WAITING && value == PROGRESSING) {
                 changeProgressJob = GlobalScope.launch {
                     while (isActive) {
