@@ -239,7 +239,7 @@ data class GamePlayer(
     }
 
     fun canTransform() =
-        isInfected && ((Game.state == GameState.DARK && bloodLevel == 6) || Game.state == GameState.RAGE)
+        isInfected && state == NORMAL && ((Game.state == GameState.DARK && bloodLevel == 6) || Game.state == GameState.RAGE)
 
     fun respawn() {
         player.health = if (state == TRANSFORMED) {
@@ -380,7 +380,7 @@ data class GamePlayer(
                     gp.addGameItem(TransformItem(gp.isInfected))
                     gp.addGameItem(Crossbow())
                     gp.addGameItem(Arrow(4))
-                    gp.addGameItem(InspectionKit())
+                    gp.addGameItem(LethalInjection())
                     gps[player] = gp
                     if (!debug) {
                         val spawn = Game.level.spawnPoses.random()
@@ -419,6 +419,9 @@ data class GamePlayer(
             }
 
             Game.addListener(GameEvent.ON_END) {
+                gps.values.forEach {
+                    it.player.gameMode = GameMode.ADVENTURE
+                }
                 gps.clear()
             }
         }

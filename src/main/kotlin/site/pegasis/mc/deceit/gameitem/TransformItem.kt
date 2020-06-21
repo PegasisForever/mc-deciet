@@ -19,11 +19,11 @@ class TransformItem(private val isInfected: Boolean) : GameItem(
     override fun onAttach(gp: GamePlayer, index: Int) {
         super.onAttach(gp, index)
         Game.addListener(GameEvent.ON_SECOND) {
-            if (getItemStack()!!.enchantments.isEmpty() && gp.canTransform()) {
+            if (gp.canTransform() && getItemStack()?.enchantments?.isEmpty() == true) {
                 modifyItemStack {
                     enchant()
                 }
-            } else if (getItemStack()!!.enchantments.isNotEmpty() && !gp.canTransform()) {
+            } else if (!gp.canTransform() && getItemStack()?.enchantments?.isNotEmpty() == true) {
                 modifyItemStack {
                     removeEnchant()
                 }

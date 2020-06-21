@@ -28,9 +28,6 @@ enum class GameItemType {
 }
 
 fun GameItemType.getItem(infected: Boolean? = null, count: Int = 1) = when (this) {
-    TRACKER -> ItemStack(Config.trackerMaterial).apply {
-        rename("Tracker")
-    }
     ARMOR -> ItemStack(Material.IRON_CHESTPLATE).apply {
         rename("Armor")
     }
@@ -94,10 +91,11 @@ abstract class GameItem(
     companion object {
         fun getRandomObjectiveItem(): GameItem = when (Random.nextInt(6)) {
             // fixme
+            // todo LETHAL_INJECTION only appear when level config allows
 //            0 -> ANTIDOTE.getItem()
 //            1 -> CAMERA.getItem()
-//            2 -> INSPECTION_KIT.getItem()
-//            3 -> LETHAL_INJECTION.getItem()
+            2 -> InspectionKit()
+            3 -> LethalInjection()
             4 -> Tracker()
             5 -> Torch()
             else -> Torch()
