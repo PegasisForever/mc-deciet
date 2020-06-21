@@ -16,11 +16,10 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scoreboard.DisplaySlot
 import org.bukkit.scoreboard.Objective
-import kotlin.random.Random
 import site.pegasis.mc.deceit.PlayerState.*
 import site.pegasis.mc.deceit.gameitem.*
 import site.pegasis.mc.deceit.gameitem.Arrow
-import site.pegasis.mc.deceit.gameitem.Fuse
+import kotlin.random.Random
 
 enum class PlayerState {
     NORMAL,

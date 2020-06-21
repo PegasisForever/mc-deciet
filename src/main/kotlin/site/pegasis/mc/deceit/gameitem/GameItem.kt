@@ -5,7 +5,8 @@ import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
-import site.pegasis.mc.deceit.gameitem.GameItemType.*
+import site.pegasis.mc.deceit.gameitem.GameItemType.ARMOR
+import site.pegasis.mc.deceit.gameitem.GameItemType.HEALTH_PACK
 import kotlin.random.Random
 
 enum class GameItemType {

@@ -14,7 +14,6 @@ import org.bukkit.event.HandlerList
 import org.bukkit.event.entity.EntityInteractEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
-import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
 import site.pegasis.mc.deceit.gameitem.GameItem
 import site.pegasis.mc.deceit.objective.ObjectiveB.State.*

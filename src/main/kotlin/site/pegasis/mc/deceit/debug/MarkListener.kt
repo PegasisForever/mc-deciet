@@ -9,8 +9,11 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
-import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.Game
 import site.pegasis.mc.deceit.environment.GlowingManager
+import site.pegasis.mc.deceit.log
+import site.pegasis.mc.deceit.marking
+import site.pegasis.mc.deceit.tempPigs
 
 class MarkListener : Listener {
     @EventHandler

@@ -3,13 +3,11 @@ package site.pegasis.mc.deceit.gameitem
 import kotlinx.coroutines.*
 import org.bukkit.block.Block
 import org.bukkit.event.EventHandler
-import org.bukkit.event.HandlerList
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerItemHeldEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.Damageable
 import site.pegasis.mc.deceit.*
 
 class Torch : GameItem(

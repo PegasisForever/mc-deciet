@@ -1,6 +1,5 @@
 package site.pegasis.mc.deceit.objective
 
-import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
@@ -12,7 +11,6 @@ import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.EquipmentSlot
-import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
 import site.pegasis.mc.deceit.gameitem.GameItem
 import site.pegasis.mc.deceit.objective.ObjectiveC.State.*

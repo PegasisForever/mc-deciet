@@ -9,11 +9,10 @@ import org.bukkit.event.HandlerList
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.EquipmentSlot
-import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
 import site.pegasis.mc.deceit.gameitem.GameItem
-import kotlin.math.pow
 import site.pegasis.mc.deceit.objective.ObjectiveA.State.*
+import kotlin.math.pow
 
 class ObjectiveA(
     private val pos: BlockPos,

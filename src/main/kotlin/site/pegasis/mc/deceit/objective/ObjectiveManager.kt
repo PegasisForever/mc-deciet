@@ -1,7 +1,6 @@
 package site.pegasis.mc.deceit.objective
 
 import org.bukkit.event.Listener
-import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.Game
 import site.pegasis.mc.deceit.GameEvent
 import site.pegasis.mc.deceit.gameitem.GameItem

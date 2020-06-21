@@ -6,9 +6,12 @@ import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.inventory.EquipmentSlot
-import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.Game
+import site.pegasis.mc.deceit.GameState
+import site.pegasis.mc.deceit.Main
 import site.pegasis.mc.deceit.environment.ConsistentFallingBlock
 import site.pegasis.mc.deceit.gameitem.Fuse
+import site.pegasis.mc.deceit.getGP
 
 class FuseEntityBlock(val block: Block, val fallingBlock: ConsistentFallingBlock) :
     Listener {

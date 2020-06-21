@@ -21,10 +21,10 @@ import site.pegasis.mc.deceit.environment.DoorManager
 import site.pegasis.mc.deceit.environment.FallingBlockManager
 import site.pegasis.mc.deceit.environment.GlowingManager
 import site.pegasis.mc.deceit.environment.LightManager
-import site.pegasis.mc.deceit.objective.fuse.FuseManager
-import site.pegasis.mc.deceit.objective.fuse.FuseSocketManager
 import site.pegasis.mc.deceit.objective.ObjectiveManager
 import site.pegasis.mc.deceit.objective.bloodbag.BloodBagManager
+import site.pegasis.mc.deceit.objective.fuse.FuseManager
+import site.pegasis.mc.deceit.objective.fuse.FuseSocketManager
 import site.pegasis.mc.deceit.rules.*
 
 var debug = true
