@@ -292,8 +292,8 @@ data class GamePlayer(
 
     fun removeGameItem(item: GameItem) {
         val index = gameItems.indexOfFirst { it == item }
+        item.onDetach()
         if (index != -1) {
-            item.onDetach()
             gameItems[index] = null
         }
     }
@@ -381,8 +381,7 @@ data class GamePlayer(
                     gp.addGameItem(TransformItem(gp.isInfected))
                     gp.addGameItem(Crossbow())
                     gp.addGameItem(Arrow(4))
-                    gp.addGameItem(LethalInjection())
-                    gp.addGameItem(Antidote())
+                    gp.addGameItem(Camera(6))
                     gps[player] = gp
                     if (!debug) {
                         val spawn = Game.level.spawnPoses.random()

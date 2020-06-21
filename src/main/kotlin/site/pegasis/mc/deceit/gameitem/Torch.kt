@@ -16,9 +16,6 @@ class Torch : GameItem(
     ItemStack(Config.torchMaterial).apply {
         amount = if (debug) 10 else 64
         rename("Torch")
-        setItemMeta(itemMeta.apply {
-            (this as Damageable).damage = 10
-        })
     }
 ) {
     private enum class State {

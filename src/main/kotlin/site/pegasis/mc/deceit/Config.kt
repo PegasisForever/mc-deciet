@@ -71,6 +71,9 @@ object Config {
     val torchMaterial = Material.LEVER
     val torchDistance = 10.0
     val torchBrightness = 15
+    val cameraDistance = 10.0
+    val cameraBrightness = 15
+    val cameraDuration = 0.2
     val highLightDistance = 16
     val doorMaterial = Material.ANVIL
     val trackerDuration = 5.0

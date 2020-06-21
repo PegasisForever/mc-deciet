@@ -1,13 +1,9 @@
 package site.pegasis.mc.deceit.gameitem
 
-import org.bukkit.ChatColor
 import org.bukkit.Material
-import org.bukkit.enchantments.Enchantment
 import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
-import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.Damageable
 import site.pegasis.mc.deceit.*
 import site.pegasis.mc.deceit.gameitem.GameItemType.*
 import kotlin.random.Random
@@ -31,14 +27,8 @@ fun GameItemType.getItem(infected: Boolean? = null, count: Int = 1) = when (this
     ARMOR -> ItemStack(Material.IRON_CHESTPLATE).apply {
         rename("Armor")
     }
-    CAMERA -> ItemStack(Config.cameraMaterial).apply {
-        rename("Camera")
-    }
     HEALTH_PACK -> ItemStack(Config.healthPackMaterial).apply {
         rename("Health Pack")
-    }
-    ANTIDOTE -> ItemStack(Config.antidoteMaterial).apply {
-        rename("Antidote")
     }
     else -> TODO()
 }
@@ -84,10 +74,9 @@ abstract class GameItem(
 
     companion object {
         fun getRandomObjectiveItem(): GameItem = when (Random.nextInt(6)) {
-            // fixme
             // todo LETHAL_INJECTION only appear when level config allows
-//            0 -> ANTIDOTE.getItem()
-//            1 -> CAMERA.getItem()
+            0 -> Antidote()
+            1 -> Camera(6)
             2 -> InspectionKit()
             3 -> LethalInjection()
             4 -> Tracker()
