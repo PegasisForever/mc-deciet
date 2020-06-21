@@ -119,14 +119,6 @@ class ObjectiveC(
         state = DESTROYED
     }
 
-    // fixme
-    fun take(frame: ItemFrame, gp: GamePlayer): Boolean {
-        if (state != OPENED || frame != itemFrame || gp in insidePlayers) return false
-        gp.addGameItem(gameItem)
-        state = COMPLETED
-        return true
-    }
-
     @EventHandler(ignoreCancelled = true)
     fun onLeverPull(event: PlayerInteractEvent) {
         if (event.hand != EquipmentSlot.HAND) return
@@ -175,8 +167,7 @@ class ObjectiveC(
         if (event.rightClicked != itemFrame) return
         if (state != OPENED) return
         if (!Game.started) return
-        val player = event.player
-        val gp = player.gp ?: return
+        val gp = event.player.gp ?: return
         if (gp in insidePlayers) return
 
         event.cancel()
