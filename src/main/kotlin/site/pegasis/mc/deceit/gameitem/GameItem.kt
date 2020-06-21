@@ -98,7 +98,7 @@ abstract class GameItem(
 //            1 -> CAMERA.getItem()
 //            2 -> INSPECTION_KIT.getItem()
 //            3 -> LETHAL_INJECTION.getItem()
-//            4 -> TRACKER.getItem()
+            4 -> Tracker()
             5 -> Torch()
             else -> Torch()
         }

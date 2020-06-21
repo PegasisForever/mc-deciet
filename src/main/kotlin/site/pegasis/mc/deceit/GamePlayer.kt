@@ -266,7 +266,7 @@ data class GamePlayer(
         addPotionEffect(
             PotionEffect(
                 PotionEffectType.SPEED,
-                10000,
+                10000000,
                 1,
                 false,
                 false,
@@ -380,7 +380,7 @@ data class GamePlayer(
                     gp.addGameItem(TransformItem(gp.isInfected))
                     gp.addGameItem(Crossbow())
                     gp.addGameItem(Arrow(4))
-                    gp.addGameItem(Torch())
+                    gp.addGameItem(Tracker())
                     gps[player] = gp
                     if (!debug) {
                         val spawn = Game.level.spawnPoses.random()

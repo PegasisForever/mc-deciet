@@ -73,6 +73,7 @@ object Config {
     val torchBrightness = 15
     val highLightDistance = 16
     val doorMaterial = Material.ANVIL
+    val trackerDuration = 5.0
     val objADuration = 3.0
     val objAUnactivatedBlock = Material.BIRCH_PLANKS
     val objANormalBlock = Material.WHITE_STAINED_GLASS
