@@ -47,17 +47,20 @@ data class GamePlayer(
     val glowingEntityIDs: Set<Int>
         get() {
             val set = hashSetOf<Int>()
+            if (gameItems.any { it is Antidote }) {
+                set += gps.values
+                    .filter { it != this && it.state == DYING && inHighLightDistance(it.player) }
+                    .map { it.player.entityId }
+            }
             if ((Game.state == GameState.DARK || Game.state == GameState.RAGE) && !hasFuse) {
                 set += player.world
                     .getEntitiesByClass(FallingBlock::class.java)
-                    .filter { it.blockData.material == Config.fuseMaterial }
-                    .filter { inHighLightDistance(it) }
+                    .filter { it.blockData.material == Config.fuseMaterial && inHighLightDistance(it) }
                     .map { it.entityId }
             } else if ((Game.state == GameState.DARK || Game.state == GameState.RAGE) && hasFuse) {
                 set += player.world
                     .getEntitiesByClass(FallingBlock::class.java)
-                    .filter { it.blockData.material == Material.END_PORTAL_FRAME }
-                    .filter { inHighLightDistance(it) }
+                    .filter { it.blockData.material == Material.END_PORTAL_FRAME && inHighLightDistance(it) }
                     .map { it.entityId }
             }
             return set
@@ -186,6 +189,13 @@ data class GamePlayer(
                 val playerSitPos = player.getUnderBlockLocation()
                 player.health = 1.0
                 sit(playerSitPos)
+
+                gps.values.forEach {
+                    if (it != this) {
+                        it.player.hidePlayer(Game.plugin, player)
+                        it.player.showPlayer(Game.plugin, player)
+                    }
+                }
 
                 countDownSecond = Config.playerDyingDuration
                 countDownJob = GlobalScope.launch {
@@ -380,7 +390,8 @@ data class GamePlayer(
                     gp.addGameItem(TransformItem(gp.isInfected))
                     gp.addGameItem(Crossbow())
                     gp.addGameItem(Arrow(4))
-                    gp.addGameItem(Camera(6))
+                    gp.addGameItem(LethalInjection())
+                    gp.addGameItem(Antidote())
                     gps[player] = gp
                     if (!debug) {
                         val spawn = Game.level.spawnPoses.random()
