@@ -119,6 +119,7 @@ class ObjectiveC(
         state = DESTROYED
     }
 
+    // fixme
     fun take(frame: ItemFrame, gp: GamePlayer): Boolean {
         if (state != OPENED || frame != itemFrame || gp in insidePlayers) return false
         gp.addGameItem(gameItem)

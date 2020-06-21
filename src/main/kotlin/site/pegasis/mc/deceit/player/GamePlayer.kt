@@ -9,19 +9,17 @@ import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.attribute.Attribute
-import org.bukkit.block.Block
 import org.bukkit.entity.*
+import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
-import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scoreboard.DisplaySlot
 import org.bukkit.scoreboard.Objective
 import site.pegasis.mc.deceit.*
-import site.pegasis.mc.deceit.gameitem.Antidote
-import site.pegasis.mc.deceit.gameitem.Fuse
-import site.pegasis.mc.deceit.gameitem.GameItem
+import site.pegasis.mc.deceit.gameitem.*
+import site.pegasis.mc.deceit.gameitem.Arrow
 import site.pegasis.mc.deceit.player.GamePlayerManager.getRequiredVotes
 import site.pegasis.mc.deceit.player.GamePlayerManager.gps
 import site.pegasis.mc.deceit.player.PlayerState.*
@@ -31,9 +29,15 @@ class GamePlayer(
     val player: Player,
     val isInfected: Boolean
 ) : Listener {
-    var torchLightBlock: Block? = null
-    var countDownSecond: Int = 0
-    var countDownJob: Job? = null
+    private val scoreboardObjective: Objective
+    private var rided: Mob? = null // used to let player ride on when dying
+    private var hologram: Hologram? = null // used to show vote count when dying
+    private var hologramVoteLine: TextLine? = null // used to show vote count when dying
+    private var votedGp: HashSet<GamePlayer> = hashSetOf()
+    private val effectFlags = hashSetOf<Pair<Any, GamePlayerEffectFlag>>()
+    private var countDownSecond: Int = 0
+    private var countDownJob: Job? = null
+
     var bloodLevel: Int = 0
         set(value) {
             field = value.coerceAtMost(6)
@@ -46,42 +50,24 @@ class GamePlayer(
             val set = hashSetOf<Int>()
             if (gameItems.any { it is Antidote }) {
                 set += gps.values
-                    .filter { it != this && it.state == DYING && inHighLightDistance(it.player) }
+                    .filter { it != this && it.state == DYING && isInHighLightDistance(it.player) }
                     .map { it.player.entityId }
             }
             if ((Game.state == GameState.DARK || Game.state == GameState.RAGE) && !hasFuse) {
                 set += player.world
                     .getEntitiesByClass(FallingBlock::class.java)
-                    .filter { it.blockData.material == Config.fuseMaterial && inHighLightDistance(it) }
+                    .filter { it.blockData.material == Config.fuseMaterial && isInHighLightDistance(it) }
                     .map { it.entityId }
             } else if ((Game.state == GameState.DARK || Game.state == GameState.RAGE) && hasFuse) {
                 set += player.world
                     .getEntitiesByClass(FallingBlock::class.java)
-                    .filter { it.blockData.material == Material.END_PORTAL_FRAME && inHighLightDistance(it) }
+                    .filter { it.blockData.material == Material.END_PORTAL_FRAME && isInHighLightDistance(it) }
                     .map { it.entityId }
             }
             return set
         }
-    val objective: Objective
     var lockGetItem = false
-    var rided: Mob? = null // used to let player ride on when dying
-    var hologram: Hologram? = null // used to show vote count when dying
-    var hologramVoteLine: TextLine? = null // used to show vote count when dying
     var gameItems = Array<GameItem?>(9) { null }
-    private var votedGp: HashSet<GamePlayer> = hashSetOf()
-    private val effectFlags = hashSetOf<Pair<Any, GamePlayerEffectFlag>>()
-    fun vote(gp: GamePlayer) {
-        if (state != VOTING || gp in votedGp) return
-        votedGp.add(gp)
-        hologramVoteLine?.text = ChatColor.GREEN.toString() +
-                "⬛".repeat(votedGp.size) +
-                ChatColor.GRAY.toString() +
-                "⬛".repeat(getRequiredVotes() - votedGp.size)
-        if (votedGp.size >= getRequiredVotes()) {
-            state = DEAD
-        }
-    }
-
     var state = NORMAL
         set(newValue) {
             if (!isInMainThread()) error("Async player state change!")
@@ -91,7 +77,7 @@ class GamePlayer(
             if (field == TRANSFORMED && newValue == NORMAL) {
                 countDownJob!!.cancel()
                 countDownJob = null
-                removeEffectFlag(GamePlayerEffectFlag.TRANSFORMED,this)
+                removeEffectFlag(GamePlayerEffectFlag.TRANSFORMED, this)
                 GlobalScope.launch {
                     plugin.changeSkin(player, Config.originalSkinOverride[player.name] ?: player.name)
                     plugin.inMainThread {
@@ -107,7 +93,7 @@ class GamePlayer(
                         clearBloodLevel()
 
                         player.inventory.heldItemSlot = 8
-                        addEffectFlag(GamePlayerEffectFlag.TRANSFORMED,this@GamePlayer)
+                        addEffectFlag(GamePlayerEffectFlag.TRANSFORMED, this@GamePlayer)
                     }
 
                     // wait
@@ -212,8 +198,47 @@ class GamePlayer(
         }
 
     init {
-        objective = player.scoreboard.registerNewObjective(Random.nextLong().toString().take(16), "dummy", "MC Deciet")
-        objective.displaySlot = DisplaySlot.SIDEBAR
+        scoreboardObjective =
+            player.scoreboard.registerNewObjective(Random.nextLong().toString().take(16), "dummy", "MC Deciet")
+        scoreboardObjective.displaySlot = DisplaySlot.SIDEBAR
+
+        if (!debug) {
+            player.gameMode = GameMode.ADVENTURE
+            val spawn = Game.level.spawnPoses.random()
+            player.teleport(player.location.apply { x = spawn.x; y = spawn.y; z = spawn.z })
+        }
+        resetItemAndState()
+        addGameItem(TransformItem(isInfected))
+        addGameItem(Crossbow())
+        addGameItem(Arrow(4))
+        addGameItem(LethalInjection())
+        addGameItem(Tracker())
+        addGameItem(Torch(64))
+        addGameItem(Torch(64))
+
+        player.sendTitle(
+            if (isInfected) ChatColor.RED.toString() + "Infected" else "Innocent",
+            "",
+            10,
+            60,
+            10
+        )
+
+        Main.registerEvents(this)
+        Game.addListener(GameEvent.ON_SECOND) {
+            updateScoreBoard()
+            if (canTransform) {
+                player.inventory.contents[0]?.enchant()
+            } else {
+                player.inventory.contents[0]?.removeEnchant()
+            }
+        }
+        Game.addListener(GameEvent.ON_END) {
+            HandlerList.unregisterAll(this@GamePlayer)
+            resetItemAndState()
+            updateScoreBoard()
+            state = NORMAL
+        }
     }
 
     private suspend fun CoroutineScope.waitCountDown() {
@@ -226,7 +251,14 @@ class GamePlayer(
         }
     }
 
-    private fun inHighLightDistance(entity: Entity): Boolean {
+    private suspend fun JavaPlugin.changeSkin(player: Player, skinName: String) {
+        inMainThread { consoleCommand("skin ${player.name} $skinName") }
+        delay(300)
+        inMainThread { consoleCommand("skinupdate ${player.name}") }
+        delay(200)
+    }
+
+    private fun isInHighLightDistance(entity: Entity): Boolean {
         return entity.location.distanceSquared(player.location) < Config.highLightDistance * Config.highLightDistance
     }
 
@@ -246,62 +278,27 @@ class GamePlayer(
         player.teleport(player.location.clone().add(0.0, 1.0, 0.0))
     }
 
-    fun canTransform() =
-        isInfected && state == NORMAL && ((Game.state == GameState.DARK && bloodLevel == 6) || Game.state == GameState.RAGE)
-
-    fun respawn() {
-        player.health = if (state == TRANSFORMED) {
-            player.getAttribute(Attribute.GENERIC_MAX_HEALTH)!!.value
-        } else {
-            Config.playerRespawnHealth
-        }
-        player.teleport(Game.level.spawnPoses.random().toLocation())
-    }
-
     private fun clearBloodLevel() {
         bloodLevel = 0
         player.exp = 0f
     }
 
-    private suspend fun JavaPlugin.changeSkin(player: Player, skinName: String) {
-        inMainThread { consoleCommand("skin ${player.name} $skinName") }
-        delay(300)
-        inMainThread { consoleCommand("skinupdate ${player.name}") }
-        delay(200)
-    }
-
-    fun distanceSquared(other: GamePlayer) = player.location.distanceSquared(other.player.location)
-
-    fun addGameItem(item: GameItem) {
-        val index = gameItems.indexOfFirst { it == null }
-        if (index != -1) {
-            item.onAttach(this, index)
-            gameItems[index] = item
-        }
-    }
-
-    fun removeGameItem(item: GameItem) {
-        val index = gameItems.indexOfFirst { it == item }
-        item.onDetach()
-        if (index != -1) {
-            gameItems[index] = null
-        }
-    }
-
-    fun resetItemAndState() {
+    private fun resetItemAndState() {
         if (player.gameMode == GameMode.CREATIVE) return
+        player.activePotionEffects.forEach { player.removePotionEffect(it.type) }
         player.level = 0
         player.exp = 0f
         player.foodLevel = 20
         player.health = player.getAttribute(Attribute.GENERIC_MAX_HEALTH)!!.value
         player.inventory.setItemInOffHand(null)
         for (i in 0..8) {
+            gameItems[i] = null
             player.inventory.setItem(i, null)
         }
     }
 
-    fun updateScoreBoard() {
-        val obj = objective
+    private fun updateScoreBoard() {
+        val obj = scoreboardObjective
         val board = obj.scoreboard!!
         obj.displayName = when (Game.state) {
             GameState.LIGHT -> "Light On"
@@ -331,11 +328,46 @@ class GamePlayer(
         }
     }
 
-    fun holdingItem(slot: Int? = null): ItemStack? {
-        return if (slot != null) {
-            player.inventory.getItem(slot)
+
+    fun vote(gp: GamePlayer) {
+        if (state != VOTING || gp in votedGp) return
+        votedGp.add(gp)
+        hologramVoteLine?.text = ChatColor.GREEN.toString() +
+                "⬛".repeat(votedGp.size) +
+                ChatColor.GRAY.toString() +
+                "⬛".repeat(getRequiredVotes() - votedGp.size)
+        if (votedGp.size >= getRequiredVotes()) {
+            state = DEAD
+        }
+    }
+
+    val canTransform: Boolean
+        get() = isInfected && state == NORMAL && ((Game.state == GameState.DARK && bloodLevel == 6) || Game.state == GameState.RAGE)
+
+    fun respawn() {
+        player.health = if (state == TRANSFORMED) {
+            player.getAttribute(Attribute.GENERIC_MAX_HEALTH)!!.value
         } else {
-            player.inventory.itemInMainHand
+            Config.playerRespawnHealth
+        }
+        player.teleport(Game.level.spawnPoses.random().toLocation())
+    }
+
+    fun distanceSquared(other: GamePlayer) = player.location.distanceSquared(other.player.location)
+
+    fun addGameItem(item: GameItem) {
+        val index = gameItems.indexOfFirst { it == null }
+        if (index != -1) {
+            item.onAttach(this, index)
+            gameItems[index] = item
+        }
+    }
+
+    fun removeGameItem(item: GameItem) {
+        val index = gameItems.indexOfFirst { it == item }
+        item.onDetach()
+        if (index != -1) {
+            gameItems[index] = null
         }
     }
 

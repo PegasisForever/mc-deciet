@@ -1,39 +1,18 @@
 package site.pegasis.mc.deceit.gameitem
 
-import org.bukkit.Material
 import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
-import site.pegasis.mc.deceit.gameitem.GameItemType.ARMOR
-import site.pegasis.mc.deceit.gameitem.GameItemType.HEALTH_PACK
 import site.pegasis.mc.deceit.player.GamePlayer
 import kotlin.random.Random
 
-enum class GameItemType {
-    TRANSFORM_ITEM,
-    CROSSBOW,
-    FUSE,
-    AMMO,
-    TRACKER,
-    ARMOR,
-    CAMERA,
-    INSPECTION_KIT,
-    HEALTH_PACK,
-    ANTIDOTE,
-    LETHAL_INJECTION,
-    TORCH
-}
-
-fun GameItemType.getItem(infected: Boolean? = null, count: Int = 1) = when (this) {
-    ARMOR -> ItemStack(Material.IRON_CHESTPLATE).apply {
-        rename("Armor")
-    }
-    HEALTH_PACK -> ItemStack(Config.healthPackMaterial).apply {
-        rename("Health Pack")
-    }
-    else -> TODO()
-}
+//ARMOR -> ItemStack(Material.IRON_CHESTPLATE).apply {
+//    rename("Armor")
+//}
+//HEALTH_PACK -> ItemStack(Config.healthPackMaterial).apply {
+//    rename("Health Pack")
+//}
 
 abstract class GameItem(
     private val itemStack: ItemStack,

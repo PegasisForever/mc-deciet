@@ -89,7 +89,7 @@ class Torch(amount: Int = if (debug) 10 else 64) : GameItem(
     }
 
     private fun torchDamageUpdate(state: State = this.state) {
-        GamePlayerManager.gps.values.forEach { otherGp ->
+        GamePlayerManager.livingPlayers().forEach { otherGp ->
             if (otherGp == gp) return@forEach
             val isInRange = inLightRange(otherGp.player.eyeLocation)
             if (isInRange && state == State.ON) {

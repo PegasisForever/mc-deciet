@@ -21,11 +21,11 @@ class TransformItem(private val isInfected: Boolean) : GameItem(
     override fun onAttach(gp: GamePlayer, index: Int) {
         super.onAttach(gp, index)
         Game.addListener(GameEvent.ON_SECOND) {
-            if (gp.canTransform() && getItemStack()?.enchantments?.isEmpty() == true) {
+            if (gp.canTransform && getItemStack()?.enchantments?.isEmpty() == true) {
                 modifyItemStack {
                     enchant()
                 }
-            } else if (!gp.canTransform() && getItemStack()?.enchantments?.isNotEmpty() == true) {
+            } else if (!gp.canTransform && getItemStack()?.enchantments?.isNotEmpty() == true) {
                 modifyItemStack {
                     removeEnchant()
                 }
@@ -40,7 +40,7 @@ class TransformItem(private val isInfected: Boolean) : GameItem(
 
         if ((event.action == Action.RIGHT_CLICK_AIR || event.action == Action.RIGHT_CLICK_BLOCK) &&
             isHolding() &&
-            gp!!.canTransform()
+            gp!!.canTransform
         ) {
             gp!!.state = PlayerState.TRANSFORMED
         }
