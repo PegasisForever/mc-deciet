@@ -9,11 +9,10 @@ import org.bukkit.event.player.PlayerItemHeldEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
-import org.bukkit.potion.PotionEffect
-import org.bukkit.potion.PotionEffectType
 import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.player.GamePlayerEffectFlag
+import site.pegasis.mc.deceit.player.GamePlayerManager
 import site.pegasis.mc.deceit.player.PlayerState
-import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
 
 class Torch(amount: Int = if (debug) 10 else 64) : GameItem(
     ItemStack(Config.torchMaterial).apply {
@@ -35,6 +34,7 @@ class Torch(amount: Int = if (debug) 10 else 64) : GameItem(
             if (value == field) return
             if (field == State.OFF && value == State.ON) {
                 torchUpdate(value)
+                torchDamageUpdate(value)
                 reduceCountJob = GlobalScope.launch {
                     while (getItemStack() != null && isActive) {
                         Game.plugin.inMainThread {
@@ -54,10 +54,12 @@ class Torch(amount: Int = if (debug) 10 else 64) : GameItem(
                 reduceCountJob!!.cancel()
                 reduceCountJob = null
                 torchUpdate(value)
+                torchDamageUpdate(value)
             } else if (field == State.ON && value == State.REMOVED) {
                 reduceCountJob!!.cancel()
                 reduceCountJob = null
                 torchUpdate(State.REMOVED)
+                torchDamageUpdate(State.REMOVED)
                 gp!!.removeGameItem(this@Torch)
             } else {
                 error("Unknown state change: $field to $value")
@@ -67,6 +69,7 @@ class Torch(amount: Int = if (debug) 10 else 64) : GameItem(
 
     private fun torchUpdate(state: State = this.state) {
         val player = gp?.player ?: return
+
         if (state == State.ON) {
             val lightBlock = player.rayTraceBlocks(Config.torchDistance)?.adjacentBlock() ?: player.rayTraceEndBlock(
                 Config.torchDistance
@@ -85,9 +88,23 @@ class Torch(amount: Int = if (debug) 10 else 64) : GameItem(
         }
     }
 
-    fun inLightRange(target: Location): Boolean {
+    private fun torchDamageUpdate(state: State = this.state) {
+        GamePlayerManager.gps.values.forEach { otherGp ->
+            if (otherGp == gp) return@forEach
+            val isInRange = inLightRange(otherGp.player.eyeLocation)
+            if (isInRange && state == State.ON) {
+                otherGp.addEffectFlag(GamePlayerEffectFlag.IN_LIGHT, this)
+            } else if (!isInRange || state != State.ON) {
+                otherGp.removeEffectFlag(GamePlayerEffectFlag.IN_LIGHT, this)
+            }
+        }
+    }
+
+    // use eye location
+    private fun inLightRange(target: Location): Boolean {
         val playerVector = gp!!.player.eyeLocation.toVector()
         val playerLookVector = gp!!.player.location.direction
+        playerVector.subtract(playerLookVector)
         val targetVector = target.toVector()
 
         val targetInPlayersEyeVector = targetVector.clone().subtract(playerVector)
@@ -123,18 +140,7 @@ class Torch(amount: Int = if (debug) 10 else 64) : GameItem(
         if (state != State.ON) return
         if (event.player == gp?.player) {
             torchUpdate()
-        } else if (event.player.getGP()?.state == PlayerState.TRANSFORMED) {
-            event.player.addPotionEffect(
-                PotionEffect(
-                    PotionEffectType.SLOW,
-                    1000000,
-                    2,
-                    false,
-                    false,
-                    false
-                )
-            )
+            torchDamageUpdate()
         }
-
     }
 }

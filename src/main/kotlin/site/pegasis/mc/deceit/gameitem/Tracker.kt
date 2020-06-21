@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.player.GamePlayerEffectFlag
 import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
 
 class Tracker : GameItem(
@@ -26,20 +27,11 @@ class Tracker : GameItem(
         if (event.hand != EquipmentSlot.HAND || !isHolding()) return
         if (event.player != gp?.player) return
         val targetGp = (event.rightClicked as? Player)?.getGP() ?: return
-        targetGp.player.addPotionEffect(
-            PotionEffect(
-                PotionEffectType.GLOWING,
-                10000000,
-                1,
-                false,
-                false,
-                true
-            )
-        )
+        targetGp.addEffectFlag(GamePlayerEffectFlag.TRACKED, this)
         trackJob = GlobalScope.launch {
             delay((Config.trackerDuration * 1000).toLong())
             Game.plugin.inMainThread {
-                targetGp.player.removePotionEffect(PotionEffectType.GLOWING)
+                targetGp.removeEffectFlag(GamePlayerEffectFlag.TRACKED, this@Tracker)
             }
         }
         Game.addListener(GameEvent.ON_END) {

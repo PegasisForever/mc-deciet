@@ -69,7 +69,7 @@ class GamePlayer(
     var hologramVoteLine: TextLine? = null // used to show vote count when dying
     var gameItems = Array<GameItem?>(9) { null }
     private var votedGp: HashSet<GamePlayer> = hashSetOf()
-//    private val effectFlags = hashSetOf<Pair<Any, GamePlayerEffectFlag>>()
+    private val effectFlags = hashSetOf<Pair<Any, GamePlayerEffectFlag>>()
     fun vote(gp: GamePlayer) {
         if (state != VOTING || gp in votedGp) return
         votedGp.add(gp)
@@ -91,7 +91,7 @@ class GamePlayer(
             if (field == TRANSFORMED && newValue == NORMAL) {
                 countDownJob!!.cancel()
                 countDownJob = null
-                player.removeAllEffect()
+                removeEffectFlag(GamePlayerEffectFlag.TRANSFORMED,this)
                 GlobalScope.launch {
                     plugin.changeSkin(player, Config.originalSkinOverride[player.name] ?: player.name)
                     plugin.inMainThread {
@@ -107,7 +107,7 @@ class GamePlayer(
                         clearBloodLevel()
 
                         player.inventory.heldItemSlot = 8
-                        player.addInfectedEffect()
+                        addEffectFlag(GamePlayerEffectFlag.TRANSFORMED,this@GamePlayer)
                     }
 
                     // wait
@@ -270,24 +270,7 @@ class GamePlayer(
         delay(200)
     }
 
-    private fun Player.addInfectedEffect() {
-        addPotionEffect(
-            PotionEffect(
-                PotionEffectType.SPEED,
-                10000000,
-                1,
-                false,
-                false,
-                false
-            )
-        )
-    }
-
     fun distanceSquared(other: GamePlayer) = player.location.distanceSquared(other.player.location)
-
-    private fun Player.removeAllEffect() {
-        activePotionEffects.forEach { removePotionEffect(it.type) }
-    }
 
     fun addGameItem(item: GameItem) {
         val index = gameItems.indexOfFirst { it == null }
@@ -356,16 +339,18 @@ class GamePlayer(
         }
     }
 
-//    private fun applyEffectFlag() {
-//        effectFlags.forEach { (_, flag) ->
-//
-//        }
-//    }
-//
-//    fun addEffectFlag(flag: GamePlayerEffectFlag, adder: Any) {
-//        if (!effectFlags.any { (_, oldFlag) -> oldFlag == flag }) {
-//            flag.applyTo(player)
-//        }
-//        effectFlags.add(adder to flag)
-//    }
+    fun addEffectFlag(flag: GamePlayerEffectFlag, adder: Any) {
+        if (!effectFlags.any { (_, oldFlag) -> oldFlag == flag }) {
+            flag.applyTo(player)
+        }
+        effectFlags.add(adder to flag)
+    }
+
+    fun removeEffectFlag(flag: GamePlayerEffectFlag, adder: Any) {
+        if (effectFlags.remove(adder to flag) &&
+            !effectFlags.any { (_, oldFlag) -> oldFlag == flag }
+        ) {
+            flag.removeFrom(player)
+        }
+    }
 }

@@ -71,7 +71,7 @@ object Config {
     val torchMaterial = Material.LEVER
     val torchDistance = 10.0
     val torchBrightness = 15
-    val torchAngle = 30
+    val torchAngle = 40
     val cameraDistance = 10.0
     val cameraBrightness = 15
     val cameraDuration = 0.2

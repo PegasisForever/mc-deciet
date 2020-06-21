@@ -43,7 +43,7 @@ object GamePlayerManager{
                 gp.addGameItem(Crossbow())
                 gp.addGameItem(Arrow(4))
                 gp.addGameItem(LethalInjection())
-                gp.addGameItem(Antidote())
+                gp.addGameItem(Tracker())
                 gp.addGameItem(Torch(64))
                 gp.addGameItem(Torch(64))
                 gps[player] = gp
