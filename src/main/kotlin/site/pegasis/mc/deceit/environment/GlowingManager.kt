@@ -6,7 +6,7 @@ import com.comphenix.protocol.events.PacketAdapter
 import com.comphenix.protocol.events.PacketEvent
 import org.bukkit.entity.Entity
 import org.bukkit.plugin.java.JavaPlugin
-import site.pegasis.mc.deceit.getGP
+import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
 import kotlin.experimental.or
 
 object GlowingManager {

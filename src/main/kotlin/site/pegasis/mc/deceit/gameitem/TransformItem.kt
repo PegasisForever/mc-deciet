@@ -6,6 +6,8 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.player.GamePlayer
+import site.pegasis.mc.deceit.player.PlayerState
 
 class TransformItem(private val isInfected: Boolean) : GameItem(
     ItemStack(Config.transformMaterial).apply {

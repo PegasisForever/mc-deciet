@@ -1,14 +1,16 @@
-package site.pegasis.mc.deceit
+package site.pegasis.mc.deceit.player
 
 import com.gmail.filoghost.holographicdisplays.api.Hologram
 import com.gmail.filoghost.holographicdisplays.api.HologramsAPI
 import com.gmail.filoghost.holographicdisplays.api.line.TextLine
 import kotlinx.coroutines.*
-import org.bukkit.*
+import org.bukkit.ChatColor
+import org.bukkit.GameMode
+import org.bukkit.Location
+import org.bukkit.Material
 import org.bukkit.attribute.Attribute
 import org.bukkit.block.Block
 import org.bukkit.entity.*
-import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
@@ -16,21 +18,16 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scoreboard.DisplaySlot
 import org.bukkit.scoreboard.Objective
-import site.pegasis.mc.deceit.PlayerState.*
-import site.pegasis.mc.deceit.gameitem.*
-import site.pegasis.mc.deceit.gameitem.Arrow
+import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.gameitem.Antidote
+import site.pegasis.mc.deceit.gameitem.Fuse
+import site.pegasis.mc.deceit.gameitem.GameItem
+import site.pegasis.mc.deceit.player.GamePlayerManager.getRequiredVotes
+import site.pegasis.mc.deceit.player.GamePlayerManager.gps
+import site.pegasis.mc.deceit.player.PlayerState.*
 import kotlin.random.Random
 
-enum class PlayerState {
-    NORMAL,
-    TRANSFORMED,
-    VOTING,
-    DYING,
-    DEAD,
-    REMOVED
-}
-
-data class GamePlayer(
+class GamePlayer(
     val player: Player,
     val isInfected: Boolean
 ) : Listener {
@@ -72,6 +69,7 @@ data class GamePlayer(
     var hologramVoteLine: TextLine? = null // used to show vote count when dying
     var gameItems = Array<GameItem?>(9) { null }
     private var votedGp: HashSet<GamePlayer> = hashSetOf()
+//    private val effectFlags = hashSetOf<Pair<Any, GamePlayerEffectFlag>>()
     fun vote(gp: GamePlayer) {
         if (state != VOTING || gp in votedGp) return
         votedGp.add(gp)
@@ -319,7 +317,7 @@ data class GamePlayer(
         }
     }
 
-    private fun updateScoreBoard() {
+    fun updateScoreBoard() {
         val obj = objective
         val board = obj.scoreboard!!
         obj.displayName = when (Game.state) {
@@ -358,86 +356,16 @@ data class GamePlayer(
         }
     }
 
-    companion object {
-        val gps = hashMapOf<Player, GamePlayer>()
-
-        suspend fun preStart(plugin: JavaPlugin) {
-            if (!debug) {
-                repeat(5) { i ->
-                    plugin.inMainThread {
-                        Bukkit.getOnlinePlayers().forEach { player ->
-                            player.sendTitle((5 - i).toString(), "", 0, 20, 0)
-                        }
-                    }
-                    delay(1000)
-                }
-            }
-        }
-
-        fun hook() {
-            Game.addListener(GameEvent.ON_START) {
-                val randomInfectedList = listOf(true, true, false, false, false, false).shuffled()
-                Bukkit.getOnlinePlayers().take(6).forEachIndexed { i, player ->
-                    val gp = if (debug) {
-                        GamePlayer(player, true)
-                    } else {
-                        GamePlayer(player, randomInfectedList[i])
-                    }
-                    if (!debug) {
-                        player.gameMode = GameMode.ADVENTURE
-                    }
-                    gp.resetItemAndState()
-                    gp.addGameItem(TransformItem(gp.isInfected))
-                    gp.addGameItem(Crossbow())
-                    gp.addGameItem(Arrow(4))
-                    gp.addGameItem(LethalInjection())
-                    gp.addGameItem(Antidote())
-                    gps[player] = gp
-                    if (!debug) {
-                        val spawn = Game.level.spawnPoses.random()
-                        player.teleport(player.location.apply { x = spawn.x; y = spawn.y; z = spawn.z })
-                    }
-                    server.pluginManager.registerEvents(gp, Game.plugin)
-                    player.sendTitle(
-                        if (gp.isInfected) ChatColor.RED.toString() + "Infected" else "Innocent",
-                        "",
-                        10,
-                        60,
-                        10
-                    )
-
-                    Game.addListener(GameEvent.ON_SECOND) {
-                        gp.updateScoreBoard()
-                        if (gp.canTransform()) {
-                            player.inventory.contents[0]?.enchant()
-                        } else {
-                            player.inventory.contents[0]?.removeEnchant()
-                        }
-                    }
-                    Game.addListener(GameEvent.ON_END) {
-                        HandlerList.unregisterAll(gp)
-                        if (gp.torchLightBlock != null) {
-                            gp.torchLightBlock!!.deleteLight()
-                            gp.torchLightBlock = null
-                            updateLight(gp.player.location)
-                        }
-                        gp.resetItemAndState()
-                        gp.updateScoreBoard()
-                        gp.state = NORMAL
-                        gp.resetItemAndState()
-                    }
-                }
-            }
-
-            Game.addListener(GameEvent.ON_END) {
-                gps.clear()
-            }
-        }
-
-        fun livingPlayers() = gps.values.filter { it.state != DEAD }
-
-        fun getRequiredVotes() = (livingPlayers().size - 1) / 2 + 1
-    }
+//    private fun applyEffectFlag() {
+//        effectFlags.forEach { (_, flag) ->
+//
+//        }
+//    }
+//
+//    fun addEffectFlag(flag: GamePlayerEffectFlag, adder: Any) {
+//        if (!effectFlags.any { (_, oldFlag) -> oldFlag == flag }) {
+//            flag.applyTo(player)
+//        }
+//        effectFlags.add(adder to flag)
+//    }
 }
-
-fun Player.getGP() = GamePlayer.gps[player]

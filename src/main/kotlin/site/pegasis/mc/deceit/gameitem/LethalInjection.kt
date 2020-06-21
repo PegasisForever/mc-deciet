@@ -7,8 +7,8 @@ import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.Config
-import site.pegasis.mc.deceit.PlayerState
-import site.pegasis.mc.deceit.getGP
+import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
+import site.pegasis.mc.deceit.player.PlayerState
 import site.pegasis.mc.deceit.rename
 
 class LethalInjection : GameItem(

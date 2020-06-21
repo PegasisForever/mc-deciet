@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
 import site.pegasis.mc.deceit.gameitem.GameItemType.ARMOR
 import site.pegasis.mc.deceit.gameitem.GameItemType.HEALTH_PACK
+import site.pegasis.mc.deceit.player.GamePlayer
 import kotlin.random.Random
 
 enum class GameItemType {

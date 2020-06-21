@@ -9,6 +9,7 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
 import site.pegasis.mc.deceit.objective.fuse.FuseSocketManager
+import site.pegasis.mc.deceit.player.GamePlayer
 
 class Fuse : GameItem(
     ItemStack(Config.fuseMaterial).apply {

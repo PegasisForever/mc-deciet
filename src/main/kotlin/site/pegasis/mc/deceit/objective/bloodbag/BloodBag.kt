@@ -16,6 +16,8 @@ import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.player.GamePlayer
+import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
 
 class BloodBag(private val itemFrame: ItemFrame, var refillJob: Job? = null) :
     Listener {

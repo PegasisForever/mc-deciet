@@ -14,6 +14,9 @@ import org.bukkit.inventory.EquipmentSlot
 import site.pegasis.mc.deceit.*
 import site.pegasis.mc.deceit.gameitem.GameItem
 import site.pegasis.mc.deceit.objective.ObjectiveC.State.*
+import site.pegasis.mc.deceit.player.GamePlayer
+import site.pegasis.mc.deceit.player.PlayerState
+import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
 
 class ObjectiveC(
     pos: BlockPos,

@@ -25,6 +25,8 @@ import site.pegasis.mc.deceit.objective.ObjectiveManager
 import site.pegasis.mc.deceit.objective.bloodbag.BloodBagManager
 import site.pegasis.mc.deceit.objective.fuse.FuseManager
 import site.pegasis.mc.deceit.objective.fuse.FuseSocketManager
+import site.pegasis.mc.deceit.player.GamePlayer
+import site.pegasis.mc.deceit.player.GamePlayerManager
 import site.pegasis.mc.deceit.rules.*
 
 var debug = true
@@ -199,14 +201,14 @@ open class Main : JavaPlugin(), Listener {
     }
 
     private suspend fun startGame() {
-        GamePlayer.preStart(this)
+        GamePlayerManager.preStart(this)
 
         ObjectiveManager.hook()
         DoorManager.hook()
         FuseSocketManager.hook()
         FallingBlockManager.hook()
         FuseManager.hook()
-        GamePlayer.hook()
+        GamePlayerManager.hook()
         BloodBagManager.hook()
         LightManager.hook()
 

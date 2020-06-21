@@ -17,6 +17,8 @@ import org.bukkit.inventory.EquipmentSlot
 import site.pegasis.mc.deceit.*
 import site.pegasis.mc.deceit.gameitem.GameItem
 import site.pegasis.mc.deceit.objective.ObjectiveB.State.*
+import site.pegasis.mc.deceit.player.GamePlayer
+import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
 
 class ObjectiveB(
     val pos: BlockPos,

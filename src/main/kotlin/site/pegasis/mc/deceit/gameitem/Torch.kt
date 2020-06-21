@@ -1,6 +1,7 @@
 package site.pegasis.mc.deceit.gameitem
 
 import kotlinx.coroutines.*
+import org.bukkit.Location
 import org.bukkit.block.Block
 import org.bukkit.event.EventHandler
 import org.bukkit.event.player.PlayerInteractEvent
@@ -8,11 +9,15 @@ import org.bukkit.event.player.PlayerItemHeldEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
 import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.player.PlayerState
+import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
 
-class Torch : GameItem(
+class Torch(amount: Int = if (debug) 10 else 64) : GameItem(
     ItemStack(Config.torchMaterial).apply {
-        amount = if (debug) 10 else 64
+        this.amount = amount
         rename("Torch")
     }
 ) {
@@ -80,6 +85,17 @@ class Torch : GameItem(
         }
     }
 
+    fun inLightRange(target: Location): Boolean {
+        val playerVector = gp!!.player.eyeLocation.toVector()
+        val playerLookVector = gp!!.player.location.direction
+        val targetVector = target.toVector()
+
+        val targetInPlayersEyeVector = targetVector.clone().subtract(playerVector)
+        val degree = playerLookVector.angle(targetInPlayersEyeVector).toDegree()
+
+        return degree < Config.torchAngle / 2 && targetInPlayersEyeVector.length() < Config.torchDistance
+    }
+
     @EventHandler
     fun onInteract(event: PlayerInteractEvent) {
         if (event.player != gp?.player ||
@@ -104,7 +120,21 @@ class Torch : GameItem(
 
     @EventHandler
     fun onMove(event: PlayerMoveEvent) {
-        if (event.player != gp?.player || state != State.ON) return
-        torchUpdate()
+        if (state != State.ON) return
+        if (event.player == gp?.player) {
+            torchUpdate()
+        } else if (event.player.getGP()?.state == PlayerState.TRANSFORMED) {
+            event.player.addPotionEffect(
+                PotionEffect(
+                    PotionEffectType.SLOW,
+                    1000000,
+                    2,
+                    false,
+                    false,
+                    false
+                )
+            )
+        }
+
     }
 }

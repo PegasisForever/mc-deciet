@@ -9,6 +9,8 @@ import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.EntityRegainHealthEvent
 import org.bukkit.plugin.java.JavaPlugin
 import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
+import site.pegasis.mc.deceit.player.PlayerState
 
 class CombatListener(val plugin: JavaPlugin) : Listener {
     @EventHandler

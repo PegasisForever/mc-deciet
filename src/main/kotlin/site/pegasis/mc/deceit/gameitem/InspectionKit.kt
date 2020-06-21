@@ -10,6 +10,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
 
 class InspectionKit : GameItem(
     ItemStack(Config.inspectionKitMaterial).apply {

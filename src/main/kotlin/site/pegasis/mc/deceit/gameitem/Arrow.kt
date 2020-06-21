@@ -2,7 +2,7 @@ package site.pegasis.mc.deceit.gameitem
 
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
-import site.pegasis.mc.deceit.GamePlayer
+import site.pegasis.mc.deceit.player.GamePlayer
 import site.pegasis.mc.deceit.rename
 
 class Arrow(amount: Int) : GameItem(

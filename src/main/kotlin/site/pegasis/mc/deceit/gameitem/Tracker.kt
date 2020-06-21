@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
 
 class Tracker : GameItem(
     ItemStack(Config.trackerMaterial).apply {

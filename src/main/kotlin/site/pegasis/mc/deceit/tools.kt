@@ -16,6 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scoreboard.Team
 import org.bukkit.util.RayTraceResult
+import org.bukkit.util.Vector
 import ru.beykerykt.lightapi.LightAPI
 import ru.beykerykt.lightapi.LightType
 import java.util.logging.Level
@@ -114,7 +115,7 @@ fun Block.deleteLight() {
 }
 
 fun Player.rayTraceEndBlock(distance: Double): Block {
-    val tracedLocation = location.direction.clone()
+    val tracedLocation = eyeLocation.direction.clone()
         .normalize()
         .multiply(distance)
     return world.getBlockAt(location.clone().add(tracedLocation).add(0.0, 1.8, 0.0))
@@ -150,3 +151,5 @@ fun ItemStack.rename(name: String) {
     meta.addItemFlags(*ItemFlag.values())
     setItemMeta(meta)
 }
+
+fun Float.toDegree()=this*57.2958f

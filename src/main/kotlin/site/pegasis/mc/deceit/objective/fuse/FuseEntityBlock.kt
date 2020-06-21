@@ -11,7 +11,7 @@ import site.pegasis.mc.deceit.GameState
 import site.pegasis.mc.deceit.Main
 import site.pegasis.mc.deceit.environment.ConsistentFallingBlock
 import site.pegasis.mc.deceit.gameitem.Fuse
-import site.pegasis.mc.deceit.getGP
+import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
 
 class FuseEntityBlock(val block: Block, val fallingBlock: ConsistentFallingBlock) :
     Listener {
