@@ -16,7 +16,7 @@ import site.pegasis.mc.deceit.gameitem.GameItem
 import site.pegasis.mc.deceit.objective.ObjectiveC.State.*
 import site.pegasis.mc.deceit.player.GamePlayer
 import site.pegasis.mc.deceit.player.PlayerState
-import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
+import site.pegasis.mc.deceit.player.GamePlayerManager.gp
 
 class ObjectiveC(
     pos: BlockPos,
@@ -153,7 +153,7 @@ class ObjectiveC(
     @EventHandler
     fun onPlayerMove(event: PlayerMoveEvent) {
         if (state != OPENED && state != CLOSED) return
-        val gp = event.player.getGP() ?: return
+        val gp = event.player.gp ?: return
         if (gp.state == PlayerState.DEAD) return
         if (event.player.location.isInPressurePlate()) {
             if (gp !in insidePlayers) {
@@ -176,7 +176,7 @@ class ObjectiveC(
         if (state != OPENED) return
         if (!Game.started) return
         val player = event.player
-        val gp = player.getGP() ?: return
+        val gp = player.gp ?: return
         if (gp in insidePlayers) return
 
         event.cancel()

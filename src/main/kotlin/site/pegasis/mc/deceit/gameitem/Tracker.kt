@@ -9,11 +9,9 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
-import org.bukkit.potion.PotionEffect
-import org.bukkit.potion.PotionEffectType
 import site.pegasis.mc.deceit.*
 import site.pegasis.mc.deceit.player.GamePlayerEffectFlag
-import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
+import site.pegasis.mc.deceit.player.GamePlayerManager.gp
 
 class Tracker : GameItem(
     ItemStack(Config.trackerMaterial).apply {
@@ -26,7 +24,7 @@ class Tracker : GameItem(
     fun onInteractEntity(event: PlayerInteractEntityEvent) {
         if (event.hand != EquipmentSlot.HAND || !isHolding()) return
         if (event.player != gp?.player) return
-        val targetGp = (event.rightClicked as? Player)?.getGP() ?: return
+        val targetGp = (event.rightClicked as? Player)?.gp ?: return
         targetGp.addEffectFlag(GamePlayerEffectFlag.TRACKED, this)
         trackJob = GlobalScope.launch {
             delay((Config.trackerDuration * 1000).toLong())

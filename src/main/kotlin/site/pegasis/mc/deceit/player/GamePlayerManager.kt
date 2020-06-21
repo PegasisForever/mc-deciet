@@ -43,9 +43,12 @@ object GamePlayerManager {
         }
     }
 
-    fun livingPlayers() = gps.values.filter { it.state != PlayerState.DEAD }
+    val requiredVotes: Int
+        get() = (livingPlayers.size - 1) / 2 + 1
 
-    fun getRequiredVotes() = (livingPlayers().size - 1) / 2 + 1
+    val livingPlayers: List<GamePlayer>
+        get() = gps.values.filter { it.state != PlayerState.DEAD }
 
-    fun Player.getGP() = gps[player]
+    val Player.gp: GamePlayer?
+        get() = gps[this]
 }

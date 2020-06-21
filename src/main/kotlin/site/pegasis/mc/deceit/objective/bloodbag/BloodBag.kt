@@ -17,7 +17,7 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
 import site.pegasis.mc.deceit.player.GamePlayer
-import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
+import site.pegasis.mc.deceit.player.GamePlayerManager.gp
 
 class BloodBag(private val itemFrame: ItemFrame, var refillJob: Job? = null) :
     Listener {
@@ -36,7 +36,7 @@ class BloodBag(private val itemFrame: ItemFrame, var refillJob: Job? = null) :
         if (event.rightClicked != itemFrame) return
         val player = event.player
         if (!Game.started || player.gameMode == GameMode.CREATIVE) return
-        val gp = player.getGP() ?: return
+        val gp = player.gp ?: return
 
         event.cancel()
 

@@ -6,7 +6,7 @@ import com.comphenix.protocol.events.PacketAdapter
 import com.comphenix.protocol.events.PacketEvent
 import org.bukkit.entity.Entity
 import org.bukkit.plugin.java.JavaPlugin
-import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
+import site.pegasis.mc.deceit.player.GamePlayerManager.gp
 import kotlin.experimental.or
 
 object GlowingManager {
@@ -24,7 +24,7 @@ object GlowingManager {
                 if (entityID in globalGlowingID) {
                     event.makeEntityGlow()
                 } else {
-                    val gp = event.player.getGP() ?: return
+                    val gp = event.player.gp ?: return
                     val set = gp.glowingEntityIDs
                     if (entityID in set) {
                         event.makeEntityGlow()

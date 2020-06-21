@@ -7,7 +7,7 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.Config
 import site.pegasis.mc.deceit.player.PlayerState
-import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
+import site.pegasis.mc.deceit.player.GamePlayerManager.gp
 import site.pegasis.mc.deceit.rename
 
 class Antidote:GameItem(
@@ -19,7 +19,7 @@ class Antidote:GameItem(
     fun onInteractEntity(event: PlayerInteractEntityEvent) {
         if (event.hand != EquipmentSlot.HAND || !isHolding()) return
         if (event.player != gp?.player) return
-        val targetGp = (event.rightClicked as? Player)?.getGP() ?: return
+        val targetGp = (event.rightClicked as? Player)?.gp ?: return
         if (targetGp.state != PlayerState.DYING) return
 
         targetGp.state = PlayerState.NORMAL

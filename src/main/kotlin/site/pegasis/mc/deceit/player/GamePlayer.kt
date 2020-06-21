@@ -20,8 +20,8 @@ import org.bukkit.scoreboard.Objective
 import site.pegasis.mc.deceit.*
 import site.pegasis.mc.deceit.gameitem.*
 import site.pegasis.mc.deceit.gameitem.Arrow
-import site.pegasis.mc.deceit.player.GamePlayerManager.getRequiredVotes
 import site.pegasis.mc.deceit.player.GamePlayerManager.gps
+import site.pegasis.mc.deceit.player.GamePlayerManager.requiredVotes
 import site.pegasis.mc.deceit.player.PlayerState.*
 import kotlin.random.Random
 
@@ -115,7 +115,7 @@ class GamePlayer(
                     playerSitPos.clone().add(0.0, Config.votingTextHeight, 0.0)
                 ).apply {
                     appendTextLine("Voting")
-                    hologramVoteLine = appendTextLine(ChatColor.GRAY.toString() + "⬛".repeat(getRequiredVotes()))
+                    hologramVoteLine = appendTextLine(ChatColor.GRAY.toString() + "⬛".repeat(requiredVotes))
                 }
 
                 // sit
@@ -335,8 +335,8 @@ class GamePlayer(
         hologramVoteLine?.text = ChatColor.GREEN.toString() +
                 "⬛".repeat(votedGp.size) +
                 ChatColor.GRAY.toString() +
-                "⬛".repeat(getRequiredVotes() - votedGp.size)
-        if (votedGp.size >= getRequiredVotes()) {
+                "⬛".repeat(requiredVotes - votedGp.size)
+        if (votedGp.size >= requiredVotes) {
             state = DEAD
         }
     }

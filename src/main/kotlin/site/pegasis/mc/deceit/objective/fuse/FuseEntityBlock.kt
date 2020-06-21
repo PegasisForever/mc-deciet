@@ -11,7 +11,7 @@ import site.pegasis.mc.deceit.GameState
 import site.pegasis.mc.deceit.Main
 import site.pegasis.mc.deceit.environment.ConsistentFallingBlock
 import site.pegasis.mc.deceit.gameitem.Fuse
-import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
+import site.pegasis.mc.deceit.player.GamePlayerManager.gp
 
 class FuseEntityBlock(val block: Block, val fallingBlock: ConsistentFallingBlock) :
     Listener {
@@ -38,7 +38,7 @@ class FuseEntityBlock(val block: Block, val fallingBlock: ConsistentFallingBlock
         if (event.hand != EquipmentSlot.HAND) return
         if (Game.state != GameState.DARK && Game.state != GameState.RAGE) return
         val player = event.player
-        val gp = player.getGP() ?: return
+        val gp = player.gp ?: return
 
         if (event.rightClicked == fallingBlock.block && !gp.hasFuse) {
             taken = true

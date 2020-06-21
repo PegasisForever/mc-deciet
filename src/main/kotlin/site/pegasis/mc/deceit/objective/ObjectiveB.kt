@@ -18,7 +18,7 @@ import site.pegasis.mc.deceit.*
 import site.pegasis.mc.deceit.gameitem.GameItem
 import site.pegasis.mc.deceit.objective.ObjectiveB.State.*
 import site.pegasis.mc.deceit.player.GamePlayer
-import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
+import site.pegasis.mc.deceit.player.GamePlayerManager.gp
 
 class ObjectiveB(
     val pos: BlockPos,
@@ -196,7 +196,7 @@ class ObjectiveB(
                 event.cancel()
             }
         } else if (state == ACTIVATED && clickedBlock == button) {
-            val gp = event.player.getGP() ?: return
+            val gp = event.player.gp ?: return
             plusLevel(gp)
         }
     }
@@ -205,7 +205,7 @@ class ObjectiveB(
     fun onArrowLand(event: EntityInteractEvent) {
         button ?: return
         if (state == ACTIVATED && event.block == button) {
-            val gp = (((event.entity as? Arrow)?.shooter) as? Player)?.getGP() ?: return
+            val gp = (((event.entity as? Arrow)?.shooter) as? Player)?.gp ?: return
             plusLevel(gp)
         }
     }

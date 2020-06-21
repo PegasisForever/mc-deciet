@@ -14,7 +14,7 @@ import site.pegasis.mc.deceit.gameitem.GameItem
 import site.pegasis.mc.deceit.objective.ObjectiveA.State.*
 import site.pegasis.mc.deceit.player.GamePlayer
 import site.pegasis.mc.deceit.player.PlayerState
-import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
+import site.pegasis.mc.deceit.player.GamePlayerManager.gp
 import kotlin.math.pow
 
 class ObjectiveA(
@@ -158,7 +158,7 @@ class ObjectiveA(
     @EventHandler
     fun onPlayerMove(event: PlayerMoveEvent) {
         if (state != WAITING && state != PROGRESSING) return
-        val gp = event.player.getGP() ?: return
+        val gp = event.player.gp ?: return
         if (gp.state == PlayerState.DEAD) return
         if (event.player.location.isInArea()) {
             if (gp !in insidePlayers) {

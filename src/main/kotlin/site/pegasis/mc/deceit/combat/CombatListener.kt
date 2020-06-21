@@ -9,7 +9,7 @@ import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.EntityRegainHealthEvent
 import org.bukkit.plugin.java.JavaPlugin
 import site.pegasis.mc.deceit.*
-import site.pegasis.mc.deceit.player.GamePlayerManager.getGP
+import site.pegasis.mc.deceit.player.GamePlayerManager.gp
 import site.pegasis.mc.deceit.player.PlayerState
 
 class CombatListener(val plugin: JavaPlugin) : Listener {
@@ -21,8 +21,8 @@ class CombatListener(val plugin: JavaPlugin) : Listener {
             (((event.damager as? Arrow)?.shooter) as? Player)
         } else {
             event.damager as? Player
-        }?.getGP() ?: return
-        val attacked = (event.entity as? Player)?.getGP() ?: return
+        }?.gp ?: return
+        val attacked = (event.entity as? Player)?.gp ?: return
 
         if (!isShoot && attacker.distanceSquared(attacked) > Config.knifeDistance * Config.knifeDistance) {
             event.cancel()
