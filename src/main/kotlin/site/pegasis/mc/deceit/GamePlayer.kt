@@ -380,7 +380,7 @@ data class GamePlayer(
                     gp.addGameItem(TransformItem(gp.isInfected))
                     gp.addGameItem(Crossbow())
                     gp.addGameItem(Arrow(4))
-                    gp.addGameItem(Tracker())
+                    gp.addGameItem(InspectionKit())
                     gps[player] = gp
                     if (!debug) {
                         val spawn = Game.level.spawnPoses.random()
