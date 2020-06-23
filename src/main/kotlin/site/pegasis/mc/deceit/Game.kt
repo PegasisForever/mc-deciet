@@ -79,6 +79,7 @@ object Game {
     }
 
     suspend fun start() {
+        dispatch(GameEvent.ON_START)
         for (levelIndex in Config.levels.indices) {
             this.levelIndex = levelIndex
             level = Config.levels[Game.levelIndex]
@@ -86,7 +87,6 @@ object Game {
             // light
             state = GameState.LIGHT
             secondToNextStage = level.lightTime
-            dispatch(GameEvent.ON_START)
             dispatch(GameEvent.ON_LEVEL_START)
             dispatch(GameEvent.ON_LIGHT)
             dispatch(GameEvent.ON_LIGHT_ON)

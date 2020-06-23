@@ -19,11 +19,11 @@ object BloodBagManager {
         Game.addListener(GameEvent.ON_LEVEL_START) {
             val world = Bukkit.getWorld(Config.worldName)!!
             val locations =
-                Game.level.bloodPackPoses.map { it.toLocation() }.shuffled()
+                Game.level.bloodBagPoses.map { it.toLocation() }.shuffled()
             val addLocations =
-                locations.take(Game.level.bloodPackPosesCount).toMutableSet()
+                locations.take(Game.level.bloodBagPosesCount).toMutableSet()
             val removeLocations =
-                locations.takeLast(locations.size - Game.level.bloodPackPosesCount)
+                locations.takeLast(locations.size - Game.level.bloodBagPosesCount)
             val itemFrames = world.getEntitiesByClass(ItemFrame::class.java).toMutableSet()
 
             removeLocations.forEach { removeLocation ->
@@ -50,7 +50,7 @@ object BloodBagManager {
 
             val world = Bukkit.getWorld(Config.worldName)!!
             val itemFrames = world.getEntitiesByClass(ItemFrame::class.java).toMutableSet()
-            Game.level.bloodPackPoses.map { it.toLocation() }
+            Game.level.bloodBagPoses.map { it.toLocation() }
                 .forEach { location ->
                     val itemFrame = itemFrames.find {
                         location.distanceSquared(it.location) < 0.3

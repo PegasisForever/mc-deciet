@@ -81,7 +81,7 @@ class Torch(amount: Int = if (debug) 10 else 64) : LightSource(
                 changeStunLevelJobs.remove(otherGp)?.cancel()
             } else {
                 if (inLightRange(otherGp.player.eyeLocation, Config.torchAngle, Config.torchDistance)) {
-                    if (otherGp.state==PlayerState.TRANSFORMED && otherGp !in changeStunLevelJobs) {
+                    if (otherGp.state == PlayerState.TRANSFORMED && otherGp !in changeStunLevelJobs) {
                         changeStunLevelJobs[otherGp] = launchStunLevelJob(otherGp, 1, 5000L, 500L)!!
                     }
                 } else {
