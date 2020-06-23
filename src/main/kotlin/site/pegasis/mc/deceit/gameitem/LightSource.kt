@@ -59,8 +59,8 @@ abstract class LightSource(itemStack: ItemStack) : GameItem(itemStack) {
     private fun facingBlock(distance: Double) =
         gp?.player?.rayTraceBlocks(distance)?.adjacentBlock() ?: gp?.player?.rayTraceEndBlock(distance)
 
-    private fun updateLight(location: Location) {
-        LightAPI.collectChunks(location, LightType.BLOCK, 15).forEach {
+    private fun updateLight(level: Int, location: Location) {
+        LightAPI.collectChunks(location, LightType.BLOCK, level).forEach {
             LightAPI.updateChunk(it, LightType.BLOCK)
         }
     }
@@ -74,15 +74,16 @@ abstract class LightSource(itemStack: ItemStack) : GameItem(itemStack) {
         LightAPI.createLight(facingBlock.location, LightType.BLOCK, level, false)
         lightBlock = facingBlock
 
-        gp?.player?.location?.let { updateLight(it) }
+        updateLight(level, lightBlock!!.location)
     }
 
-    protected fun deleteLight() {
+    protected fun deleteLight(level: Int) {
         if (lightBlock == null) return
 
-        lightBlock?.let { LightAPI.deleteLight(it.location, LightType.BLOCK, false) }
+        val blockLocation = lightBlock!!.location
+        LightAPI.deleteLight(lightBlock!!.location, LightType.BLOCK, false)
         lightBlock = null
 
-        gp?.player?.location?.let { updateLight(it) }
+        updateLight(level, blockLocation)
     }
 }

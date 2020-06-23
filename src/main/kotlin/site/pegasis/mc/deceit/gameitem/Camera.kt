@@ -36,7 +36,7 @@ class Camera(amount: Int = 6) : LightSource(
         setFacingBlockLight(Config.cameraBrightness, Config.cameraDistance)
         applyDamage()
         Game.plugin.runDelayed(Config.cameraDuration) {
-            deleteLight()
+            deleteLight(Config.cameraBrightness)
         }
 
         modifyItemStack {

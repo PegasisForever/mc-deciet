@@ -67,9 +67,9 @@ class Torch(amount: Int = if (debug) 10 else 64) : LightSource(
         if (gp == null) return
 
         if (state == State.ON) {
-            setFacingBlockLight(Config.torchBrightness,Config.torchDistance)
+            setFacingBlockLight(Config.torchBrightness, Config.torchDistance)
         } else {
-            deleteLight()
+            deleteLight(Config.torchBrightness)
         }
     }
 
