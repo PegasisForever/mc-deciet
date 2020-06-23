@@ -60,11 +60,11 @@ class GamePlayer(
                 field = value
                 return
             }
-            field = value
+            field = value.coerceAtLeast(0)
 
             player.removePotionEffect(PotionEffectType.SLOW)
             player.removePotionEffect(PotionEffectType.JUMP)
-            if (value > 0) {
+            if (value > 0 && state == TRANSFORMED) {
                 player.addPotionEffect(
                     PotionEffect(
                         PotionEffectType.JUMP,
@@ -127,6 +127,7 @@ class GamePlayer(
             if (field == TRANSFORMED && newValue == NORMAL) {
                 countDownJob!!.cancel()
                 countDownJob = null
+                stunLevel = 0
                 removeEffectFlag(GamePlayerEffectFlag.TRANSFORMED, this)
                 GlobalScope.launch {
                     plugin.changeSkin(player, Config.originalSkinOverride[player.name] ?: player.name)

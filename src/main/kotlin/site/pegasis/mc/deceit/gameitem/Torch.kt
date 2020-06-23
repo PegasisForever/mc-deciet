@@ -10,6 +10,7 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
 import site.pegasis.mc.deceit.player.GamePlayerManager
+import site.pegasis.mc.deceit.player.PlayerState
 
 class Torch(amount: Int = if (debug) 10 else 64) : LightSource(
     ItemStack(Config.torchMaterial).apply {
@@ -80,8 +81,8 @@ class Torch(amount: Int = if (debug) 10 else 64) : LightSource(
                 changeStunLevelJobs.remove(otherGp)?.cancel()
             } else {
                 if (inLightRange(otherGp.player.eyeLocation, Config.torchAngle, Config.torchDistance)) {
-                    if (otherGp !in changeStunLevelJobs) {
-                        changeStunLevelJobs[otherGp] = launchStunLevelJob(otherGp, 1, 5000L, 500L)
+                    if (otherGp.state==PlayerState.TRANSFORMED && otherGp !in changeStunLevelJobs) {
+                        changeStunLevelJobs[otherGp] = launchStunLevelJob(otherGp, 1, 5000L, 500L)!!
                     }
                 } else {
                     changeStunLevelJobs.remove(otherGp)?.cancel()

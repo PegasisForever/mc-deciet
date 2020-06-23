@@ -9,6 +9,7 @@ import ru.beykerykt.lightapi.LightAPI
 import ru.beykerykt.lightapi.LightType
 import site.pegasis.mc.deceit.*
 import site.pegasis.mc.deceit.player.GamePlayer
+import site.pegasis.mc.deceit.player.PlayerState
 import kotlin.math.pow
 
 abstract class LightSource(itemStack: ItemStack) : GameItem(itemStack) {
@@ -28,21 +29,26 @@ abstract class LightSource(itemStack: ItemStack) : GameItem(itemStack) {
         level: Int,
         restoreDuration: Long,
         repeatDuration: Long? = null
-    ) =
-        GlobalScope.launch {
-            while (isActive) {
-                GlobalScope.launch {
-                    Game.plugin.inMainThread { otherGp.stunLevel += level }
-                    delay(restoreDuration)
-                    Game.plugin.inMainThread { otherGp.stunLevel -= level }
-                }
-                if (repeatDuration != null) {
-                    delay(repeatDuration)
-                } else {
-                    break
+    ): Job? {
+        return if (otherGp.state != PlayerState.TRANSFORMED) {
+            null
+        } else {
+            GlobalScope.launch {
+                while (isActive) {
+                    GlobalScope.launch {
+                        Game.plugin.inMainThread { otherGp.stunLevel += level }
+                        delay(restoreDuration)
+                        Game.plugin.inMainThread { otherGp.stunLevel -= level }
+                    }
+                    if (repeatDuration != null) {
+                        delay(repeatDuration)
+                    } else {
+                        break
+                    }
                 }
             }
         }
+    }
 
     // use eye location
     protected fun inLightRange(target: Location, angle: Double, distance: Double): Boolean {
