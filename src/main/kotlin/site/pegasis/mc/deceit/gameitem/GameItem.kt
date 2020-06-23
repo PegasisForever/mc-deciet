@@ -40,6 +40,7 @@ abstract class GameItem(
     fun isHolding(slot: Int? = slotIndex) = slot != null && gp!!.player.inventory.heldItemSlot == slot
 
     open fun onAttach(gp: GamePlayer, index: Int) {
+        if (this.gp != null) return
         slotIndex = index
         this.gp = gp
         setItemStack(itemStack)
@@ -47,6 +48,7 @@ abstract class GameItem(
     }
 
     open fun onDetach() {
+        if (gp == null) return
         HandlerList.unregisterAll(this)
         setItemStack(null)
         gp = null
