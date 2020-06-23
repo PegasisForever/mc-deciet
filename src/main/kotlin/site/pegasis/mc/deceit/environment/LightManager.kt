@@ -53,6 +53,42 @@ object LightManager {
         }
     }
 
+    private fun replace(block: Block) {
+        if (block.type == Material.TORCH) {
+            if (Random.nextInt(10) <= 6) {
+                block.setType(Material.REDSTONE_TORCH)
+            } else {
+                block.setType(Material.AIR)
+            }
+            torchBlocks.add(block)
+        } else if (block.type.toString().startsWith("POTTED")) {
+            potBlocks += (block to block.type)
+            if (Random.nextBoolean()) {
+                block.setType(Material.POTTED_DEAD_BUSH)
+            } else {
+                block.setType(Material.POTTED_WITHER_ROSE)
+            }
+        } else if (block.type == Material.LANTERN) {
+            lanternBlocks += (block to (block.blockData as Lantern).isHanging)
+            block.setType(Material.AIR)
+        } else if (block.type == Material.JACK_O_LANTERN) {
+            val facing = (block.blockData as Directional).facing
+            pumpkinBlocks += (block to facing)
+            block.setType(Material.CARVED_PUMPKIN)
+            block.setBlockData((block.blockData as Directional).apply { setFacing(facing) })
+        } else if (block.type.toString().endsWith("BANNER")) {
+            val banner = block.state as Banner
+            for ((from, to) in Config.bannerStates) {
+                if (from.isMatch(banner)) {
+                    bannerBlocks += (block to from)
+                    banner.applyState(to)
+                    banner.update()
+                    break
+                }
+            }
+        }
+    }
+
     // fixme some torch wont off
     fun lightOff(full: Boolean = false) {
         if (!lightOn) return
@@ -63,50 +99,14 @@ object LightManager {
         lanternBlocks.clear()
         pumpkinBlocks.clear()
 
-        val replaceAction: (Block) -> Unit = { block: Block ->
-            if (block.type == Material.TORCH) {
-                if (Random.nextInt(10) <= 6) {
-                    block.setType(Material.REDSTONE_TORCH)
-                } else {
-                    block.setType(Material.AIR)
-                }
-                torchBlocks.add(block)
-            } else if (block.type.toString().startsWith("POTTED")) {
-                potBlocks += (block to block.type)
-                if (Random.nextBoolean()) {
-                    block.setType(Material.POTTED_DEAD_BUSH)
-                } else {
-                    block.setType(Material.POTTED_WITHER_ROSE)
-                }
-            } else if (block.type == Material.LANTERN) {
-                lanternBlocks += (block to (block.blockData as Lantern).isHanging)
-                block.setType(Material.AIR)
-            } else if (block.type == Material.JACK_O_LANTERN) {
-                val facing = (block.blockData as Directional).facing
-                pumpkinBlocks += (block to facing)
-                block.setType(Material.CARVED_PUMPKIN)
-                block.setBlockData((block.blockData as Directional).apply { setFacing(facing) })
-            } else if (block.type.toString().endsWith("BANNER")) {
-                val banner = block.state as Banner
-                for ((from, to) in Config.bannerStates) {
-                    if (from.isMatch(banner)) {
-                        bannerBlocks += (block to from)
-                        banner.applyState(to)
-                        banner.update()
-                        break
-                    }
-                }
-            }
-        }
-
         val world = Bukkit.getWorld(Config.worldName)!!
         if (full) {
             world.loadedChunks.forEach { chunk ->
-                chunk.forEachBlock(replaceAction)
+                chunk.forEachBlock(this::replace)
             }
         } else {
             Config.lightSources.forEach { pos ->
-                replaceAction(world.getBlockAt(pos))
+                replace(world.getBlockAt(pos))
             }
         }
 
