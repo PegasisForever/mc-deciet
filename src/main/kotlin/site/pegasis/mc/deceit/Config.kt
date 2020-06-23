@@ -1,10 +1,28 @@
 package site.pegasis.mc.deceit
 
+import org.bukkit.DyeColor
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.World
+import org.bukkit.block.Banner
 import org.bukkit.block.Block
+import org.bukkit.block.banner.Pattern
+import org.bukkit.block.banner.PatternType
 import org.bukkit.entity.Entity
+
+data class BannerState(val baseColor: DyeColor, val patterns: List<Pattern>) {
+    fun isMatch(banner: Banner): Boolean {
+        if (banner.baseColor != baseColor) return false
+        return listsEqual(banner.patterns, patterns)
+    }
+
+    companion object {
+        fun Banner.applyState(bannerState: BannerState) {
+            baseColor = bannerState.baseColor
+            patterns = bannerState.patterns
+        }
+    }
+}
 
 data class BlockPos(val x: Int, val y: Int, val z: Int) {
     fun toEntityPos() = EntityPos(x.toDouble(), y.toDouble(), z.toDouble())
@@ -124,12 +142,14 @@ object Config {
         BlockPos(x = 703, y = 78, z = 28341),
         BlockPos(x = 703, y = 91, z = 28342),
         BlockPos(x = 703, y = 91, z = 28344),
+        BlockPos(x = 680, y = 77, z = 28335),
         BlockPos(x = 681, y = 72, z = 28329),
         BlockPos(x = 681, y = 72, z = 28333),
         BlockPos(x = 682, y = 81, z = 28335),
         BlockPos(x = 683, y = 81, z = 28334),
         BlockPos(x = 684, y = 81, z = 28335),
         BlockPos(x = 686, y = 75, z = 28331),
+        BlockPos(x = 687, y = 77, z = 28328),
         BlockPos(x = 673, y = 75, z = 28347),
         BlockPos(x = 674, y = 81, z = 28351),
         BlockPos(x = 674, y = 86, z = 28344),
@@ -150,6 +170,7 @@ object Config {
         BlockPos(x = 686, y = 75, z = 28339),
         BlockPos(x = 686, y = 92, z = 28339),
         BlockPos(x = 686, y = 92, z = 28347),
+        BlockPos(x = 687, y = 77, z = 28342),
         BlockPos(x = 687, y = 92, z = 28338),
         BlockPos(x = 687, y = 92, z = 28340),
         BlockPos(x = 687, y = 92, z = 28346),
@@ -308,6 +329,7 @@ object Config {
         BlockPos(x = 694, y = 71, z = 28375),
         BlockPos(x = 695, y = 89, z = 28369),
         BlockPos(x = 695, y = 89, z = 28373),
+        BlockPos(x = 696, y = 78, z = 28371),
         BlockPos(x = 696, y = 79, z = 28375),
         BlockPos(x = 699, y = 71, z = 28368),
         BlockPos(x = 700, y = 75, z = 28378),
@@ -328,6 +350,10 @@ object Config {
         BlockPos(x = 705, y = 86, z = 28379),
         BlockPos(x = 706, y = 75, z = 28376),
         BlockPos(x = 710, y = 79, z = 28375),
+        BlockPos(x = 712, y = 77, z = 28376),
+        BlockPos(x = 712, y = 77, z = 28378),
+        BlockPos(x = 712, y = 77, z = 28380),
+        BlockPos(x = 712, y = 77, z = 28382),
         BlockPos(x = 712, y = 86, z = 28374),
         BlockPos(x = 715, y = 69, z = 28382),
         BlockPos(x = 715, y = 92, z = 28368),
@@ -402,10 +428,52 @@ object Config {
         BlockPos(x = 727, y = 70, z = 28373),
         BlockPos(x = 727, y = 78, z = 28369),
         BlockPos(x = 727, y = 78, z = 28373),
+        BlockPos(x = 728, y = 78, z = 28376),
         BlockPos(x = 729, y = 81, z = 28379),
         BlockPos(x = 730, y = 71, z = 28382),
         BlockPos(x = 731, y = 67, z = 28382),
-        BlockPos(x = 733, y = 81, z = 28379)
+        BlockPos(x = 731, y = 78, z = 28382),
+        BlockPos(x = 733, y = 81, z = 28379),
+        BlockPos(x = 734, y = 78, z = 28376)
+    )
+    val bannerStates = listOf(
+        Pair(
+            BannerState(
+                DyeColor.WHITE, listOf(
+                    Pattern(DyeColor.BLACK, PatternType.STRIPE_MIDDLE),
+                    Pattern(DyeColor.WHITE, PatternType.STRIPE_CENTER)
+                )
+            )
+            , BannerState(
+                DyeColor.WHITE, listOf(
+                    Pattern(DyeColor.RED, PatternType.STRIPE_SMALL),
+                    Pattern(DyeColor.WHITE, PatternType.GRADIENT_UP),
+                    Pattern(DyeColor.WHITE, PatternType.HALF_HORIZONTAL),
+                    Pattern(DyeColor.BLACK, PatternType.STRIPE_MIDDLE),
+                    Pattern(DyeColor.WHITE, PatternType.STRIPE_CENTER)
+                )
+            )
+        ),
+        Pair(
+            BannerState(
+                DyeColor.WHITE, listOf(
+                    Pattern(DyeColor.BLACK, PatternType.HALF_HORIZONTAL),
+                    Pattern(DyeColor.BLACK, PatternType.CREEPER),
+                    Pattern(DyeColor.WHITE, PatternType.CREEPER),
+                    Pattern(DyeColor.BLACK, PatternType.GRADIENT)
+                )
+            )
+            , BannerState(
+                DyeColor.WHITE, listOf(
+                    Pattern(DyeColor.RED, PatternType.MOJANG),
+                    Pattern(DyeColor.BLACK, PatternType.HALF_HORIZONTAL),
+                    Pattern(DyeColor.BLACK, PatternType.TRIANGLE_BOTTOM),
+                    Pattern(DyeColor.WHITE, PatternType.CREEPER),
+                    Pattern(DyeColor.WHITE, PatternType.TRIANGLES_BOTTOM),
+                    Pattern(DyeColor.BLACK, PatternType.GRADIENT)
+                )
+            )
+        )
     )
     val knifeDistance = 2.0
     val knifeDamage = 5.0

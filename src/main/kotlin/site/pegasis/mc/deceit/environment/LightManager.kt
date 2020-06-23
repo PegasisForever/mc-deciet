@@ -2,21 +2,16 @@ package site.pegasis.mc.deceit.environment
 
 import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.block.Banner
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.Directional
 import org.bukkit.block.data.type.Lantern
-import org.bukkit.plugin.java.JavaPlugin
 import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.BannerState.Companion.applyState
 import kotlin.random.Random
 
 object LightManager {
-    lateinit var plugin: JavaPlugin
-
-    fun init(plugin: JavaPlugin) {
-        LightManager.plugin = plugin
-    }
-
     fun hook() {
         Game.addListener(GameEvent.ON_LIGHT_ON) {
             lightOn()
@@ -30,6 +25,7 @@ object LightManager {
     private val potBlocks = arrayListOf<Pair<Block, Material>>()
     private val lanternBlocks = arrayListOf<Pair<Block, Boolean>>()
     private val pumpkinBlocks = arrayListOf<Pair<Block, BlockFace>>()
+    private val bannerBlocks = arrayListOf<Pair<Block, BannerState>>()
     private var lightOn = true
 
     fun lightOn() {
@@ -49,6 +45,11 @@ object LightManager {
         pumpkinBlocks.forEach { (block, facing) ->
             block.setType(Material.JACK_O_LANTERN)
             block.setBlockData((block.blockData as Directional).apply { setFacing(facing) })
+        }
+        bannerBlocks.forEach { (block, oldBannerState) ->
+            val banner = block.state as Banner
+            banner.applyState(oldBannerState)
+            banner.update()
         }
     }
 
@@ -85,6 +86,16 @@ object LightManager {
                 pumpkinBlocks += (block to facing)
                 block.setType(Material.CARVED_PUMPKIN)
                 block.setBlockData((block.blockData as Directional).apply { setFacing(facing) })
+            } else if (block.type.toString().endsWith("BANNER")) {
+                val banner = block.state as Banner
+                for ((from, to) in Config.bannerStates) {
+                    if (from.isMatch(banner)) {
+                        bannerBlocks += (block to from)
+                        banner.applyState(to)
+                        banner.update()
+                        break
+                    }
+                }
             }
         }
 

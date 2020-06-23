@@ -137,3 +137,14 @@ fun Float.toDegree() = this * 57.2958f
 
 fun World.getNearbyEntities(loc: Location, sideLength: Double) =
     getNearbyEntities(loc, sideLength / 2, sideLength / 2, sideLength / 2)
+
+fun listsEqual(list1: List<Any>, list2: List<Any>): Boolean {
+    if (list1.size != list2.size)
+        return false
+
+    val pairList = list1.zip(list2)
+
+    return pairList.all { (a, b) ->
+        a == b
+    }
+}

@@ -3,18 +3,25 @@ package site.pegasis.mc.deceit
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
+import org.bukkit.DyeColor
 import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.block.Banner
+import org.bukkit.block.Block
+import org.bukkit.block.banner.Pattern
+import org.bukkit.block.banner.PatternType
 import org.bukkit.block.data.Directional
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.ItemFrame
 import org.bukkit.entity.Pig
 import org.bukkit.event.Listener
+import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
 import ru.beykerykt.lightapi.LightAPI
 import ru.beykerykt.lightapi.LightType
 import site.pegasis.mc.deceit.combat.CombatListener
+import site.pegasis.mc.deceit.debug.Debugger
 import site.pegasis.mc.deceit.debug.MarkListener
 import site.pegasis.mc.deceit.debug.ServerStopListener
 import site.pegasis.mc.deceit.environment.*
@@ -53,7 +60,6 @@ open class Main : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(PickupDroppedItemListener(), this)
         Game.init(this)
         GlowingManager.init(this)
-        LightManager.init(this)
         FallingBlockManager.init(this)
         FuseSocketManager.init(this)
         FuseManager.init(this)
@@ -81,7 +87,12 @@ open class Main : JavaPlugin(), Listener {
                             if (block.type == Material.TORCH ||
                                 block.type.toString().startsWith("POTTED") ||
                                 block.type == Material.LANTERN ||
-                                block.type == Material.JACK_O_LANTERN
+                                block.type == Material.JACK_O_LANTERN ||
+                                (block.type.toString().endsWith("BANNER") && Config.bannerStates.any {
+                                    it.first.isMatch(
+                                        block.state as Banner
+                                    )
+                                })
                             ) {
                                 list += block.blockPos
                             }
@@ -190,6 +201,28 @@ open class Main : JavaPlugin(), Listener {
                     }
                     LightAPI.collectChunks(lightPos, LightType.BLOCK, 15).forEach {
                         LightAPI.updateChunk(it, LightType.BLOCK)
+                    }
+                }
+                "banner" -> {
+                    val block = Debugger.player!!.getTargetBlock(10)
+                    if (block?.type?.toString()?.endsWith("BANNER") == true) {
+                        val bannerState = block.state as Banner
+                        Debugger.msg(block.type.toString())
+                        Debugger.msg(bannerState.patterns.joinToString {
+                            "${it.color} ${it.pattern}"
+                        })
+                    }
+                }
+                "change-banner" -> {
+                    val block = Debugger.player!!.getTargetBlock(10)
+                    if (block?.type?.toString()?.endsWith("BANNER") == true) {
+                        val bannerState = block.state as Banner
+                        bannerState.baseColor = DyeColor.WHITE
+                        bannerState.patterns = listOf(
+                            Pattern(DyeColor.BLACK, PatternType.STRIPE_MIDDLE),
+                            Pattern(DyeColor.WHITE, PatternType.STRIPE_CENTER)
+                        )
+                        bannerState.update()
                     }
                 }
             }
