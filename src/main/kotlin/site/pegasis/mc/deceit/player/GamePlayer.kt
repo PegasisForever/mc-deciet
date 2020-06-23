@@ -23,6 +23,7 @@ import site.pegasis.mc.deceit.gameitem.Arrow
 import site.pegasis.mc.deceit.player.GamePlayerManager.gps
 import site.pegasis.mc.deceit.player.GamePlayerManager.requiredVotes
 import site.pegasis.mc.deceit.player.PlayerState.*
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
 
 class GamePlayer(
@@ -38,6 +39,41 @@ class GamePlayer(
     private var countDownSecond: Int = 0
     private var countDownJob: Job? = null
 
+    var stunLevel: Int = 0
+        set(value) {
+            if (!isInMainThread()) error("Async stunLevel change!")
+
+            if (field > 10 && value > 10) {
+                field = value
+                return
+            }
+            field = value
+
+            player.removePotionEffect(PotionEffectType.SLOW)
+            player.removePotionEffect(PotionEffectType.JUMP)
+            if (value > 0) {
+                player.addPotionEffect(
+                    PotionEffect(
+                        PotionEffectType.JUMP,
+                        10000000,
+                        250,
+                        false,
+                        false,
+                        false
+                    )
+                )
+                player.addPotionEffect(
+                    PotionEffect(
+                        PotionEffectType.SLOW,
+                        10000000,
+                        (value / 1.6).toInt(),
+                        false,
+                        false,
+                        true
+                    )
+                )
+            }
+        }
     var bloodLevel: Int = 0
         set(value) {
             field = value.coerceAtMost(6)

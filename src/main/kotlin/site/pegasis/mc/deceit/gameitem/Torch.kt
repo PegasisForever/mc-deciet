@@ -10,6 +10,7 @@ import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.player.GamePlayer
 import site.pegasis.mc.deceit.player.GamePlayerEffectFlag
 import site.pegasis.mc.deceit.player.GamePlayerManager
 import site.pegasis.mc.deceit.player.PlayerState
@@ -26,6 +27,7 @@ class Torch(amount: Int = if (debug) 10 else 64) : GameItem(
         REMOVED
     }
 
+    private var changeStunLevelJobs = hashMapOf<GamePlayer, Job>()
     private var torchLightBlock: Block? = null
     private var reduceCountJob: Job? = null
     private val durationPerCount = (Config.torchDuration / 64 * 1000).toLong()
@@ -88,14 +90,31 @@ class Torch(amount: Int = if (debug) 10 else 64) : GameItem(
         }
     }
 
+    private fun launchStunLevelJob(otherGp: GamePlayer) = GlobalScope.launch {
+        while (isActive) {
+            GlobalScope.launch {
+                Game.plugin.inMainThread { otherGp.stunLevel++ }
+                delay(5000L)
+                Game.plugin.inMainThread { otherGp.stunLevel-- }
+            }
+            delay(500L)
+        }
+    }
+
     private fun torchDamageUpdate(state: State = this.state) {
         GamePlayerManager.livingPlayers.forEach { otherGp ->
             if (otherGp == gp) return@forEach
-            val isInRange = inLightRange(otherGp.player.eyeLocation)
-            if (isInRange && state == State.ON) {
-                otherGp.addEffectFlag(GamePlayerEffectFlag.IN_LIGHT, this)
-            } else if (!isInRange || state != State.ON) {
-                otherGp.removeEffectFlag(GamePlayerEffectFlag.IN_LIGHT, this)
+            if (state != State.ON) {
+                changeStunLevelJobs.remove(otherGp)?.cancel()
+            } else {
+                if (inLightRange(otherGp.player.eyeLocation)) {
+                    if (otherGp !in changeStunLevelJobs) {
+                        GamePlayerManager.getPlayer("Pegasis")?.sendMessage("launchStunLevelJob")
+                        changeStunLevelJobs[otherGp] = launchStunLevelJob(otherGp)
+                    }
+                } else {
+                    changeStunLevelJobs.remove(otherGp)?.cancel()
+                }
             }
         }
     }
