@@ -58,6 +58,8 @@ class GamePlayer(
             }
             field = value
 
+            player.removePotionEffect(PotionEffectType.SLOW)
+            player.removePotionEffect(PotionEffectType.JUMP)
             if (value > 0) {
                 player.addPotionEffect(
                     PotionEffect(

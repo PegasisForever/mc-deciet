@@ -396,7 +396,7 @@ object Config {
     val torchDuration = 20.0
     val levels = listOf(
         Level(
-            5,
+            15,
             10,
             10,
             5,

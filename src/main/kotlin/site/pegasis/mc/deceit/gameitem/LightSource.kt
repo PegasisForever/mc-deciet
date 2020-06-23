@@ -15,6 +15,14 @@ abstract class LightSource(itemStack: ItemStack) : GameItem(itemStack) {
     protected var changeStunLevelJobs = hashMapOf<GamePlayer, Job>()
     private var lightBlock: Block? = null
 
+    init {
+        Game.addListener(GameEvent.ON_END) {
+            changeStunLevelJobs.forEach { (_, job) ->
+                job.cancel()
+            }
+        }
+    }
+
     protected fun launchStunLevelJob(
         otherGp: GamePlayer,
         level: Int,
@@ -29,7 +37,7 @@ abstract class LightSource(itemStack: ItemStack) : GameItem(itemStack) {
                     Game.plugin.inMainThread { otherGp.stunLevel -= level }
                 }
                 if (repeatDuration != null) {
-                    delay(500L)
+                    delay(repeatDuration)
                 } else {
                     break
                 }
