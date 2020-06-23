@@ -12,6 +12,7 @@ import org.bukkit.attribute.Attribute
 import org.bukkit.entity.*
 import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
+import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
@@ -335,6 +336,7 @@ class GamePlayer(
         player.exp = 0f
         player.foodLevel = 20
         player.health = player.getAttribute(Attribute.GENERIC_MAX_HEALTH)!!.value
+        player.inventory.setArmorContents(arrayOf<ItemStack?>(null, null, null, null))
         player.inventory.setItemInOffHand(null)
         for (i in 0..8) {
             gameItems[i] = null
@@ -406,7 +408,7 @@ class GamePlayer(
             item.onAttach(this, index)
             if (item.getItemStack() != null) {
                 gameItems[index] = item
-            }else{
+            } else {
                 item.onDetach()
             }
         }
