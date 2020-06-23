@@ -812,6 +812,11 @@ object Config {
                     BlockPos(687, 74, 28335),
                     BlockPos(694, 75, 28336),
                     BlockPos(690, 74, 28335)
+                ),
+                ThreePair(
+                    BlockPos(708, 74, 28381),
+                    BlockPos(703, 75, 28382),
+                    BlockPos(707, 74, 28378)
                 )
             ), // objCs
             listOf(
