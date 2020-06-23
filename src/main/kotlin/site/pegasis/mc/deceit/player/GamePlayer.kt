@@ -23,6 +23,7 @@ import site.pegasis.mc.deceit.debug.Debugger
 import site.pegasis.mc.deceit.gameitem.*
 import site.pegasis.mc.deceit.gameitem.Arrow
 import site.pegasis.mc.deceit.player.GamePlayerManager.gps
+import site.pegasis.mc.deceit.player.GamePlayerManager.livingPlayers
 import site.pegasis.mc.deceit.player.GamePlayerManager.requiredVotes
 import site.pegasis.mc.deceit.player.PlayerState.*
 import java.util.concurrent.atomic.AtomicInteger
@@ -40,6 +41,8 @@ class GamePlayer(
     private val effectFlags = hashSetOf<Pair<Any, GamePlayerEffectFlag>>()
     private var countDownSecond: Int = 0
     private var countDownJob: Job? = null
+    private var outlineInnocentJob: Job? = null
+    private var glowingInnocentPlayers: List<GamePlayer> = emptyList()
 
     val hasArmor: Boolean
         get() = player.inventory.armorContents.any { it?.type == Material.IRON_CHESTPLATE }
@@ -99,6 +102,7 @@ class GamePlayer(
                     .filter { it != this && it.state == DYING && isInHighLightDistance(it.player) }
                     .map { it.player.entityId }
             }
+            set += glowingInnocentPlayers.map { it.player.entityId }
             if ((Game.state == GameState.DARK || Game.state == GameState.RAGE) && !hasFuse) {
                 set += player.world
                     .getEntitiesByClass(FallingBlock::class.java)
@@ -271,6 +275,32 @@ class GamePlayer(
         )
 
         Main.registerEvents(this)
+        if (isInfected) {
+            outlineInnocentJob = GlobalScope.launch {
+                while (isActive) {
+                    delay((Config.outlineInnocentDelay * 1000).toLong())
+
+                    glowingInnocentPlayers = livingPlayers.filter { !it.isInfected && it.player.isSprinting }
+                    Game.plugin.inMainThread {
+                        glowingInnocentPlayers.forEach {
+                            player.hidePlayer(Game.plugin, it.player)
+                            player.showPlayer(Game.plugin, it.player)
+                        }
+                    }
+
+                    delay((Config.outlineInnocentDuration * 1000).toLong())
+
+                    val temp = glowingInnocentPlayers
+                    glowingInnocentPlayers = emptyList()
+                    Game.plugin.inMainThread {
+                        temp.forEach {
+                            player.hidePlayer(Game.plugin, it.player)
+                            player.showPlayer(Game.plugin, it.player)
+                        }
+                    }
+                }
+            }
+        }
         Game.addListener(GameEvent.ON_SECOND) {
             updateScoreBoard()
             if (canTransform) {
@@ -281,6 +311,7 @@ class GamePlayer(
         }
         Game.addListener(GameEvent.ON_END) {
             HandlerList.unregisterAll(this@GamePlayer)
+            outlineInnocentJob?.cancel()
             resetItemAndState()
             updateScoreBoard()
             state = NORMAL

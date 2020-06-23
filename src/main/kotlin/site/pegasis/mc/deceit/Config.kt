@@ -396,6 +396,8 @@ object Config {
     val transformedDamage = 10.0
     val torchDuration = 20.0
     val playerPickupDistance = 1.0
+    val outlineInnocentDelay = 5.0
+    val outlineInnocentDuration = 1.0
     val levels = listOf(
         Level(
             15,
