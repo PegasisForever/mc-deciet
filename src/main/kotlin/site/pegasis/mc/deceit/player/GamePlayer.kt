@@ -18,6 +18,7 @@ import org.bukkit.potion.PotionEffectType
 import org.bukkit.scoreboard.DisplaySlot
 import org.bukkit.scoreboard.Objective
 import site.pegasis.mc.deceit.*
+import site.pegasis.mc.deceit.debug.Debugger
 import site.pegasis.mc.deceit.gameitem.*
 import site.pegasis.mc.deceit.gameitem.Arrow
 import site.pegasis.mc.deceit.player.GamePlayerManager.gps
@@ -43,14 +44,20 @@ class GamePlayer(
         set(value) {
             if (!isInMainThread()) error("Async stunLevel change!")
 
-            if (field > 10 && value > 10) {
+            Debugger.actionBar("$this stunLevel change to $field")
+
+            if (Game.state == GameState.END) {
+                player.removePotionEffect(PotionEffectType.SLOW)
+                player.removePotionEffect(PotionEffectType.JUMP)
+                return
+            }
+
+            if (field >= 10 && value >= 10) {
                 field = value
                 return
             }
             field = value
 
-            player.removePotionEffect(PotionEffectType.SLOW)
-            player.removePotionEffect(PotionEffectType.JUMP)
             if (value > 0) {
                 player.addPotionEffect(
                     PotionEffect(
@@ -250,7 +257,7 @@ class GamePlayer(
         addGameItem(LethalInjection())
         addGameItem(Tracker())
         addGameItem(Torch(64))
-        addGameItem(Torch(64))
+        addGameItem(Camera())
 
         player.sendTitle(
             if (isInfected) ChatColor.RED.toString() + "Infected" else "Innocent",
@@ -421,4 +428,6 @@ class GamePlayer(
             flag.removeFrom(player)
         }
     }
+
+    override fun toString() = "GamePlayer(${player.name}, state = ${state})"
 }

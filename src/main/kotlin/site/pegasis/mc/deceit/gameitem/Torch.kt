@@ -1,7 +1,6 @@
 package site.pegasis.mc.deceit.gameitem
 
 import kotlinx.coroutines.*
-import org.bukkit.Location
 import org.bukkit.block.Block
 import org.bukkit.event.EventHandler
 import org.bukkit.event.player.PlayerInteractEvent
@@ -10,12 +9,9 @@ import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import site.pegasis.mc.deceit.*
-import site.pegasis.mc.deceit.player.GamePlayer
-import site.pegasis.mc.deceit.player.GamePlayerEffectFlag
 import site.pegasis.mc.deceit.player.GamePlayerManager
-import site.pegasis.mc.deceit.player.PlayerState
 
-class Torch(amount: Int = if (debug) 10 else 64) : GameItem(
+class Torch(amount: Int = if (debug) 10 else 64) : LightSource(
     ItemStack(Config.torchMaterial).apply {
         this.amount = amount
         rename("Torch")
@@ -27,8 +23,6 @@ class Torch(amount: Int = if (debug) 10 else 64) : GameItem(
         REMOVED
     }
 
-    private var changeStunLevelJobs = hashMapOf<GamePlayer, Job>()
-    private var torchLightBlock: Block? = null
     private var reduceCountJob: Job? = null
     private val durationPerCount = (Config.torchDuration / 64 * 1000).toLong()
     private var state = State.OFF
@@ -70,34 +64,12 @@ class Torch(amount: Int = if (debug) 10 else 64) : GameItem(
         }
 
     private fun torchUpdate(state: State = this.state) {
-        val player = gp?.player ?: return
+        if (gp == null) return
 
         if (state == State.ON) {
-            val lightBlock = player.rayTraceBlocks(Config.torchDistance)?.adjacentBlock() ?: player.rayTraceEndBlock(
-                Config.torchDistance
-            )
-            if (lightBlock == torchLightBlock) return
-
-            torchLightBlock?.deleteLight()
-            lightBlock.setLight(Config.torchBrightness)
-            torchLightBlock = lightBlock
-
-            updateLight(player.location)
-        } else if (torchLightBlock != null) {
-            torchLightBlock!!.deleteLight()
-            torchLightBlock = null
-            updateLight(player.location)
-        }
-    }
-
-    private fun launchStunLevelJob(otherGp: GamePlayer) = GlobalScope.launch {
-        while (isActive) {
-            GlobalScope.launch {
-                Game.plugin.inMainThread { otherGp.stunLevel++ }
-                delay(5000L)
-                Game.plugin.inMainThread { otherGp.stunLevel-- }
-            }
-            delay(500L)
+            setFacingBlockLight(Config.torchBrightness,Config.torchDistance)
+        } else {
+            deleteLight()
         }
     }
 
@@ -107,29 +79,15 @@ class Torch(amount: Int = if (debug) 10 else 64) : GameItem(
             if (state != State.ON) {
                 changeStunLevelJobs.remove(otherGp)?.cancel()
             } else {
-                if (inLightRange(otherGp.player.eyeLocation)) {
+                if (inLightRange(otherGp.player.eyeLocation, Config.torchAngle, Config.torchDistance)) {
                     if (otherGp !in changeStunLevelJobs) {
-                        GamePlayerManager.getPlayer("Pegasis")?.sendMessage("launchStunLevelJob")
-                        changeStunLevelJobs[otherGp] = launchStunLevelJob(otherGp)
+                        changeStunLevelJobs[otherGp] = launchStunLevelJob(otherGp, 1, 5000L, 500L)
                     }
                 } else {
                     changeStunLevelJobs.remove(otherGp)?.cancel()
                 }
             }
         }
-    }
-
-    // use eye location
-    private fun inLightRange(target: Location): Boolean {
-        val playerVector = gp!!.player.eyeLocation.toVector()
-        val playerLookVector = gp!!.player.location.direction
-        playerVector.subtract(playerLookVector)
-        val targetVector = target.toVector()
-
-        val targetInPlayersEyeVector = targetVector.clone().subtract(playerVector)
-        val degree = playerLookVector.angle(targetInPlayersEyeVector).toDegree()
-
-        return degree < Config.torchAngle / 2 && targetInPlayersEyeVector.length() < Config.torchDistance
     }
 
     @EventHandler

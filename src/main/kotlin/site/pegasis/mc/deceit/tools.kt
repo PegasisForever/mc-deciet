@@ -21,6 +21,7 @@ import ru.beykerykt.lightapi.LightAPI
 import ru.beykerykt.lightapi.LightType
 import java.util.logging.Level
 import java.util.logging.Logger
+import kotlin.coroutines.suspendCoroutine
 
 fun JavaPlugin.log(msg: Any?) {
     logger.logInfo(msg.toString())
@@ -106,27 +107,6 @@ fun RayTraceResult.adjacentBlock(): Block? {
     }
 }
 
-fun Block.setLight(level: Int) {
-    LightAPI.createLight(location, LightType.BLOCK, level, false)
-}
-
-fun Block.deleteLight() {
-    LightAPI.deleteLight(location, LightType.BLOCK, false)
-}
-
-fun Player.rayTraceEndBlock(distance: Double): Block {
-    val tracedLocation = eyeLocation.direction.clone()
-        .normalize()
-        .multiply(distance)
-    return world.getBlockAt(location.clone().add(tracedLocation).add(0.0, 1.8, 0.0))
-}
-
-fun updateLight(location: Location) {
-    LightAPI.collectChunks(location, LightType.BLOCK, 15).forEach {
-        LightAPI.updateChunk(it, LightType.BLOCK)
-    }
-}
-
 fun BlockFace.clockWiseNext() = when (this) {
     BlockFace.EAST -> BlockFace.SOUTH
     BlockFace.SOUTH -> BlockFace.WEST
@@ -152,4 +132,4 @@ fun ItemStack.rename(name: String) {
     setItemMeta(meta)
 }
 
-fun Float.toDegree()=this*57.2958f
+fun Float.toDegree() = this * 57.2958f

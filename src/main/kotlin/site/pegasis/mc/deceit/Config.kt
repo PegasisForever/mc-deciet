@@ -52,6 +52,7 @@ data class Level(
 )
 
 object Config {
+    val debuggerName="Pegasis"
     val removeEntityWaitSecond = 0.2
     val lobbyLocation = Location(null, 731.0, 66.0, 28351.0)
     val originalSkinOverride = mapOf("Pegasis" to "yEco")
@@ -70,11 +71,13 @@ object Config {
     val lethalInjectionMaterial = Material.PUFFERFISH
     val torchMaterial = Material.LEVER
     val torchDistance = 10.0
-    val torchBrightness = 15
-    val torchAngle = 40
-    val cameraDistance = 10.0
+    val torchBrightness = 13
+    val torchAngle = 40.0
+    val cameraDistance = 7.0
+    val cameraAngle = 50.0
     val cameraBrightness = 15
     val cameraDuration = 0.2
+    val cameraCoolDown = 1.0
     val highLightDistance = 16
     val doorMaterial = Material.ANVIL
     val trackerDuration = 5.0

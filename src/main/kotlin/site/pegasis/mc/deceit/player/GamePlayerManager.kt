@@ -43,7 +43,7 @@ object GamePlayerManager {
         }
     }
 
-    fun getPlayer(name:String)=gps.values.find { it.player.name==name }?.player
+    fun getPlayer(name: String) = gps.values.find { it.player.name == name }?.player
 
     val requiredVotes: Int
         get() = (livingPlayers.size - 1) / 2 + 1
