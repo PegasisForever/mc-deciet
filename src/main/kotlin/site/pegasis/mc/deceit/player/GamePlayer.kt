@@ -40,11 +40,11 @@ class GamePlayer(
     private var countDownSecond: Int = 0
     private var countDownJob: Job? = null
 
+    val hasArmor: Boolean
+        get() = player.inventory.armorContents.any { it?.type == Material.IRON_CHESTPLATE }
     var stunLevel: Int = 0
         set(value) {
             if (!isInMainThread()) error("Async stunLevel change!")
-
-            Debugger.actionBar("$this stunLevel change to $field")
 
             if (Game.state == GameState.END) {
                 player.removePotionEffect(PotionEffectType.SLOW)
@@ -404,7 +404,11 @@ class GamePlayer(
         val index = gameItems.indexOfFirst { it == null }
         if (index != -1) {
             item.onAttach(this, index)
-            gameItems[index] = item
+            if (item.getItemStack() != null) {
+                gameItems[index] = item
+            }else{
+                item.onDetach()
+            }
         }
     }
 
