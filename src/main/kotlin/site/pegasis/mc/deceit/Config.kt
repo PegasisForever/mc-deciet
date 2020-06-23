@@ -48,11 +48,12 @@ data class Level(
     val objBs: List<ThreePair<BlockPos, BlockPos, BlockPos>>, // objective tall (bottom block), lever, item frame
     val objCs: List<ThreePair<BlockPos, BlockPos, BlockPos>>, // objective two person (half block), lever, pressure plate
     val itemSpawnPlaces: List<EntityPos>,
+    val itemSpawnCount: Int,
     val spawnPoses: List<EntityPos>
 )
 
 object Config {
-    val debuggerName="Pegasis"
+    val debuggerName = "Pegasis"
     val removeEntityWaitSecond = 0.2
     val lobbyLocation = Location(null, 731.0, 66.0, 28351.0)
     val originalSkinOverride = mapOf("Pegasis" to "yEco")
@@ -394,6 +395,7 @@ object Config {
     val votingTextHeight = 3.0
     val transformedDamage = 10.0
     val torchDuration = 20.0
+    val playerPickupDistance = 1.0
     val levels = listOf(
         Level(
             15,
@@ -642,6 +644,7 @@ object Config {
                 EntityPos(x = 686.53319593519, y = 66.0, z = 28360.549576106747),
                 EntityPos(x = 726.3463054173654, y = 68.0, z = 28363.482905523506)
             ),
+            10,
             listOf(
                 EntityPos(x = 726.275986729928, y = 66.0, z = 28356.82808153551),
                 EntityPos(x = 730.0247261704653, y = 66.0625, z = 28367.76422589824),

@@ -5,6 +5,7 @@ import kotlinx.coroutines.withContext
 import org.bukkit.Bukkit
 import org.bukkit.Chunk
 import org.bukkit.Location
+import org.bukkit.World
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.enchantments.Enchantment
@@ -133,3 +134,6 @@ fun ItemStack.rename(name: String) {
 }
 
 fun Float.toDegree() = this * 57.2958f
+
+fun World.getNearbyEntities(loc: Location, sideLength: Double) =
+    getNearbyEntities(loc, sideLength / 2, sideLength / 2, sideLength / 2)

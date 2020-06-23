@@ -17,15 +17,12 @@ import ru.beykerykt.lightapi.LightType
 import site.pegasis.mc.deceit.combat.CombatListener
 import site.pegasis.mc.deceit.debug.MarkListener
 import site.pegasis.mc.deceit.debug.ServerStopListener
-import site.pegasis.mc.deceit.environment.DoorManager
-import site.pegasis.mc.deceit.environment.FallingBlockManager
-import site.pegasis.mc.deceit.environment.GlowingManager
-import site.pegasis.mc.deceit.environment.LightManager
+import site.pegasis.mc.deceit.environment.*
+import site.pegasis.mc.deceit.gameitem.PickupDroppedItemListener
 import site.pegasis.mc.deceit.objective.ObjectiveManager
 import site.pegasis.mc.deceit.objective.bloodbag.BloodBagManager
 import site.pegasis.mc.deceit.objective.fuse.FuseManager
 import site.pegasis.mc.deceit.objective.fuse.FuseSocketManager
-import site.pegasis.mc.deceit.player.GamePlayer
 import site.pegasis.mc.deceit.player.GamePlayerManager
 import site.pegasis.mc.deceit.rules.*
 
@@ -52,7 +49,8 @@ open class Main : JavaPlugin(), Listener {
         server.pluginManager.registerEvents(DisableAttackEntity(), this)
         server.pluginManager.registerEvents(MarkListener(), this)
         server.pluginManager.registerEvents(InteractDistanceListener(), this)
-        server.pluginManager.registerEvents(NoArrowPickupListener(), this)
+        server.pluginManager.registerEvents(NoPickupListener(), this)
+        server.pluginManager.registerEvents(PickupDroppedItemListener(), this)
         Game.init(this)
         GlowingManager.init(this)
         LightManager.init(this)
@@ -211,6 +209,7 @@ open class Main : JavaPlugin(), Listener {
         GamePlayerManager.hook()
         BloodBagManager.hook()
         LightManager.hook()
+        DroppedItemManager.hook()
 
         Game.start()
     }

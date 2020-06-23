@@ -7,13 +7,6 @@ import site.pegasis.mc.deceit.*
 import site.pegasis.mc.deceit.player.GamePlayer
 import kotlin.random.Random
 
-//ARMOR -> ItemStack(Material.IRON_CHESTPLATE).apply {
-//    rename("Armor")
-//}
-//HEALTH_PACK -> ItemStack(Config.healthPackMaterial).apply {
-//    rename("Health Pack")
-//}
-
 abstract class GameItem(
     private val itemStack: ItemStack,
     var gp: GamePlayer? = null,
